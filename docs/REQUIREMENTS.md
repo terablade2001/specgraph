@@ -1,0 +1,148 @@
+# Requirements
+
+The requirement IDs used in tests, ADRs and code comments (for example `REQ-STO-03`).
+`docs/REQUIREMENTS-COVERAGE.md` maps each one to its tests.
+
+These statements were written afterwards from the tests, the code and the ADRs, because the
+original wording was not kept. They describe what the tool is tested to do. IDs whose meaning
+could not be established from the repository are left out (see the end of this file) rather
+than guessed. If a statement here disagrees with the tool, ask the owner which one is right.
+
+## STO — storage and Git
+
+| ID | Requirement |
+|---|---|
+| STO-01 | The model is kept in one JSON file in the Git repository. |
+| STO-02 | Organizing the model (folders, diagrams) changes content only; no file per element, folder or diagram. |
+| STO-03 | An unchanged model serializes to identical bytes; changing one field gives a small diff. |
+| STO-04 | What changed, when and by whom can be read from Git history. |
+| STO-05 | Changes are made on a configured branch; the branch name is configurable. |
+| STO-06 | People working in parallel can merge: different items or fields merge cleanly, the same field changed twice is surfaced with both values kept. |
+| STO-07 | A session holding an old view is told to reload instead of overwriting newer changes. |
+| STO-08 | Agents read the file as plain JSON and change it through a command. |
+
+## ELM — elements
+
+| ID | Requirement |
+|---|---|
+| ELM-01 | An element has a stereotype, a topic, notes and a status. |
+| ELM-02 | An element gets a generated label that is unique: the type prefix plus the first 8 characters of its id (ADR-023). |
+| ELM-03 | Internal ids are random and need no coordination between people. |
+| ELM-04 | The status of an element is one of the configured statuses. |
+| ELM-05 | An element exists once in the model and may appear on several diagrams. |
+| ELM-06 | Removing an element from a diagram keeps it; deleting shows where it is used and removes its links. |
+
+## FLD — folders
+
+| ID | Requirement |
+|---|---|
+| FLD-01 | Folders can be created, renamed and moved. |
+| FLD-02 | Elements and diagrams can be moved between folders. |
+
+## DGM — diagrams
+
+| ID | Requirement |
+|---|---|
+| DGM-01 | A diagram shows elements and links of the model; it stores layout only. |
+| DGM-02 | Elements can be placed, moved, resized and linked by dragging. |
+| DGM-03 | Each diagram has its own layout; an element appears at most once per diagram. |
+| DGM-04 | Link routing is straight, automatic or user-defined, and can be overridden per diagram. |
+| DGM-05 | Elements show their stereotype and status visually. |
+| DGM-06 | A link's look follows its link type. |
+| DGM-07 | Links between elements on a diagram appear from the model. |
+| DGM-08 | A diagram can be exported as an image (SVG and PNG). |
+
+## LNK — links
+
+| ID | Requirement |
+|---|---|
+| LNK-01 | Links are typed. |
+| LNK-02 | Links belong to the model, not to a diagram. |
+| LNK-03 | A link type can restrict the stereotypes of its source and target. |
+
+## TRC — traceability
+
+| ID | Requirement |
+|---|---|
+| TRC-01 | Traceability follows links over several levels. |
+| TRC-02 | Traceability uses the model, not diagrams. |
+| TRC-03 | A link type can opt out of traceability. |
+| TRC-04 | A matrix of stereotype × stereotype for chosen link types, and impact analysis (downstream). |
+| TRC-05 | Coverage rules are configurable and violations are reported. |
+
+## CFG — configuration
+
+| ID | Requirement |
+|---|---|
+| CFG-01 | Stereotypes can be added and changed through the tool. |
+| CFG-02 | Statuses can be added and changed through the tool. |
+| CFG-03 | Which statuses a stereotype allows is configurable (status transition rules: optional, not built). |
+| CFG-04 | Stereotypes can have typed custom fields. |
+| CFG-05 | Link types can be added and changed through the tool. |
+| CFG-06 | Data refers to configuration by stable key, never by display label. |
+| CFG-07 | A configuration entry that is in use cannot be deleted, but can be retired: existing data stays valid and editable, new use is refused. |
+| CFG-08 | A default configuration ships with the tool (stereotypes, statuses, link types; see ADR-020); everything in it can be edited. |
+
+## SRC — search
+
+| ID | Requirement |
+|---|---|
+| SRC-01 | Search by id (or its start), label and text. |
+| SRC-02 | Search results list the diagrams that show each element. |
+| SRC-03 | A search result can open a diagram with the element centred and selected. |
+| SRC-04 | An element's context menu finds it in all diagrams. |
+| SRC-05 | A list of elements that are not used (not linked or not on a diagram). |
+
+## INT — integrity
+
+| ID | Requirement |
+|---|---|
+| INT-01 | Every change carries a unique, signed stamp with who, when and tool version. |
+| INT-02 | A change that bypassed the tool is detected. |
+| INT-03 | Changes by agents also go through the tool. |
+| INT-04 | The model is validated: structure, references and configuration rules. |
+| INT-05 | What the integrity mechanism does and does not prove is documented (ADR-003). |
+
+## USR — users
+
+| ID | Requirement |
+|---|---|
+| USR-01 | Users are names with existing SSH public keys; no passwords. |
+| USR-02 | There is an administrator role. |
+
+## LCK — locks
+
+| ID | Requirement |
+|---|---|
+| LCK-01 | A folder can be locked, covering its sub-folders and contents; only the owner's key may change locked content. |
+| LCK-02 | Anyone can unlock; unlocking another user's lock needs a confirmation (ADR-022). |
+| LCK-03 | Lock information is available for the tree and diagrams. |
+| LCK-04 | Locked content can still be viewed and placed on other diagrams; only the lock owner may link to it (ADR-022). |
+| LCK-05 | A hand edit of locked content is rejected, even if re-stamped with a valid key. |
+| LCK-06 | Two people locking the same folder is surfaced as a conflict. |
+
+## CHK — checks
+
+| ID | Requirement |
+|---|---|
+| CHK-01 | A pre-commit hook blocks hand edits and invalid models. |
+| CHK-02 | One command installs the hooks and the merge driver. |
+| CHK-03 | A history audit reports integrity, lock and identity violations. |
+
+## HST, USE, DOC
+
+| ID | Requirement |
+|---|---|
+| HST-01 | An element's history is shown in words from Git history. |
+| USE-01 | The editor has a folder tree, diagrams and a properties panel. |
+| USE-02 | The editor server is local only (see ADR-002). |
+| USE-05 | The editor opens only for someone who can sign with the registered private key (ADR-021). |
+| USE-06 | The tool runs only when exactly one key is loaded in ssh-agent. |
+| DOC-05 | A demo model, built through the tool's own operations. |
+
+## IDs with no recorded meaning
+
+`USE-03`, `USE-04` and `DOC-01`..`DOC-04` are mentioned in `docs/REQUIREMENTS-COVERAGE.md` and
+ADR-002 as documents or constraints that tests cannot check. Nothing in the repository says what
+they required, so they are not restated here. ADR-002 lists the constraints that shaped the
+design (start from a Python script, nothing non-Python to install, no licence risk).

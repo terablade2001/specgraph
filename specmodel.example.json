@@ -1,0 +1,1293 @@
+{
+ "config": {
+  "coverageRules": {
+   "An_approved_requirement_is_ver": {
+    "description": "An approved requirement is verified by a test",
+    "direction": "incoming",
+    "linkType": "verifies",
+    "other": null,
+    "statuses": [
+     "approved",
+     "validated",
+     "implemented"
+    ],
+    "stereotype": "REQ"
+   }
+  },
+  "linkTypes": {
+   "association": {
+    "color": "#6b7280",
+    "label": "association",
+    "lineStyle": "solid",
+    "retired": false,
+    "routing": "auto",
+    "showLabel": true,
+    "sourceArrow": "none",
+    "sources": null,
+    "targetArrow": "none",
+    "targets": null,
+    "traceable": false
+   },
+   "depends_on": {
+    "color": "#374151",
+    "label": "depends on",
+    "lineStyle": "solid",
+    "retired": false,
+    "routing": "auto",
+    "showLabel": true,
+    "sourceArrow": "none",
+    "sources": null,
+    "targetArrow": "open",
+    "targets": null,
+    "traceable": true
+   },
+   "implements": {
+    "color": "#1d4ed8",
+    "label": "implements",
+    "lineStyle": "dashed",
+    "retired": false,
+    "routing": "auto",
+    "showLabel": true,
+    "sourceArrow": "none",
+    "sources": null,
+    "targetArrow": "hollow-triangle",
+    "targets": null,
+    "traceable": true
+   },
+   "mitigates": {
+    "color": "#b91c1c",
+    "label": "mitigates",
+    "lineStyle": "solid",
+    "retired": false,
+    "routing": "auto",
+    "showLabel": true,
+    "sourceArrow": "none",
+    "sources": null,
+    "targetArrow": "open",
+    "targets": null,
+    "traceable": true
+   },
+   "refines": {
+    "color": "#15803d",
+    "label": "refines",
+    "lineStyle": "solid",
+    "retired": false,
+    "routing": "auto",
+    "showLabel": true,
+    "sourceArrow": "none",
+    "sources": null,
+    "targetArrow": "triangle",
+    "targets": null,
+    "traceable": true
+   },
+   "relates_to": {
+    "color": "#9ca3af",
+    "label": "relates to",
+    "lineStyle": "dotted",
+    "retired": false,
+    "routing": "straight",
+    "showLabel": false,
+    "sourceArrow": "none",
+    "sources": null,
+    "targetArrow": "none",
+    "targets": null,
+    "traceable": false
+   },
+   "trace": {
+    "color": "#6b7280",
+    "label": "trace",
+    "lineStyle": "dashed",
+    "retired": false,
+    "routing": "straight",
+    "showLabel": false,
+    "sourceArrow": "none",
+    "sources": null,
+    "targetArrow": "open",
+    "targets": null,
+    "traceable": true
+   },
+   "verifies": {
+    "color": "#6d28d9",
+    "label": "verifies",
+    "lineStyle": "dashed",
+    "retired": false,
+    "routing": "auto",
+    "showLabel": true,
+    "sourceArrow": "none",
+    "sources": [
+     "TEST-E2E",
+     "TEST-INT"
+    ],
+    "targetArrow": "open",
+    "targets": null,
+    "traceable": true
+   }
+  },
+  "statuses": {
+   "approved": {
+    "color": "#2563eb",
+    "label": "Approved",
+    "order": 20,
+    "retired": false,
+    "symbol": "✓"
+   },
+   "deprecated": {
+    "color": "#78716c",
+    "label": "Deprecated",
+    "order": 60,
+    "retired": false,
+    "symbol": "⊘"
+   },
+   "implemented": {
+    "color": "#15803d",
+    "label": "Implemented",
+    "order": 40,
+    "retired": false,
+    "symbol": "●"
+   },
+   "proposed": {
+    "color": "#6b7280",
+    "label": "Proposed",
+    "order": 10,
+    "retired": false,
+    "symbol": "?"
+   },
+   "rejected": {
+    "color": "#dc2626",
+    "label": "Rejected",
+    "order": 50,
+    "retired": false,
+    "symbol": "✕"
+   },
+   "validated": {
+    "color": "#7c3aed",
+    "label": "Validated",
+    "order": 30,
+    "retired": false,
+    "symbol": "✔"
+   }
+  },
+  "stereotypes": {
+   "ADR": {
+    "border": "#1d4ed8",
+    "fields": {
+     "decisionDate": {
+      "label": "Decision date",
+      "type": "date"
+     },
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     }
+    },
+    "fill": "#dbeafe",
+    "icon": "⚖",
+    "label": "ADR",
+    "labelPrefix": "ADR",
+    "retired": false,
+    "shape": "rounded",
+    "statuses": null
+   },
+   "ASSET": {
+    "border": "#4b5563",
+    "fields": {},
+    "fill": "#f3f4f6",
+    "icon": "▤",
+    "label": "ASSET",
+    "labelPrefix": "ASSET",
+    "retired": false,
+    "shape": "rect",
+    "statuses": null
+   },
+   "B-REQ": {
+    "border": "#047857",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     },
+     "priority": {
+      "label": "Priority",
+      "options": [
+       "Must",
+       "Should",
+       "Could"
+      ],
+      "type": "enum"
+     }
+    },
+    "fill": "#d1fae5",
+    "icon": "◆",
+    "label": "B-REQ",
+    "labelPrefix": "B-REQ",
+    "retired": false,
+    "shape": "rect",
+    "statuses": null
+   },
+   "CONSTRAINT": {
+    "border": "#b45309",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     }
+    },
+    "fill": "#fef3c7",
+    "icon": "⊗",
+    "label": "CONSTRAINT",
+    "labelPrefix": "CON",
+    "retired": false,
+    "shape": "hexagon",
+    "statuses": null
+   },
+   "DOC": {
+    "border": "#475569",
+    "fields": {},
+    "fill": "#f1f5f9",
+    "icon": "☰",
+    "label": "DOC",
+    "labelPrefix": "DOC",
+    "retired": false,
+    "shape": "rect",
+    "statuses": null
+   },
+   "FEAT": {
+    "border": "#a16207",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     }
+    },
+    "fill": "#fef9c3",
+    "icon": "★",
+    "label": "FEAT",
+    "labelPrefix": "FEAT",
+    "retired": false,
+    "shape": "rounded",
+    "statuses": null
+   },
+   "ISSUE": {
+    "border": "#c2410c",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     }
+    },
+    "fill": "#ffedd5",
+    "icon": "⚑",
+    "label": "ISSUE",
+    "labelPrefix": "ISS",
+    "retired": false,
+    "shape": "rounded",
+    "statuses": null
+   },
+   "NAMESPACE": {
+    "border": "#4338ca",
+    "fields": {},
+    "fill": "#e0e7ff",
+    "icon": "◫",
+    "label": "NAMESPACE",
+    "labelPrefix": "NS",
+    "retired": false,
+    "shape": "rect",
+    "statuses": null
+   },
+   "REQ": {
+    "border": "#15803d",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     },
+     "priority": {
+      "label": "Priority",
+      "options": [
+       "Must",
+       "Should",
+       "Could"
+      ],
+      "type": "enum"
+     }
+    },
+    "fill": "#dcfce7",
+    "icon": "☑",
+    "label": "REQ",
+    "labelPrefix": "REQ",
+    "retired": false,
+    "shape": "rect",
+    "statuses": null
+   },
+   "RISK": {
+    "border": "#b91c1c",
+    "fields": {
+     "likelihood": {
+      "label": "Likelihood",
+      "options": [
+       "Low",
+       "Medium",
+       "High"
+      ],
+      "type": "enum"
+     },
+     "severity": {
+      "label": "Severity",
+      "options": [
+       "Low",
+       "Medium",
+       "High"
+      ],
+      "type": "enum"
+     }
+    },
+    "fill": "#fee2e2",
+    "icon": "⚠",
+    "label": "RISK",
+    "labelPrefix": "RISK",
+    "retired": false,
+    "shape": "ellipse",
+    "statuses": null
+   },
+   "TEMPORAL-ADR": {
+    "border": "#0e7490",
+    "fields": {
+     "decisionDate": {
+      "label": "Decision date",
+      "type": "date"
+     },
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     }
+    },
+    "fill": "#cffafe",
+    "icon": "◷",
+    "label": "TEMPORAL-ADR",
+    "labelPrefix": "T-ADR",
+    "retired": false,
+    "shape": "rounded",
+    "statuses": null
+   },
+   "TEST-E2E": {
+    "border": "#6d28d9",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     }
+    },
+    "fill": "#ede9fe",
+    "icon": "⇄",
+    "label": "TEST-E2E",
+    "labelPrefix": "E2E",
+    "retired": false,
+    "shape": "rect",
+    "statuses": null
+   },
+   "TEST-INT": {
+    "border": "#a21caf",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     }
+    },
+    "fill": "#fae8ff",
+    "icon": "⇆",
+    "label": "TEST-INT",
+    "labelPrefix": "INT",
+    "retired": false,
+    "shape": "rect",
+    "statuses": null
+   },
+   "U-REQ": {
+    "border": "#0f766e",
+    "fields": {
+     "owner": {
+      "label": "Owner",
+      "type": "string"
+     },
+     "priority": {
+      "label": "Priority",
+      "options": [
+       "Must",
+       "Should",
+       "Could"
+      ],
+      "type": "enum"
+     }
+    },
+    "fill": "#ccfbf1",
+    "icon": "☺",
+    "label": "U-REQ",
+    "labelPrefix": "U-REQ",
+    "retired": false,
+    "shape": "rounded",
+    "statuses": null
+   }
+  }
+ },
+ "diagrams": {
+  "3e325e9a-f09a-43b0-8d43-f3c8df00a67b": {
+   "folder": "ba6b00db-486e-4070-80b8-6d8d39113336",
+   "links": {},
+   "name": "Checkout: from business goal to tests",
+   "nodes": {
+    "0446b972-57cd-4ee4-89e2-7b52f4ae3c0d": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 320
+    },
+    "08dca778-6011-4a35-ade4-8daa5877eddb": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 650
+    },
+    "0da9a001-07e7-4bf0-8f7e-2839a2c9730a": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 320
+    },
+    "4d6a2432-566a-46a5-939d-fd1d56258c0f": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 480
+    },
+    "527dd4d8-1160-4771-a6cc-2111ba7d0117": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 170
+    },
+    "6eb3e865-33b5-455c-a422-e804739cfe89": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 480
+    },
+    "72dfd5b2-20a8-4f53-9dee-9d82813c1fab": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 480
+    },
+    "7966af2d-ff23-46a1-842e-94b6be53021d": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 20
+    },
+    "7faf0886-bac3-45b3-98d4-bf905fc1b541": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 320
+    },
+    "9c588209-ba07-46bc-9707-f1c4c2eb45e5": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 650
+    },
+    "adf64e64-2ca6-4be1-94a2-266a078d3fbc": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 650
+    },
+    "bac56885-8292-47d6-97aa-c16e313c7859": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 650
+    }
+   }
+  },
+  "ae382538-6eec-4163-b9ce-1c888dd54b76": {
+   "folder": "aecfb29d-d015-4c80-ad1a-7bf37994df70",
+   "links": {},
+   "name": "Decisions, what they implement and the risks",
+   "nodes": {
+    "1bebf85f-20bd-4980-998d-ab81fddfe5eb": {
+     "h": 96,
+     "w": 190,
+     "x": 720,
+     "y": 150
+    },
+    "2b56879b-eb22-4e93-a808-511253c78f48": {
+     "h": 96,
+     "w": 190,
+     "x": 380,
+     "y": 190
+    },
+    "4d6a2432-566a-46a5-939d-fd1d56258c0f": {
+     "h": 96,
+     "w": 190,
+     "x": 720,
+     "y": 330
+    },
+    "53c47495-2b48-4051-bdec-f27c38e5d545": {
+     "h": 96,
+     "w": 190,
+     "x": 720,
+     "y": 20
+    },
+    "6eb3e865-33b5-455c-a422-e804739cfe89": {
+     "h": 96,
+     "w": 190,
+     "x": 720,
+     "y": 460
+    },
+    "9c588209-ba07-46bc-9707-f1c4c2eb45e5": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 360
+    },
+    "adf64e64-2ca6-4be1-94a2-266a078d3fbc": {
+     "h": 96,
+     "w": 190,
+     "x": 380,
+     "y": 530
+    },
+    "bac56885-8292-47d6-97aa-c16e313c7859": {
+     "h": 96,
+     "w": 190,
+     "x": 380,
+     "y": 360
+    },
+    "db5d0a79-68fe-4fe0-ad64-c758a11fce75": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 20
+    },
+    "dbc6ba1d-358b-465b-9f9b-03a208d57470": {
+     "h": 96,
+     "w": 190,
+     "x": 380,
+     "y": 20
+    },
+    "eb6a4545-7509-4680-99d0-0bb9fb41aaec": {
+     "h": 96,
+     "w": 190,
+     "x": 720,
+     "y": 600
+    }
+   }
+  },
+  "c5ea877d-e383-4a00-a1a2-252ffa297bbb": {
+   "folder": "4251ee24-14b6-4d97-898a-9c2b6bf4c798",
+   "links": {},
+   "name": "Reminders and overdue loans",
+   "nodes": {
+    "1bebf85f-20bd-4980-998d-ab81fddfe5eb": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 480
+    },
+    "2b56879b-eb22-4e93-a808-511253c78f48": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 650
+    },
+    "2e9aac2b-39b1-42e2-a1e1-6a707065952b": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 480
+    },
+    "3f42bb66-622b-475b-9e9b-ab0d7c51dc49": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 170
+    },
+    "53c47495-2b48-4051-bdec-f27c38e5d545": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 480
+    },
+    "54adf262-8a5a-40ff-8362-58512564b1b4": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 480
+    },
+    "691b975d-5617-4dee-8300-759450e6f021": {
+     "h": 96,
+     "w": 190,
+     "x": 1040,
+     "y": 480
+    },
+    "6d49c42a-8a07-4509-80a3-912b125f3a5b": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 320
+    },
+    "98490cb6-1cb4-4823-ae21-d744d0afcb87": {
+     "h": 96,
+     "w": 190,
+     "x": 415,
+     "y": 320
+    },
+    "cad7cb31-78d5-4dad-a013-359813c9afea": {
+     "h": 96,
+     "w": 190,
+     "x": 600,
+     "y": 20
+    },
+    "db5d0a79-68fe-4fe0-ad64-c758a11fce75": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 650
+    },
+    "dbc6ba1d-358b-465b-9f9b-03a208d57470": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 650
+    },
+    "fe24a9b6-cc3e-4aeb-a147-555544250a97": {
+     "h": 96,
+     "w": 190,
+     "x": 415,
+     "y": 170
+    }
+   }
+  }
+ },
+ "elements": {
+  "0446b972-57cd-4ee4-89e2-7b52f4ae3c0d": {
+   "fields": {},
+   "folder": "54285aee-0345-4cbc-ae16-7750f815ed46",
+   "label": "INT-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "TEST-INT",
+   "topic": "Loan API answers within 2 seconds under load"
+  },
+  "08dca778-6011-4a35-ade4-8daa5877eddb": {
+   "fields": {
+    "owner": "Mobile team"
+   },
+   "folder": "ba6b00db-486e-4070-80b8-6d8d39113336",
+   "label": "ISS-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "ISSUE",
+   "topic": "Camera fails on barcodes under glossy covers"
+  },
+  "0da9a001-07e7-4bf0-8f7e-2839a2c9730a": {
+   "fields": {},
+   "folder": "54285aee-0345-4cbc-ae16-7750f815ed46",
+   "label": "E2E-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "TEST-E2E",
+   "topic": "Borrow offline, reconnect, the loan appears"
+  },
+  "1bebf85f-20bd-4980-998d-ab81fddfe5eb": {
+   "fields": {
+    "priority": "Could"
+   },
+   "folder": "4251ee24-14b6-4d97-898a-9c2b6bf4c798",
+   "label": "REQ-005",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "E-mail, SMS or push.",
+   "status": "proposed",
+   "stereotype": "REQ",
+   "topic": "The member chooses the reminder channel"
+  },
+  "2b56879b-eb22-4e93-a808-511253c78f48": {
+   "fields": {
+    "decisionDate": "2026-10-09"
+   },
+   "folder": "aecfb29d-d015-4c80-ad1a-7bf37994df70",
+   "label": "T-ADR-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "Temporary. Review when procurement closes the SMS contract.",
+   "status": "approved",
+   "stereotype": "TEMPORAL-ADR",
+   "topic": "E-mail only until the SMS contract is signed"
+  },
+  "2e9aac2b-39b1-42e2-a1e1-6a707065952b": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "f59561b5-7d29-4ebb-91ed-d9c445850ec1",
+   "label": "REQ-006",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "REQ",
+   "topic": "List overdue loans sorted by days late"
+  },
+  "3f42bb66-622b-475b-9e9b-ab0d7c51dc49": {
+   "fields": {
+    "priority": "Could"
+   },
+   "folder": "fe2801b2-f133-4d40-8b60-f1275750f300",
+   "label": "U-REQ-003",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "U-REQ",
+   "topic": "As a librarian I see overdue loans at a glance"
+  },
+  "4d6a2432-566a-46a5-939d-fd1d56258c0f": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "ba6b00db-486e-4070-80b8-6d8d39113336",
+   "label": "REQ-003",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "The basement shelves have no reception.",
+   "status": "approved",
+   "stereotype": "REQ",
+   "topic": "Checkout works without network and syncs later"
+  },
+  "527dd4d8-1160-4771-a6cc-2111ba7d0117": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "fe2801b2-f133-4d40-8b60-f1275750f300",
+   "label": "U-REQ-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "No queue at the desk, also when the desk is closed.",
+   "status": "approved",
+   "stereotype": "U-REQ",
+   "topic": "As a member I borrow a book with my phone"
+  },
+  "53c47495-2b48-4051-bdec-f27c38e5d545": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "4251ee24-14b6-4d97-898a-9c2b6bf4c798",
+   "label": "REQ-004",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "REQ",
+   "topic": "Send a reminder 3 days before the due date"
+  },
+  "54adf262-8a5a-40ff-8362-58512564b1b4": {
+   "fields": {},
+   "folder": "54285aee-0345-4cbc-ae16-7750f815ed46",
+   "label": "E2E-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "TEST-E2E",
+   "topic": "Reminder arrives 3 days before the due date"
+  },
+  "691b975d-5617-4dee-8300-759450e6f021": {
+   "fields": {
+    "owner": "Data protection officer"
+   },
+   "folder": "c0be072b-32ce-4109-9ed8-9a438b19ba4e",
+   "label": "CON-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "Privacy rule. Do not change without the data protection officer.",
+   "status": "approved",
+   "stereotype": "CONSTRAINT",
+   "topic": "Loan history is deleted 30 days after return"
+  },
+  "6d49c42a-8a07-4509-80a3-912b125f3a5b": {
+   "fields": {},
+   "folder": "f59561b5-7d29-4ebb-91ed-d9c445850ec1",
+   "label": "FEAT-003",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "FEAT",
+   "topic": "Overdue dashboard"
+  },
+  "6eb3e865-33b5-455c-a422-e804739cfe89": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "ba6b00db-486e-4070-80b8-6d8d39113336",
+   "label": "REQ-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "Measured from the scan to the confirmation on the screen.",
+   "status": "validated",
+   "stereotype": "REQ",
+   "topic": "A loan is recorded within 2 seconds"
+  },
+  "72dfd5b2-20a8-4f53-9dee-9d82813c1fab": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "ba6b00db-486e-4070-80b8-6d8d39113336",
+   "label": "REQ-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "REQ",
+   "topic": "Scan the book barcode with the phone camera"
+  },
+  "7966af2d-ff23-46a1-842e-94b6be53021d": {
+   "fields": {
+    "owner": "Library board",
+    "priority": "Must"
+   },
+   "folder": "c3da74bd-6b25-4b01-917f-708a09ace06a",
+   "label": "B-REQ-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "Today a librarian spends about 40% of a shift scanning books in and out.",
+   "status": "approved",
+   "stereotype": "B-REQ",
+   "topic": "Halve the desk time spent on loans"
+  },
+  "7faf0886-bac3-45b3-98d4-bf905fc1b541": {
+   "fields": {
+    "owner": "Mobile team"
+   },
+   "folder": "ba6b00db-486e-4070-80b8-6d8d39113336",
+   "label": "FEAT-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "FEAT",
+   "topic": "Self-service checkout"
+  },
+  "98490cb6-1cb4-4823-ae21-d744d0afcb87": {
+   "fields": {
+    "owner": "Backend team"
+   },
+   "folder": "4251ee24-14b6-4d97-898a-9c2b6bf4c798",
+   "label": "FEAT-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "FEAT",
+   "topic": "Due-date reminders"
+  },
+  "9c588209-ba07-46bc-9707-f1c4c2eb45e5": {
+   "fields": {
+    "likelihood": "Medium",
+    "severity": "High"
+   },
+   "folder": "aecfb29d-d015-4c80-ad1a-7bf37994df70",
+   "label": "RISK-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "RISK",
+   "topic": "Two phones borrow the same copy while offline"
+  },
+  "adf64e64-2ca6-4be1-94a2-266a078d3fbc": {
+   "fields": {
+    "decisionDate": "2026-08-20"
+   },
+   "folder": "aecfb29d-d015-4c80-ad1a-7bf37994df70",
+   "label": "ADR-003",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "ADR",
+   "topic": "Store loans in PostgreSQL hosted in Frankfurt"
+  },
+  "bac56885-8292-47d6-97aa-c16e313c7859": {
+   "fields": {
+    "decisionDate": "2026-09-14",
+    "owner": "Mobile team"
+   },
+   "folder": "aecfb29d-d015-4c80-ad1a-7bf37994df70",
+   "label": "ADR-001",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "Loans made offline are queued and sent when the phone is online again. The server decides which loan wins.",
+   "status": "approved",
+   "stereotype": "ADR",
+   "topic": "Keep an offline queue of loans on the phone"
+  },
+  "cad7cb31-78d5-4dad-a013-359813c9afea": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "c3da74bd-6b25-4b01-917f-708a09ace06a",
+   "label": "B-REQ-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "B-REQ",
+   "topic": "Fewer than 5% of loans are returned late"
+  },
+  "db5d0a79-68fe-4fe0-ad64-c758a11fce75": {
+   "fields": {
+    "likelihood": "Medium",
+    "severity": "Medium"
+   },
+   "folder": "aecfb29d-d015-4c80-ad1a-7bf37994df70",
+   "label": "RISK-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "RISK",
+   "topic": "Reminders land in the spam folder"
+  },
+  "dbc6ba1d-358b-465b-9f9b-03a208d57470": {
+   "fields": {
+    "decisionDate": "2026-10-02"
+   },
+   "folder": "aecfb29d-d015-4c80-ad1a-7bf37994df70",
+   "label": "ADR-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "ADR",
+   "topic": "Send all reminders through one notification service"
+  },
+  "eb6a4545-7509-4680-99d0-0bb9fb41aaec": {
+   "fields": {
+    "owner": "Data protection officer"
+   },
+   "folder": "c0be072b-32ce-4109-9ed8-9a438b19ba4e",
+   "label": "CON-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "CONSTRAINT",
+   "topic": "Personal data stays in the EU"
+  },
+  "fe24a9b6-cc3e-4aeb-a147-555544250a97": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "fe2801b2-f133-4d40-8b60-f1275750f300",
+   "label": "U-REQ-002",
+   "modified": {
+    "at": "2026-11-15T15:46:31Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "validated",
+   "stereotype": "U-REQ",
+   "topic": "As a member I am reminded before a loan is due"
+  }
+ },
+ "folders": {
+  "298160ce-40bf-4375-a04c-47295d467a3e": {
+   "lock": null,
+   "name": "Product",
+   "parent": null
+  },
+  "4251ee24-14b6-4d97-898a-9c2b6bf4c798": {
+   "lock": null,
+   "name": "Reminders",
+   "parent": "298160ce-40bf-4375-a04c-47295d467a3e"
+  },
+  "54285aee-0345-4cbc-ae16-7750f815ed46": {
+   "lock": null,
+   "name": "Verification",
+   "parent": null
+  },
+  "aecfb29d-d015-4c80-ad1a-7bf37994df70": {
+   "lock": null,
+   "name": "Architecture",
+   "parent": null
+  },
+  "ba6b00db-486e-4070-80b8-6d8d39113336": {
+   "lock": null,
+   "name": "Checkout",
+   "parent": "298160ce-40bf-4375-a04c-47295d467a3e"
+  },
+  "c0be072b-32ce-4109-9ed8-9a438b19ba4e": {
+   "lock": {
+    "at": "2026-11-15T15:46:31Z",
+    "owner": "demo",
+    "reason": "Agreed with the data protection officer; ask before changing"
+   },
+   "name": "Compliance (locked)",
+   "parent": null
+  },
+  "c3da74bd-6b25-4b01-917f-708a09ace06a": {
+   "lock": null,
+   "name": "Business",
+   "parent": null
+  },
+  "f59561b5-7d29-4ebb-91ed-d9c445850ec1": {
+   "lock": null,
+   "name": "Overdue",
+   "parent": "298160ce-40bf-4375-a04c-47295d467a3e"
+  },
+  "fe2801b2-f133-4d40-8b60-f1275750f300": {
+   "lock": null,
+   "name": "Users",
+   "parent": null
+  }
+ },
+ "format": "specgraph-model",
+ "formatVersion": 2,
+ "links": {
+  "1c897a99-2254-47f2-bbe0-45368f75aec8": {
+   "label": "",
+   "source": "98490cb6-1cb4-4823-ae21-d744d0afcb87",
+   "target": "fe24a9b6-cc3e-4aeb-a147-555544250a97",
+   "type": "refines"
+  },
+  "2400c3d8-d3d4-496c-8be6-dd347532848b": {
+   "label": "",
+   "source": "0446b972-57cd-4ee4-89e2-7b52f4ae3c0d",
+   "target": "6eb3e865-33b5-455c-a422-e804739cfe89",
+   "type": "verifies"
+  },
+  "26c52010-563d-43ac-8adb-eb88b2446be5": {
+   "label": "",
+   "source": "08dca778-6011-4a35-ade4-8daa5877eddb",
+   "target": "72dfd5b2-20a8-4f53-9dee-9d82813c1fab",
+   "type": "relates_to"
+  },
+  "26ece37c-1f9c-4382-9a9a-ebe87debafa9": {
+   "label": "",
+   "source": "adf64e64-2ca6-4be1-94a2-266a078d3fbc",
+   "target": "eb6a4545-7509-4680-99d0-0bb9fb41aaec",
+   "type": "implements"
+  },
+  "3d6457a5-f1cb-4acf-9039-af22c6f812aa": {
+   "label": "",
+   "source": "72dfd5b2-20a8-4f53-9dee-9d82813c1fab",
+   "target": "7faf0886-bac3-45b3-98d4-bf905fc1b541",
+   "type": "refines"
+  },
+  "506522c0-b8bb-45c0-bdda-76bb305cd124": {
+   "label": "",
+   "source": "bac56885-8292-47d6-97aa-c16e313c7859",
+   "target": "9c588209-ba07-46bc-9707-f1c4c2eb45e5",
+   "type": "mitigates"
+  },
+  "51b37b71-a715-4277-8b48-8669baed0146": {
+   "label": "",
+   "source": "2b56879b-eb22-4e93-a808-511253c78f48",
+   "target": "1bebf85f-20bd-4980-998d-ab81fddfe5eb",
+   "type": "implements"
+  },
+  "5996906e-5e38-4a78-af40-533bd6b1aa53": {
+   "label": "",
+   "source": "527dd4d8-1160-4771-a6cc-2111ba7d0117",
+   "target": "7966af2d-ff23-46a1-842e-94b6be53021d",
+   "type": "refines"
+  },
+  "68110d4c-9faf-4837-9d38-9c27614ad295": {
+   "label": "",
+   "source": "7faf0886-bac3-45b3-98d4-bf905fc1b541",
+   "target": "527dd4d8-1160-4771-a6cc-2111ba7d0117",
+   "type": "refines"
+  },
+  "6d24866f-da52-46f6-a458-65441ee295ea": {
+   "label": "",
+   "source": "dbc6ba1d-358b-465b-9f9b-03a208d57470",
+   "target": "db5d0a79-68fe-4fe0-ad64-c758a11fce75",
+   "type": "mitigates"
+  },
+  "6e1db02c-c917-4aaf-b5ea-b59f167618cc": {
+   "label": "",
+   "source": "53c47495-2b48-4051-bdec-f27c38e5d545",
+   "target": "98490cb6-1cb4-4823-ae21-d744d0afcb87",
+   "type": "refines"
+  },
+  "713f30df-a418-4cd4-820b-b3eef46d8efa": {
+   "label": "",
+   "source": "4d6a2432-566a-46a5-939d-fd1d56258c0f",
+   "target": "7faf0886-bac3-45b3-98d4-bf905fc1b541",
+   "type": "refines"
+  },
+  "84f2dda2-7afb-4934-a2de-8bf59c796cec": {
+   "label": "",
+   "source": "4d6a2432-566a-46a5-939d-fd1d56258c0f",
+   "target": "6eb3e865-33b5-455c-a422-e804739cfe89",
+   "type": "depends_on"
+  },
+  "883ae273-f8dc-4b59-a56a-4593cb41789a": {
+   "label": "",
+   "source": "6eb3e865-33b5-455c-a422-e804739cfe89",
+   "target": "7faf0886-bac3-45b3-98d4-bf905fc1b541",
+   "type": "refines"
+  },
+  "abc6b677-7aa9-4e03-95b2-31f9e565ef28": {
+   "label": "",
+   "source": "adf64e64-2ca6-4be1-94a2-266a078d3fbc",
+   "target": "6eb3e865-33b5-455c-a422-e804739cfe89",
+   "type": "implements"
+  },
+  "afead02c-a14e-4dd6-957b-6f5968bc8b0f": {
+   "label": "",
+   "source": "fe24a9b6-cc3e-4aeb-a147-555544250a97",
+   "target": "cad7cb31-78d5-4dad-a013-359813c9afea",
+   "type": "refines"
+  },
+  "ba975143-3171-41cb-9d24-b43a24b676f1": {
+   "label": "",
+   "source": "2e9aac2b-39b1-42e2-a1e1-6a707065952b",
+   "target": "6d49c42a-8a07-4509-80a3-912b125f3a5b",
+   "type": "refines"
+  },
+  "bbd0f16b-9480-4d69-8b5a-e4d64da61edf": {
+   "label": "",
+   "source": "0da9a001-07e7-4bf0-8f7e-2839a2c9730a",
+   "target": "4d6a2432-566a-46a5-939d-fd1d56258c0f",
+   "type": "verifies"
+  },
+  "bc583c78-b315-47a3-8b75-5daa5f1934aa": {
+   "label": "",
+   "source": "dbc6ba1d-358b-465b-9f9b-03a208d57470",
+   "target": "53c47495-2b48-4051-bdec-f27c38e5d545",
+   "type": "implements"
+  },
+  "bf3bb98d-bf63-4fcf-952e-ec7b7cbf07fd": {
+   "label": "",
+   "source": "dbc6ba1d-358b-465b-9f9b-03a208d57470",
+   "target": "1bebf85f-20bd-4980-998d-ab81fddfe5eb",
+   "type": "implements"
+  },
+  "c28e12fd-b49a-4de0-b749-bc82a74a68ea": {
+   "label": "",
+   "source": "bac56885-8292-47d6-97aa-c16e313c7859",
+   "target": "4d6a2432-566a-46a5-939d-fd1d56258c0f",
+   "type": "implements"
+  },
+  "caa078a4-8aff-48fd-b434-9112cdc65a80": {
+   "label": "",
+   "source": "1bebf85f-20bd-4980-998d-ab81fddfe5eb",
+   "target": "98490cb6-1cb4-4823-ae21-d744d0afcb87",
+   "type": "refines"
+  },
+  "cace0691-ccec-4daa-9d51-5853e9624b05": {
+   "label": "",
+   "source": "54adf262-8a5a-40ff-8362-58512564b1b4",
+   "target": "53c47495-2b48-4051-bdec-f27c38e5d545",
+   "type": "verifies"
+  },
+  "e9245c96-9db9-420c-843c-ed74caa738b8": {
+   "label": "",
+   "source": "3f42bb66-622b-475b-9e9b-ab0d7c51dc49",
+   "target": "cad7cb31-78d5-4dad-a013-359813c9afea",
+   "type": "refines"
+  },
+  "f28fccbb-295a-4dfb-b842-48523f011a1e": {
+   "label": "",
+   "source": "6d49c42a-8a07-4509-80a3-912b125f3a5b",
+   "target": "3f42bb66-622b-475b-9e9b-ab0d7c51dc49",
+   "type": "refines"
+  },
+  "fd8e7dea-bb06-4e4a-a54e-a3d7eb215410": {
+   "label": "",
+   "source": "2e9aac2b-39b1-42e2-a1e1-6a707065952b",
+   "target": "691b975d-5617-4dee-8300-759450e6f021",
+   "type": "depends_on"
+  }
+ },
+ "settings": {
+  "branch": "docs/specifications"
+ },
+ "stamp": {
+  "at": "2026-11-15T15:46:31Z",
+  "contentHash": "sha256:29038c89e233c5a9ad7f88ab5eb71c2457204375512813ca6c786e5b66644f42",
+  "id": "e6b502a8-bfbb-49f4-b99f-bb9b51ed6b28",
+  "op": "batch:folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,element.create,element.create,element.create,element.create,element.create",
+  "prev": [
+   "9ab91731-844e-48b4-937e-d477d09b54cb"
+  ],
+  "sig": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgrO4rpoWzFwiDI1mkQaUi67MNY+\ngPxWUrG5MIhVJpizMAAAAJc3BlY2dyYXBoAAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1l\nZDI1NTE5AAAAQKTUOsWIFw+eL9Nl8IAntGGu+5slPtLU7Dg7Pp2UJAR0hE2qTM4AFrKgQw\naexQ2m3IR4qtAJFeh/a8BAAejSTQg=\n-----END SSH SIGNATURE-----",
+  "tool": "specgraph",
+  "toolVersion": "0.1.0",
+  "user": "demo"
+ },
+ "users": {
+  "demo": {
+   "keys": [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKzuK6aFsxcIgyNZpEGlIuuzDWPoD8VlKxuTCIVSaYsz"
+   ],
+   "role": "admin"
+  }
+ }
+}
