@@ -65,6 +65,10 @@ def changed_items(old, new):
     return out
 
 
+def _but(item, key):
+    return {k: v for k, v in item.items() if k != key}
+
+
 def _descendants(model, fid):
     out, todo = [], [fid]
     while todo:
@@ -95,11 +99,11 @@ def check_change(olds, new, actor):
         for coll, id_ in sorted(changed):
             before, after = old.get(coll, {}).get(id_), new.get(coll, {}).get(id_)
             lock_only = False
+            order_only = bool(coll == "folders" and before and after and _but(before, "order") == _but(after, "order"))
             if coll == "folders" and before and after:
                 l0, l1 = before.get("lock"), after.get("lock")
                 if l0 != l1:
-                    lock_only = {k: v for k, v in before.items() if k != "lock"} == \
-                                {k: v for k, v in after.items() if k != "lock"}
+                    lock_only = _but(before, "lock") == _but(after, "lock")
                     if l1 and l1.get("owner") != actor:
                         out.append("%s: a lock can only be taken for yourself (%s set owner %s)" % (
                             _name(new, coll, id_), actor, l1.get("owner")))
@@ -126,6 +130,8 @@ def check_change(olds, new, actor):
                 home = home_folder(state, coll, id_)
                 if state is old and lock_only:
                     home = before.get("parent")  # own lock handled above
+                if order_only:
+                    home = item.get("parent")  # its place among its siblings belongs to the parent (ADR-024)
                 owner = lock_owner(old if state is old else _with_old_locks(old, new), home)
                 if owner and owner != actor:
                     out.append("%s is in a folder locked by %s (change by %s)" % (

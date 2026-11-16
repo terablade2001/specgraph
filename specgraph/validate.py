@@ -178,6 +178,11 @@ def validate(model):
             err("structure", "config must contain %s" % ", ".join(CONFIG_KINDS))
         return out
     users, folders, elements = model["users"], model["folders"], model["elements"]
+
+    def _order(item, what, ref):
+        o = item.get("order")
+        if o is not None and (isinstance(o, bool) or not isinstance(o, int)):
+            err("order", "%s has an 'order' that is not a whole number" % what, ref)
     links, diagrams = model["links"], model["diagrams"]
 
     for kind in CONFIG_KINDS:
@@ -209,6 +214,7 @@ def validate(model):
                 break
             seen.add(cur)
             cur = folders[cur].get("parent") if isinstance(folders[cur], dict) else None
+        _order(f, "folder '%s'" % f["name"], fid)
         lock = f.get("lock")
         if lock is not None and (not isinstance(lock, dict) or lock.get("owner") not in users):
             err("lock", "folder '%s' has a lock without a known owner" % f["name"], fid)
@@ -230,6 +236,7 @@ def validate(model):
                 err("field", "element '%s': %s" % (name, msg), eid)
         if el.get("folder") not in folders:
             err("reference", "element '%s' is in a missing folder" % name, eid)
+        _order(el, "element '%s'" % name, eid)
         if el.get("label"):
             labels.setdefault(el["label"], []).append(eid)
         mod = el.get("modified")
@@ -269,6 +276,7 @@ def validate(model):
             continue
         if d.get("folder") not in folders:
             err("reference", "diagram '%s' is in a missing folder" % d["name"], did)
+        _order(d, "diagram '%s'" % d["name"], did)
         for eid, n in d["nodes"].items():
             if eid not in elements:
                 err("reference", "diagram '%s' shows a missing element %s" % (d["name"], eid[:8]), did)
@@ -281,10 +289,6 @@ def validate(model):
             if pts is None or o.get("routing", "auto") not in ROUTINGS or not isinstance(pts, list) \
                     or not all(isinstance(p, list) and len(p) == 2 and num(p[0]) and num(p[1]) for p in pts):
                 err("diagram", "diagram '%s' has a bad link override %s" % (d["name"], lid[:8]), did)
-
-    branch = model["settings"].get("branch", "")
-    if not isinstance(branch, str):
-        err("settings", "settings.branch must be text")
 
     for i, c in enumerate(model.get("conflicts", []) or []):
         err("conflict", "unresolved merge conflict at %s" % "/".join(map(str, c.get("path", []))), i)

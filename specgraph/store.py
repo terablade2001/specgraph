@@ -90,12 +90,6 @@ class Store:
         except M.ModelError:
             return None
 
-    def branch_state(self, model):
-        required = (model.get("settings") or {}).get("branch") or ""
-        current = gitio.current_branch(self.root) if self.root else None
-        ok = not required or not self.root or current is None or current == required
-        return {"required": required, "current": current, "ok": ok}
-
     # -- writing -----------------------------------------------------------
     def init(self, user_name):
         if self.exists():
@@ -112,11 +106,11 @@ class Store:
         M.save(self.path, model)
         return model
 
-    def apply(self, ops, base=None, check_branch=True):
+    def apply(self, ops, base=None):
         """Apply operations as the local user. `base` is the stamp id the caller
         last saw; a mismatch means the file changed underneath (REQ-STO-07)."""
         with M.FileLock(self.path):
-            model, head = self._load_checked(base, check_branch)
+            model, head = self._load_checked(base)
             try:
                 key = self.key()
                 actor = S.whoami(model, key)
@@ -143,7 +137,7 @@ class Store:
                 new = model
             return new, results
 
-    def _load_checked(self, base, check_branch=True):
+    def _load_checked(self, base):
         model = self.load()
         head = (model.get("stamp") or {}).get("id")
         if base is not None and base != head:
@@ -153,11 +147,6 @@ class Store:
         if problems:
             raise StoreError(problems[0] + ". Restore the file from git, or run the 'adopt' "
                              "command to accept the outside change under your name.", "integrity")
-        if check_branch:
-            b = self.branch_state(model)
-            if not b["ok"]:
-                raise StoreError("the model is edited on branch '%s' but you are on '%s'. "
-                                 "Run: git switch %s" % (b["required"], b["current"], b["required"]), "branch")
         return model, head
 
     def undo(self, base=None):
@@ -264,5 +253,5 @@ class Store:
         return {"model": model, "head": (model.get("stamp") or {}).get("id"),
                 "me": self.me(model), "integrity": S.check_integrity(model, None),
                 "problems": V.validate(model), "locks": rules.effective_locks(model),
-                "branch": self.branch_state(model), "tool": TOOL_NAME, "version": VERSION,
+                "tool": TOOL_NAME, "version": VERSION,
                 "undo": self.undo_state(model)}

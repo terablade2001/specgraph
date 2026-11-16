@@ -242,3 +242,58 @@ def test_adr017_undo_of_a_delete_brings_back_the_element_its_links_and_diagram_p
     back = ada.load()
     for part in ("elements", "links", "diagrams"):
         assert back[part] == before[part], part
+
+
+# --- ADR-024: order of the explorer ---------------------------------------------
+
+def test_fld03_explorer_order_is_set_per_folder_and_kind(ada, bob, base):
+    """REQ-FLD-03: sub-folders, diagrams and elements of a folder can be put in an order."""
+    from specgraph import ops as O
+    G, r2, a1 = base["G"], base["r2"], base["a1"]
+    r3 = do(ada, "element.create", stereotype="REQ", topic="Third", folder=G)
+    m = ada.load()
+    assert O.tree_order(m, "elements", G)[0] == a1                     # no order yet: by name (ADR-... before REQ-...)
+    before = m["elements"][r2]["modified"]
+    do(bob, "folder.order", id=G, kind="elements", ids=[r3, r2, a1])
+    m = ada.load()
+    assert O.tree_order(m, "elements", G) == [r3, r2, a1]
+    assert m["elements"][r2]["modified"] == before                     # a place in the tree is not a change of the element
+    do(ada, "folder.order", id=G, kind="elements", ids=[a1])           # listed ones first, the rest keep their order
+    assert O.tree_order(ada.load(), "elements", G) == [a1, r3, r2]
+    new = do(ada, "element.create", stereotype="REQ", topic="Fourth", folder=G)
+    assert O.tree_order(ada.load(), "elements", G) == [a1, r3, r2, new]  # not ordered yet: after the ordered ones
+    do(ada, "folder.order", id=None, kind="folders", ids=[G, base["F"]])
+    assert O.tree_order(ada.load(), "folders", None) == [G, base["F"]]
+    do(ada, "element.move", id=a1, folder=base["F"])                   # the old place says nothing in the new folder
+    assert "order" not in ada.load()["elements"][a1]
+    for bad in ({"id": G, "kind": "links", "ids": []}, {"id": G, "kind": "elements", "ids": [base["r1"]]},
+                {"id": G, "kind": "elements", "ids": [r3, r3]}, {"id": "nope", "kind": "elements", "ids": []}):
+        with pytest.raises(StoreError):
+            do(ada, "folder.order", **bad)
+    m = ada.load()
+    assert not V.errors(m)
+    m["diagrams"][base["d1"]]["order"] = "first"
+    assert any(e["code"] == "order" for e in V.errors(m))
+
+
+def test_fld03_order_obeys_locks(ada, bob, base):
+    """The content of a locked folder cannot be reordered by others; the folder's own place among
+    its siblings is not inside its lock."""
+    s1 = do(ada, "folder.create", name="One", parent=base["G"])
+    s2 = do(ada, "folder.create", name="Two", parent=base["G"])
+    do(bob, "folder.lock", id=base["G"], reason="mine")
+    for kind, ids in (("elements", [base["r2"], base["a1"]]), ("folders", [s2, s1])):
+        with pytest.raises(StoreError) as e:
+            do(ada, "folder.order", id=base["G"], kind=kind, ids=ids)
+        assert e.value.code == "locked"
+    do(ada, "folder.order", id=None, kind="folders", ids=[base["G"], base["F"]])
+    assert ada.load()["folders"][base["G"]]["order"] == 0
+    do(bob, "folder.order", id=base["G"], kind="folders", ids=[s2, s1])
+
+
+def test_fld03_merge_keeps_our_order_without_a_conflict():
+    b = {"elements": {"e": {"topic": "t", "order": 0}}}
+    ours = {"elements": {"e": {"topic": "t", "order": 2}}}
+    theirs = {"elements": {"e": {"topic": "t2", "order": 5}}}
+    merged, conflicts = MG.merge3(b, ours, theirs)
+    assert not conflicts and merged["elements"]["e"] == {"topic": "t2", "order": 2}

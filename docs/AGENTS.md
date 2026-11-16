@@ -30,9 +30,12 @@ python sg.py apply '[{"op": "element.update", "args": {"id": "<id>", "status": "
   ```
 
 - Output: `{"ok": true, "results": [ids or null, ...], "stamp": "<stamp id>"}`. Exit code 2 with a
-  message on stderr when refused (validation, lock, identity, wrong branch).
+  message on stderr when refused (validation, lock, identity).
 - `element.delete` needs `--yes`; without it the command prints where the element is used and exits 3.
 - `python sg.py ops` lists every operation with its arguments.
+- The tool works on whatever branch is checked out; choosing the branch is up to the user.
+- The order of the explorer: `{"op": "folder.order", "args": {"id": "<folder id or null>", "kind": "elements", "ids": [...]}}`
+  (`kind`: `folders`, `diagrams` or `elements`). Leave it alone unless the user asks for an order.
 - A folder lock means someone works there: do not work around it, and do not link to its elements. Anyone may unlock
   (`folder.unlock`; another user's lock needs `--yes`), but never on your own: ask the user.
 - Every element you create or change gets `modified: {at, by}` with your user name; do not pass it.

@@ -9,14 +9,14 @@ line (plus the stamp block).
 ```
 {
  "format": "specgraph-model", "formatVersion": 2,
- "settings":  { "branch": "docs/specifications" },
+ "settings":  { },               // nothing is kept here now; an old "branch" entry is ignored (ADR-024)
  "config":    { "stereotypes": {...}, "statuses": {...}, "linkTypes": {...}, "coverageRules": {...} },
  "users":     { "<name>": { "role": "admin" | "user", "keys": ["ssh-ed25519 AAAA..."] } },
- "folders":   { "<id>": { "name", "parent": "<folder id>" | null, "lock": null | { "owner", "reason", "at" } } },
+ "folders":   { "<id>": { "name", "parent": "<folder id>" | null, "lock": null | { "owner", "reason", "at" }, "order"? } },
  "elements":  { "<id>": { "stereotype", "topic", "notes", "status", "label", "folder", "fields": {...},
-                        "modified": { "at", "by" } } },
+                        "modified": { "at", "by" }, "order"? } },
  "links":     { "<id>": { "type", "source": "<element id>", "target": "<element id>", "label" } },
- "diagrams":  { "<id>": { "name", "folder", "nodes": {...}, "links": {...} } },
+ "diagrams":  { "<id>": { "name", "folder", "nodes": {...}, "links": {...}, "order"? } },
  "conflicts": [ ... ],            // only present after a merge with conflicts
  "stamp":     { ... }             // identifies the last change
 }
@@ -44,6 +44,14 @@ line (plus the stamp block).
   - `links`: `{ "<link id>": { "routing"?: "straight"|"auto"|"custom", "points"?: [[x,y],...], "hidden"?: true } }`
     — per-diagram overrides only. A link is drawn on a diagram whenever both its ends are on it,
     unless hidden there.
+
+## Order of the explorer
+
+`order` on a folder, diagram or element is an optional whole number (ADR-024). The tree shows the
+sub-folders of a folder, then its diagrams, then its elements; each group is sorted by `order`, and
+items without one follow, sorted by name. It is set with `folder.order` and removed when the item
+moves to another folder. It carries no meaning besides the place in the tree: it does not change an
+element's `modified`, and a merge keeps our value without a conflict.
 
 ## Configuration
 

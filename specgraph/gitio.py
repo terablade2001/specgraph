@@ -24,11 +24,6 @@ def repo_root(cwd):
     return out.strip() if code == 0 and out.strip() else None
 
 
-def current_branch(root):
-    code, out = git(root, "symbolic-ref", "--short", "-q", "HEAD", check=False)
-    return out.strip() if code == 0 else None
-
-
 def config_get(root, key):
     code, out = git(root or os.getcwd(), "config", "--get", key, check=False)
     return out.strip() if code == 0 else None

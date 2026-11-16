@@ -22,8 +22,8 @@ Simplicity is a primary goal. This is not a general UML tool. Every feature beyo
    and `put()` helpers. The CSP forbids inline scripts and `eval`.
 5. **The server stays local**: bind `127.0.0.1` only, token on every `/api/` call, Host
    header check, fixed static file list. Do not weaken these.
-6. Work on the model happens on branch `docs/specifications` (configurable in
-   `settings.branch`). On another branch the tool refuses changes.
+6. The tool works on whatever branch is checked out (ADR-024). There is no branch rule; do not add one back
+   without an ADR. An old `settings.branch` in a model is ignored.
 7. High- and medium-stakes design changes need a new or updated ADR in `docs/ADRS.md`
    and the owner's approval before implementation.
 
@@ -84,8 +84,8 @@ Problems a new Windows user typically hits, in order. Check these before anythin
 
 1. **Wrong folder.** `sg.py` is in the repository root; run `python sg.py …` from there.
    "can't open file …\sg.py" means the terminal is in another folder.
-2. **Branch.** `git switch docs/specifications` fails with "invalid reference" on a new
-   repo: use `git switch -c docs/specifications`. A brand-new repo needs one commit first.
+2. **Branch.** Any branch works. `git switch <branch>` fails with "invalid reference" when the
+   branch does not exist: use `git switch -c <branch>`. A brand-new repo needs one commit first.
 3. **Commands pasted into cmd.** Trailing `# comments`, `source`, `ls`, `curl | sh` are
    not Windows cmd. `source .venv/bin/activate` is `.venv\Scripts\activate`. Shortcuts
    such as `gm`, `gl`, `gs` are the user's own aliases, not part of the project.
@@ -160,7 +160,7 @@ sg.py apply '[{"op": "element.update", "args": {"id": "<id>", "status": "approve
 - `"$N"` refers to the id created by operation N in the same batch.
 - `sg.py ops` lists every operation and its arguments. Details: `docs/AGENTS.md`.
 - `element.delete` needs `--yes`; without it, usage is printed and the exit code is 3.
-- Exit code 2 = refused (validation, lock, identity, wrong branch); read stderr.
+- Exit code 2 = refused (validation, lock, identity); read stderr.
 - A folder lock by another user blocks changes to everything under it, and new links to it
   (ADR-022). A lock means "someone is working there". Do not work around it. Anyone may
   unlock (`folder.unlock`, `--yes` for another user's lock), but never do that on your own:
@@ -178,7 +178,7 @@ After changes: `sg.py validate`, then commit normally. The pre-commit hook runs
 |---|---|
 | "your SSH key is not registered" | An administrator must add the public key under Users (`user.add`) |
 | "content does not match its stamp" | File was edited outside the tool. `git checkout -- specmodel.json`, or `sg.py adopt` to take responsibility |
-| "model is edited on branch X but you are on Y" | `git switch X` |
+| "model is edited on branch X but you are on Y" | A copy of the tool older than 0.2.0 is running; since ADR-024 there is no branch rule |
 | "not valid JSON … conflict markers" | Merge ran without the driver: `sg.py resolve` |
 | Merge conflicts listed under Check | A person chooses per conflict in the editor, then `git add` + commit |
 | "ssh-keygen was not found" | Install Git/OpenSSH or set `SPECGRAPH_SSH_KEYGEN` |
@@ -229,6 +229,8 @@ specmodel.example.json  stored example model (output of build_example.py)
 - `elements.<id>.modified` is set in one place (`ops.touch`, called by `apply_ops`), never by an operation.
 - `specmodel.deleted.jsonl` is append-only and is never read to decide anything except by the
   pre-commit check.
+- The order of the explorer is the optional `order` of folders, diagrams and elements, written only by
+  `folder.order` (ADR-024). Open folders and pane sizes are view state of the browser, never model data.
 - The tool version is `VERSION` in `specgraph/__init__.py` (shown by `--version`, in the editor
   bar and in every stamp). Raise it when behaviour changes.
 
@@ -243,6 +245,7 @@ specmodel.example.json  stored example model (output of build_example.py)
   in `sg.py ops` and the API automatically.
 - Format change: bump `formatVersion`, write a migration, update `docs/FORMAT.md`.
 - Keep `README.md`, `docs/FORMAT.md` and `docs/AGENTS.md` in step with behaviour.
+- Add every change a user or agent can notice to `CHANGELOG.md`, under the version that carries it.
 
 ## Known limits
 

@@ -11,7 +11,7 @@ through a command.
 - No third-party code is bundled. Test-only extras: `pytest`, and optionally `playwright`.
 - MIT licensed.
 
-**Status: version 0.1.0, an early release.** It works for the author's own use, and the file format
+**Status: version 0.2.0, an early release.** It works for the author's own use, and the file format
 and commands may still change. It has been run on Windows (Git Bash) with Python 3.13 only; Linux,
 macOS and older Python versions are expected to work but have not been checked. The signing and
 integrity checks have not been reviewed by anyone independent: read ADR-003 in `docs/ADRS.md` for
@@ -96,11 +96,11 @@ in Windows cmd, PowerShell and Linux/macOS shells unless marked; do not paste th
    - On Windows `ssh-keygen` and `ssh-add` ship with Git for Windows. If not found, set
      `SPECGRAPH_SSH_KEYGEN` / `SPECGRAPH_SSH_ADD` to their full paths
      (usually under `C:\Program Files\Git\usr\bin\`).
-3. **Specification branch.** A new repository needs at least one commit first.
+3. **Branch.** The tool works on whatever branch is checked out. A new repository needs at least one
+   commit first. A branch of its own for the specifications keeps their history apart from the code, for example:
 
    ```
-   git switch docs/specifications            # branch exists
-   git switch -c docs/specifications         # branch does not exist yet
+   git switch -c docs/specifications
    ```
 
 4. **Start the model** (first person only; you become administrator):
@@ -132,7 +132,7 @@ in Windows cmd, PowerShell and Linux/macOS shells unless marked; do not paste th
 | You see | Cause and fix |
 |---|---|
 | `can't open file …\sg.py` | You are not in the folder that contains `sg.py`: `cd` there first |
-| `invalid reference: docs/specifications` | Branch does not exist: `git switch -c docs/specifications` |
+| `invalid reference: <branch>` | Branch does not exist: `git switch -c <branch>` |
 | `no key is loaded in ssh-agent` / `cannot reach ssh-agent` | Start the agent and run `ssh-add` (step 2) |
 | `cannot read …specmodel.json` | No model yet: run `init` |
 | `cannot prove that you hold the private key` / `signing failed` | The key is not loaded in `ssh-agent`: `ssh-add` it (step 2) |
@@ -189,6 +189,13 @@ Your browser opens the editor (it only listens on your own machine).
 
 - **Left:** folder tree. Right-click a folder for *New REQ / ADR / …*, *New diagram*, *Lock*.
   Drag items between folders. Double-click a diagram to open it.
+  - **Order:** drag an item onto the upper or lower edge of another item of the same kind (folder, diagram,
+    element) to put it before or after it; a line shows where it lands. The middle of a folder moves it into
+    that folder. The order is saved in the model. New items go to the end of their group.
+  - **Collapse / expand:** right-click a folder for *Expand with sub-folders* and *Collapse with sub-folders*,
+    or Shift+click its arrow. Right-click the empty part of the tree for all folders at once.
+- **Pane sizes:** drag the line between the tree and the diagram, between the diagram and the properties, or
+  above the bottom panel. Double-click a line for the default size. The browser remembers the sizes.
 - **Middle:** diagrams. Drag elements in from the tree, or right-click the background to create one there.
   Drag to move, corner handle to resize, blue dot to draw a link to another element.
   Double-click a link to add a bend (user-defined routing). *Delete* key removes from the diagram only.
@@ -216,8 +223,8 @@ element shows it in words ("status Proposed → Validated, by bob, 2026-11-13").
 
 ## Branch workflow
 
-- The model is edited on `docs/specifications` (change it under `settings.branch`, op `settings.put`).
-  On another branch the editor is read-only and tells you which branch to switch to.
+- The tool works on whatever branch is checked out (ADR-024). Which branch the model is edited on is your
+  team's agreement; protect it on the git server if changes elsewhere must be stopped.
 - Several people work in parallel and `git pull`. The installed merge driver merges per item and
   per field, so most pulls just work. If two people changed the same field, git reports a conflict,
   the file stays valid, and the editor shows both values under **Check** — pick one, then
@@ -231,7 +238,7 @@ element shows it in words ("status Proposed → Validated, by bob, 2026-11-13").
 | When | What runs |
 |---|---|
 | every change in the tool | validation of the change, lock rules, identity, signed stamp |
-| `git commit` (hook) | `sg.py check --staged`: valid model, intact stamp, known signer, locks respected, right branch |
+| `git commit` (hook) | `sg.py check --staged`: valid model, intact stamp, known signer, locks respected |
 | `git push` (hook) | `sg.py audit --quiet` over the branch history |
 | any time | `sg.py audit` reports every commit that broke a rule, even if hooks were skipped |
 

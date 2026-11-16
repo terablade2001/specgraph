@@ -6,7 +6,7 @@ import os
 import time
 import uuid
 
-from . import FORMAT, FORMAT_VERSION, READABLE_VERSIONS, DEFAULT_BRANCH
+from . import FORMAT, FORMAT_VERSION, READABLE_VERSIONS
 from .defaults import default_config
 
 COLLECTIONS = ("folders", "elements", "links", "diagrams")
@@ -37,7 +37,7 @@ def empty_model():
     return {
         "format": FORMAT,
         "formatVersion": FORMAT_VERSION,
-        "settings": {"branch": DEFAULT_BRANCH},
+        "settings": {},
         "config": default_config(),
         "users": {},
         "folders": {},

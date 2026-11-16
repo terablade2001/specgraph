@@ -25,13 +25,19 @@ textarea { resize: vertical; }
 #banner div.err { background: #fee2e2; border-color: #e5b4b4; }
 #banner code { user-select: all; word-break: break-all; }
 #main { flex: 1; display: flex; min-height: 0; }
-#tree { width: 270px; border-right: 1px solid var(--line); overflow: auto; background: var(--bg); padding: 4px 0; }
-#props { width: 310px; border-left: 1px solid var(--line); overflow: auto; background: var(--bg); padding: 8px; }
+#tree { width: 270px; flex: none; max-width: 45vw; overflow: auto; background: var(--bg); padding: 4px 0; }
+#props { width: 310px; flex: none; max-width: 45vw; overflow: auto; background: var(--bg); padding: 8px; }
 #center { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.split { flex: none; width: 5px; background: var(--line); cursor: col-resize; touch-action: none; }
+.split.h { width: auto; height: 5px; cursor: row-resize; }
+.split:hover, .split.on { background: var(--accent); }
+.split[hidden] { display: none; }
 .row { display: flex; align-items: center; gap: 4px; padding: 2px 6px; white-space: nowrap; cursor: default; border-radius: 3px; }
 .row:hover { background: #e8ebf1; }
 .row.sel { background: #dbe4ff; }
 .row.drop { outline: 2px dashed var(--accent); }
+.row.drop-before { box-shadow: inset 0 2px 0 var(--accent); }
+.row.drop-after { box-shadow: inset 0 -2px 0 var(--accent); }
 .row .tw { width: 12px; color: var(--mute); cursor: pointer; flex: none; }
 .row .t { overflow: hidden; text-overflow: ellipsis; }
 .row .lk { margin-left: auto; font-size: 11px; color: var(--bad); flex: none; }
@@ -46,7 +52,7 @@ textarea { resize: vertical; }
 #canvasWrap { flex: 1; position: relative; min-height: 0; overflow: hidden; background: #fff; }
 #canvas { width: 100%; height: 100%; display: block; touch-action: none; user-select: none; background-image: radial-gradient(#e3e6eb 1px, transparent 1px); background-size: 20px 20px; }
 #empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--mute); text-align: center; padding: 20px; pointer-events: none; }
-#panel { height: 230px; border-top: 2px solid var(--line); overflow: auto; padding: 6px 10px; background: #fff; }
+#panel { height: 230px; flex: none; max-height: 75%; overflow: auto; padding: 6px 10px; background: #fff; }
 #panel h3, #props h3 { margin: 0 0 6px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
 #panel h3 .x { margin-left: auto; cursor: pointer; }
 #panel .res { padding: 3px 0; border-bottom: 1px solid #eef0f3; }

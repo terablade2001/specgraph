@@ -8,7 +8,7 @@
 | STO-01, STO-02 | core `test_sto01_02_*` |
 | STO-03 | core `test_sto03_*` |
 | STO-04 | integ `test_sto04_hst01_*` |
-| STO-05 | core `test_sto05_*`; integ `check_staged` branch finding is exercised only indirectly |
+| STO-05 | core `test_sto05_*` (any branch, old `settings.branch` ignored, no finding in the commit check) |
 | STO-06 | integ `test_sto06_parallel_*`, `test_sto06_same_field_*`, `test_merge3_*`, `test_merge_without_driver_*` |
 | STO-07 | core `test_sto07_*`; integ server test (stale base → 409) |
 | STO-08 | integ `test_int03_sto08_*`; docs/FORMAT.md |
@@ -17,6 +17,7 @@
 | ELM-05 | core `test_elm05_dgm03_*`; ui |
 | ELM-06 | core `test_elm06_*`, `test_cli_delete_requires_confirmation`; ui (dialog shows usage) |
 | FLD-01, FLD-02 | core `test_fld01_02_*`; ui (tree) |
+| FLD-03 | changes `test_fld03_*` (3 tests: order per folder and kind, locks, merge); ui `test_tree_order_*` (drag before/after, into another folder, top-level folders) |
 | DGM-01, DGM-03 | core `test_elm05_dgm03_*` |
 | DGM-02 | ui (place, move, link by dragging). Resize is implemented but has no automated test |
 | DGM-04 | core `test_dgm04_*`; ui (override + bend by double-click) |
@@ -53,6 +54,8 @@
 | USE-02 | integ `test_use02_*` |
 | USE-05 | integ `test_use05_*` (no key in ssh-agent, no editor) |
 | USE-06 | integ `test_use06_*` (two keys loaded: prove, apply and serve refuse) |
+| USE-07 | ui `test_tree_order_*` (context menu). Shift+click on the arrow and the two entries of the tree background menu have no automated test |
+| USE-08 | ui `test_tree_order_*` (three lines dragged, size kept after a reload, double-click resets) |
 | USE-03, USE-04, DOC-01..04 | documents; not testable |
 | DOC-05 | ui `test_sample_model_is_valid`; example `test_doc05_*` (2 tests: the README example builds and is valid, the stored `specmodel.example.json` matches the builder) |
 | ADR-016 author and date on every element | changes `test_adr016_*` (5 tests: set on change, untouched otherwise, validation, version-1 upgrade, merge) |

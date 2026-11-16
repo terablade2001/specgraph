@@ -80,12 +80,6 @@ def check_staged(store):
         return [], []
     findings, notes = check_version(staged, [head])
     findings += _unlogged_deletes(store, head, staged)
-    try:
-        b = store.branch_state(M.parse(staged))
-        if not b["ok"]:
-            findings.append("branch: model changes belong on '%s', not '%s'" % (b["required"], b["current"]))
-    except M.ModelError:
-        pass
     return findings, notes
 
 

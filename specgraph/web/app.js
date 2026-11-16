@@ -2,7 +2,7 @@
    Rule: all text from the model goes through textContent/setAttribute, never innerHTML. */
 'use strict';
 
-const S = { token: null, model: null, head: null, me: {}, locks: {}, problems: [], integrity: [], branch: {},
+const S = { token: null, model: null, head: null, me: {}, locks: {}, problems: [], integrity: [], treeDrag: null,
             open: [], active: null, sel: null, expanded: new Set(), views: {}, drag: null, panel: null,
             linkType: null, undo: { steps: 0, next: null }, version: '' };
 const $ = (id) => document.getElementById(id);
@@ -49,7 +49,7 @@ function get(path, params) {
   return call('GET', path + (q.toString() ? '?' + q : ''));
 }
 function setState(st) {
-  ['model', 'head', 'me', 'locks', 'problems', 'integrity', 'branch', 'undo', 'version'].forEach((k) => { S[k] = st[k]; });
+  ['model', 'head', 'me', 'locks', 'problems', 'integrity', 'undo', 'version'].forEach((k) => { S[k] = st[k]; });
   const m = S.model;
   S.open = S.open.filter((d) => m.diagrams[d]);
   if (!m.diagrams[S.active]) S.active = S.open[0] || null;
@@ -125,7 +125,7 @@ function folderPath(fid) {
 }
 const lockOf = (fid) => S.locks[fid] || null;
 const lockedOut = (fid) => { const l = lockOf(fid); return !!l && l.owner !== S.me.user; };
-const readOnly = () => !S.me.user || S.integrity.length > 0 || !S.branch.ok;
+const readOnly = () => !S.me.user || S.integrity.length > 0;
 function select(kind, id) { S.sel = id ? { kind, id } : null; renderTree(); renderDiagram(); renderProps(); }
 function chip(stKey) {
   const st = stOf(stKey);
@@ -170,50 +170,101 @@ function renderBar() {
   if (S.me.error) put(b, h('div', { class: 'err' }, 'Read-only: ', h('code', {}, S.me.error)));
   if (S.integrity.length) put(b, h('div', { class: 'err' }, 'Read-only: ' + S.integrity[0] + ' ',
     h('button', { onclick: () => showPanel({ kind: 'check' }) }, 'Details')));
-  if (!S.branch.ok) put(b, h('div', { class: 'err' }, 'Read-only: the model is edited on branch "' + S.branch.required +
-    '" but this folder is on "' + S.branch.current + '". Run: git switch ' + S.branch.required));
   if ((S.model.conflicts || []).length) put(b, h('div', {}, S.model.conflicts.length + ' merge conflict(s) need your decision. ',
     h('button', { onclick: () => showPanel({ kind: 'check' }) }, 'Resolve')));
 }
 
 // ---- render: folder tree --------------------------------------------------
+const parentOf = (kind, x) => (kind === 'folder' ? (x.parent == null ? null : x.parent) : x.folder);
+/* Ids of the sub-folders, diagrams or elements directly in a folder (null = top level), in the
+   order of the explorer (ADR-024): by `order` when set, the rest after them by name. */
+function kids(kind, fid) {
+  const coll = S.model[kind + 's'], name = kind === 'element' ? elName : (x) => x.name;
+  const ord = (x) => (Number.isInteger(x.order) ? x.order : Infinity);
+  return Object.keys(coll).filter((id) => parentOf(kind, coll[id]) === fid)
+    .sort((p, q) => (ord(coll[p]) - ord(coll[q])) || name(coll[p]).localeCompare(name(coll[q])));
+}
+/* Open or close a folder together with all its sub-folders (null = the whole tree). */
+function setExpanded(fid, open) {
+  const todo = fid ? [fid] : kids('folder', null);
+  while (todo.length) { const f = todo.pop(); if (open) S.expanded.add(f); else S.expanded.delete(f); todo.push(...kids('folder', f)); }
+  renderTree();
+}
+/* Where a dragged tree item would land on a row: before or after it (same kind: reorder), or into a folder. */
+function dropZone(e, r, kind, id) {
+  const d = S.treeDrag;
+  if (!d || (d.kind === kind && d.id === id)) return null;
+  if (d.kind !== kind) return kind === 'folder' ? 'into' : null;
+  const b = r.getBoundingClientRect(), y = (e.clientY - b.top) / b.height;
+  if (kind === 'folder') return y < 0.3 ? 'before' : y > 0.7 ? 'after' : 'into';
+  return y < 0.5 ? 'before' : 'after';
+}
+function markDrop(r, zone) {
+  r.classList.remove('drop', 'drop-before', 'drop-after');
+  if (zone) r.classList.add(zone === 'into' ? 'drop' : 'drop-' + zone);
+}
 function renderTree() {
   const m = S.model, root = clear($('tree'));
-  const dragStart = (kind, id) => (e) => { e.dataTransfer.setData('text/plain', JSON.stringify({ kind, id })); e.dataTransfer.effectAllowed = 'move'; };
-  const row = (kind, id, depth, parts, extra) => h('div', Object.assign({
-    class: 'row' + (S.sel && S.sel.kind === kind && S.sel.id === id ? ' sel' : ''), style: 'padding-left:' + (6 + depth * 14) + 'px',
-    'data-kind': kind, 'data-id': id, draggable: true, ondragstart: dragStart(kind, id),
-    onclick: () => select(kind, id), oncontextmenu: (e) => treeMenu(e, kind, id) }, extra || {}), parts);
+  const toggle = (e, fid) => {
+    e.stopPropagation();
+    if (e.shiftKey) return setExpanded(fid, !S.expanded.has(fid));
+    if (S.expanded.has(fid)) S.expanded.delete(fid); else S.expanded.add(fid);
+    renderTree();
+  };
+  const row = (kind, id, depth, parts, extra) => {
+    const r = h('div', Object.assign({
+      class: 'row' + (S.sel && S.sel.kind === kind && S.sel.id === id ? ' sel' : ''), style: 'padding-left:' + (6 + depth * 14) + 'px',
+      'data-kind': kind, 'data-id': id, draggable: true,
+      ondragstart: (e) => { S.treeDrag = { kind, id }; e.dataTransfer.setData('text/plain', JSON.stringify({ kind, id })); e.dataTransfer.effectAllowed = 'move'; },
+      ondragend: () => { S.treeDrag = null; },
+      ondragover: (e) => { const z = dropZone(e, r, kind, id); markDrop(r, z); if (z) e.preventDefault(); },
+      ondragleave: () => markDrop(r, null),
+      ondrop: (e) => { const z = dropZone(e, r, kind, id); markDrop(r, null); if (z) { e.preventDefault(); e.stopPropagation(); dropOnRow(z, kind, id); } },
+      onclick: () => select(kind, id), oncontextmenu: (e) => treeMenu(e, kind, id) }, extra || {}), parts);
+    return r;
+  };
   function folder(fid, depth) {
     const f = m.folders[fid], open = S.expanded.has(fid), lock = lockOf(fid);
-    const r = row('folder', fid, depth, [
-      h('span', { class: 'tw', onclick: (e) => { e.stopPropagation(); open ? S.expanded.delete(fid) : S.expanded.add(fid); renderTree(); } }, open ? '▾' : '▸'),
+    put(root, row('folder', fid, depth, [
+      h('span', { class: 'tw', title: 'Shift+click: with all sub-folders', onclick: (e) => toggle(e, fid) }, open ? '▾' : '▸'),
       '📁', h('span', { class: 't' }, f.name),
-      lock ? h('span', { class: 'lk', title: 'Locked by ' + lock.owner + (lock.reason ? ': ' + lock.reason : '') }, '🔒 ' + lock.owner) : null], {
-      ondragover: (e) => { e.preventDefault(); r.classList.add('drop'); },
-      ondragleave: () => r.classList.remove('drop'),
-      ondrop: (e) => { e.preventDefault(); e.stopPropagation(); r.classList.remove('drop'); dropOnFolder(e, fid); },
-      ondblclick: () => { open ? S.expanded.delete(fid) : S.expanded.add(fid); renderTree(); } });
-    put(root, r);
+      lock ? h('span', { class: 'lk', title: 'Locked by ' + lock.owner + (lock.reason ? ': ' + lock.reason : '') }, '🔒 ' + lock.owner) : null],
+      { ondblclick: (e) => toggle(e, fid) }));
     if (!open) return;
-    Object.entries(m.folders).filter(([, x]) => x.parent === fid).sort(byName((x) => x.name)).forEach(([id]) => folder(id, depth + 1));
-    Object.entries(m.diagrams).filter(([, d]) => d.folder === fid).sort(byName((d) => d.name)).forEach(([id, d]) =>
-      put(root, row('diagram', id, depth + 1, [h('span', { class: 'tw' }), '▦', h('span', { class: 't' }, d.name)], { ondblclick: () => openDiagram(id) })));
-    Object.entries(m.elements).filter(([, e]) => e.folder === fid).sort(byName(elName)).forEach(([id, e]) =>
+    kids('folder', fid).forEach((id) => folder(id, depth + 1));
+    kids('diagram', fid).forEach((id) =>
+      put(root, row('diagram', id, depth + 1, [h('span', { class: 'tw' }), '▦', h('span', { class: 't' }, m.diagrams[id].name)], { ondblclick: () => openDiagram(id) })));
+    kids('element', fid).forEach((id) => { const e = m.elements[id];
       put(root, row('element', id, depth + 1, [h('span', { class: 'tw' }), chip(e.stereotype), h('span', { class: 't', title: e.topic }, elName(e))],
-        { ondblclick: () => findInDiagrams(id) })));
+        { ondblclick: () => findInDiagrams(id) })); });
   }
-  Object.entries(m.folders).filter(([, f]) => f.parent == null).sort(byName((f) => f.name)).forEach(([id]) => folder(id, 0));
+  kids('folder', null).forEach((id) => folder(id, 0));
   put(root, h('div', { class: 'row mute', style: 'margin-top:6px', onclick: () => newFolder(null),
-    ondragover: (e) => e.preventDefault(), ondrop: (e) => { e.preventDefault(); dropOnFolder(e, null); } }, '+ top-level folder'));
-  root.oncontextmenu = (e) => { if (e.target === root) { e.preventDefault(); menu(e, [['New top-level folder…', () => newFolder(null)]]); } };
+    ondragover: (e) => { if (S.treeDrag && S.treeDrag.kind === 'folder') e.preventDefault(); },
+    ondrop: (e) => { e.preventDefault(); moveInto(S.treeDrag, null); } }, '+ top-level folder'));
+  root.oncontextmenu = (e) => { if (e.target === root) { e.preventDefault(); menu(e, [['New top-level folder…', () => newFolder(null)], null,
+    ['Expand all folders', () => setExpanded(null, true)], ['Collapse all folders', () => setExpanded(null, false)]]); } };
 }
-function dropOnFolder(e, fid) {
-  let d; try { d = JSON.parse(e.dataTransfer.getData('text/plain')); } catch (x) { return; }
+function moveInto(d, fid) {
+  S.treeDrag = null;
+  if (!d) return;
   if (d.kind === 'folder' && d.id !== fid) op('folder.move', { id: d.id, parent: fid });
   else if (fid && d.kind === 'element') op('element.move', { id: d.id, folder: fid });
   else if (fid && d.kind === 'diagram') op('diagram.move', { id: d.id, folder: fid });
   if (fid) S.expanded.add(fid);
+}
+/* Drop on a row of the tree: into a folder, or before/after an item of the same kind (a move
+   to that folder when it comes from another one, and the new order, as one change). */
+function dropOnRow(zone, kind, id) {
+  const d = S.treeDrag, coll = S.model[kind + 's'];
+  if (zone === 'into') return moveInto(d, id);
+  S.treeDrag = null;
+  if (!d || d.kind !== kind || !coll[d.id]) return;
+  const parent = parentOf(kind, coll[id]), ids = kids(kind, parent).filter((x) => x !== d.id);
+  ids.splice(ids.indexOf(id) + (zone === 'after' ? 1 : 0), 0, d.id);
+  const ops = [{ op: 'folder.order', args: { id: parent, kind: kind + 's', ids } }];
+  if (parentOf(kind, coll[d.id]) !== parent) ops.unshift({ op: kind + '.move', args: kind === 'folder' ? { id: d.id, parent } : { id: d.id, folder: parent } });
+  post(ops);
 }
 function newFolder(parent) {
   formDialog('New folder', [{ key: 'name', label: 'Name' }], async (v) => {
@@ -254,7 +305,8 @@ function treeMenu(e, kind, id) {
   const m = S.model, items = [];
   if (kind === 'folder') {
     Object.keys(cfg().stereotypes).filter((k) => !cfg().stereotypes[k].retired).forEach((k) => items.push(['New ' + stOf(k).label + '…', () => newElement(k, id)]));
-    items.push(null, ['New diagram…', () => newDiagram(id)], ['New sub-folder…', () => newFolder(id)], null);
+    items.push(null, ['New diagram…', () => newDiagram(id)], ['New sub-folder…', () => newFolder(id)], null,
+      ['Expand with sub-folders', () => setExpanded(id, true)], ['Collapse with sub-folders', () => setExpanded(id, false)], null);
     const own = m.folders[id].lock;
     items.push(own ? ['Unlock', () => unlockFolder(id)] : ['Lock…', () => lockFolder(id)]);
     items.push(['Delete folder…', () => deleteFolder(id)]);
@@ -289,6 +341,7 @@ function renderProps() {
   if (!sel) {
     put(p, h('h3', {}, 'Properties'), h('p', { class: 'mute' }, 'Select something in the tree or on a diagram.'),
       h('p', { class: 'mute' }, 'Right-click folders, elements and the diagram background for actions. Drag elements from the tree onto a diagram. ' +
+        'Drag items in the tree to move or reorder them. Drag the lines between the panes to resize them. ' +
         'Drag from the blue dot of a selected element to another element to link them.'));
     return;
   }
@@ -727,7 +780,7 @@ const findInDiagrams = (id) => showPanel({ kind: 'search', params: { q: id } });
 function elLink(s) { return h('span', {}, chip(s.stereotype), ' ', h('span', { class: 'link', onclick: () => { S.expanded.add(s.folder); select('element', s.id); } }, elName(s))); }
 function renderPanel() {
   const el = $('panel'), p = S.panel;
-  el.hidden = !p;
+  el.hidden = $('splitB').hidden = !p;
   if (!p) return;
   clear(el);
   const head = (t) => put(el, h('h3', {}, t, h('span', { class: 'x', onclick: () => { S.panel = null; renderPanel(); } }, '×')));
@@ -920,6 +973,45 @@ function configDialog(kind, key) {
     h('button', { onclick: closeModal }, 'Close'), val ? h('button', { class: 'primary', id: 'cfgSave', disabled: dis, onclick: save }, isNew ? 'Create' : 'Save') : null]);
 }
 
+// ---- resizable panes ------------------------------------------------------
+/* The sizes of the side panes and the bottom panel are kept per browser (localStorage), not in the model. */
+const PANES = { splitL: ['tree', 'width', 1], splitR: ['props', 'width', -1], splitB: ['panel', 'height', -1] };
+function paneSizes() { try { return JSON.parse(localStorage.getItem('sgpanes')) || {}; } catch (e) { return {}; } }
+/* px null = back to the default size. `keep` remembers it for the next visit. */
+function setPane(key, px, keep) {
+  const id = PANES[key][0], dim = PANES[key][1], el = $(id);
+  if (px == null) el.style[dim] = '';
+  else {
+    const max = dim === 'width' ? $('main').clientWidth - $(id === 'tree' ? 'props' : 'tree').offsetWidth - 210 : $('center').clientHeight - 120;
+    el.style[dim] = Math.round(Math.max(dim === 'width' ? 120 : 60, Math.min(max, px))) + 'px';
+  }
+  if (!keep) return;
+  const all = paneSizes();
+  if (px == null) delete all[key]; else all[key] = parseInt(el.style[dim], 10);
+  try { localStorage.setItem('sgpanes', JSON.stringify(all)); } catch (e) { /* storage refused: the size lasts for this visit */ }
+}
+function bindSplitters() {
+  const saved = paneSizes();
+  Object.keys(PANES).forEach((key) => {
+    const id = PANES[key][0], dim = PANES[key][1], sign = PANES[key][2], bar = $(key);
+    if (saved[key] > 0) setPane(key, saved[key]);
+    bar.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      bar.setPointerCapture(e.pointerId); bar.classList.add('on');
+      const at = (ev) => (dim === 'width' ? ev.clientX : ev.clientY), from = at(e), size = $(id).getBoundingClientRect()[dim];
+      const move = (ev) => setPane(key, size + sign * (at(ev) - from));
+      const stop = () => {
+        bar.removeEventListener('pointermove', move); bar.removeEventListener('pointerup', stop); bar.removeEventListener('pointercancel', stop);
+        bar.classList.remove('on');
+        if ($(id).style[dim]) setPane(key, parseInt($(id).style[dim], 10), true);
+      };
+      bar.addEventListener('pointermove', move); bar.addEventListener('pointerup', stop); bar.addEventListener('pointercancel', stop);
+    });
+    bar.addEventListener('dblclick', () => setPane(key, null, true));
+  });
+}
+
 // ---- start ----------------------------------------------------------------
 async function poll() {
   if (S.drag || document.hidden) return;
@@ -935,7 +1027,7 @@ function boot() {
     S.token = sessionStorage.getItem('sgtoken');
   } catch (e) { S.token = m && m[1]; }
   if (!S.token) { put($('banner'), h('div', { class: 'err' }, 'Open the tool with the link printed by "serve" (it carries a one-time access token).')); return; }
-  bindCanvas();
+  bindCanvas(); bindSplitters();
   load().then(() => { if (S.model) { Object.keys(S.model.folders).forEach((f) => { if (S.model.folders[f].parent == null) S.expanded.add(f); }); renderTree(); } });
   setInterval(poll, 3000);
 }

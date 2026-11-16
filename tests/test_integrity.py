@@ -195,7 +195,7 @@ def test_sto06_same_field_conflict_goes_to_a_human(ada, base, repo, tmp_path, ke
     while bob.load().get("conflicts"):
         c = bob.load()["conflicts"][0]
         choice = "theirs" if c["path"][-1] == "topic" else "ours"
-        bob.apply([{"op": "conflict.resolve", "args": {"index": 0, "choice": choice}}], check_branch=False)
+        bob.apply([{"op": "conflict.resolve", "args": {"index": 0, "choice": choice}}])
     m = bob.load()
     assert m["elements"][base["r2"]]["topic"] == "Ada's wording" and m["folders"][base["G"]]["lock"]["owner"] == "bob"
     assert not V.errors(m)

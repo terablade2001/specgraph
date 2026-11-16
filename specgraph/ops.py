@@ -128,6 +128,8 @@ def folder_move(m, a, ctx):
     parent = _folder_or_root(m, a.get("parent"))
     if _descends(m, parent, a["id"]):
         raise OpError("a folder cannot be moved into itself")
+    if f.get("parent") != parent:
+        f.pop("order", None)  # a place among the old siblings says nothing among the new ones
     f["parent"] = parent
 
 
@@ -156,6 +158,42 @@ def folder_unlock(m, a, ctx):
     if not f.get("lock"):
         raise OpError("folder is not locked")
     f["lock"] = None
+
+
+ORDER_KINDS = {"folders": "parent", "diagrams": "folder", "elements": "folder"}
+
+
+def tree_order(m, kind, parent):
+    """Ids of the sub-folders, diagrams or elements directly in `parent`, as the explorer
+    shows them (ADR-024): by `order` when set, the rest after them by name."""
+    def name(x):
+        return ((x.get("label") or "") + " " + x["topic"]).strip() if kind == "elements" else x["name"]
+
+    kids = [(i, x) for i, x in m[kind].items() if x.get(ORDER_KINDS[kind]) == parent]
+    kids.sort(key=lambda p: (0, p[1]["order"], "") if _is_order(p[1].get("order"))
+              else (1, 0, name(p[1]).casefold()))
+    return [i for i, _ in kids]
+
+
+def _is_order(v):
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+@op("folder.order", "{id, kind, ids} order of the explorer. kind: folders|diagrams|elements directly in "
+                    "folder id (null = top level, folders only). The listed ids come first, in that order; "
+                    "siblings left out follow in their present order.")
+def folder_order(m, a, ctx):
+    parent, kind, ids = _folder_or_root(m, a.get("id")), a.get("kind"), a.get("ids")
+    if kind not in ORDER_KINDS:
+        raise OpError("kind must be one of %s" % ", ".join(ORDER_KINDS))
+    if not isinstance(ids, list) or not all(isinstance(i, str) for i in ids) or len(set(ids)) != len(ids):
+        raise OpError("'ids' must be a list of different ids")
+    now = tree_order(m, kind, parent)
+    for i in ids:
+        if i not in now:
+            raise OpError("%r is not one of the %s directly in this folder" % (i, kind))
+    for n, i in enumerate(ids + [i for i in now if i not in ids]):
+        m[kind][i]["order"] = n
 
 
 # ---- elements --------------------------------------------------------------
@@ -230,6 +268,8 @@ def element_update(m, a, ctx):
 def element_move(m, a, ctx):
     el = _get(m["elements"], a.get("id"), "element")
     _get(m["folders"], a.get("folder"), "folder")
+    if el["folder"] != a["folder"]:
+        el.pop("order", None)
     el["folder"] = a["folder"]
 
 
@@ -314,6 +354,8 @@ def diagram_update(m, a, ctx):
 def diagram_move(m, a, ctx):
     d = _get(m["diagrams"], a.get("id"), "diagram")
     _get(m["folders"], a.get("folder"), "folder")
+    if d["folder"] != a["folder"]:
+        d.pop("order", None)
     d["folder"] = a["folder"]
 
 
@@ -486,11 +528,6 @@ def config_delete(m, a, ctx):
     del m["config"][kind][key]
 
 
-@op("settings.put", "{branch} branch the model may be edited on; empty text disables the check.")
-def settings_put(m, a, ctx):
-    m["settings"]["branch"] = _text(a, "branch", "", 200) or ""
-
-
 # ---- users (administrators only; enforced in rules.py) ---------------------
 
 def _key(a, name="key"):
@@ -576,7 +613,8 @@ def conflict_resolve(m, a, ctx):
 
 
 def _core(el):
-    return {k: v for k, v in el.items() if k != "modified"} if isinstance(el, dict) else el
+    """The element record itself: without its stamp of change and its place in the explorer."""
+    return {k: v for k, v in el.items() if k not in ("modified", "order")} if isinstance(el, dict) else el
 
 
 def upgrade(m, by, at):

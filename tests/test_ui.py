@@ -221,3 +221,84 @@ def test_locked_content_cannot_be_edited_by_others_in_ui(sample, page_for, keys)
     assert code is True and "locked by ada" in pg.inner_text("#toast")
     assert sample.load()["elements"][by["CON-001"]]["topic"].startswith("Invoice numbers")
     assert errors == []
+
+
+def test_tree_order_collapse_and_pane_sizes(sample, page_for):
+    """REQ-FLD-03, USE-07, USE-08 (ADR-024): reorder by dragging, collapse/expand a folder with its
+    sub-folders, resize the panes by dragging the lines between them."""
+    from specgraph import ops as O
+    pg, errors = page_for(sample)
+    m, by, dg = ids(sample)
+    folder = {f["name"].split()[0]: i for i, f in m["folders"].items()}
+    row = lambda kind, id_: pg.locator('#tree .row[data-kind=%s][data-id="%s"]' % (kind, id_))
+    shown = lambda kind: [r.get_attribute("data-id") for r in pg.query_selector_all("#tree .row[data-kind=%s]" % kind)]
+
+    def drag(src, dst, where):
+        a, b = src.bounding_box(), dst.bounding_box()
+        pg.mouse.move(a["x"] + 60, a["y"] + a["height"] / 2)
+        pg.mouse.down()
+        y = b["y"] + (2 if where == "before" else b["height"] - 2 if where == "after" else b["height"] / 2)
+        pg.mouse.move(b["x"] + 60, y, steps=6)
+        pg.mouse.move(b["x"] + 62, y, steps=2)
+        pg.mouse.up()
+        pg.wait_for_timeout(500)
+
+    # REQ-FLD-03: an element before another one of the same folder
+    num = folder["Numbering"]
+    first = O.tree_order(m, "elements", num)
+    assert [i for i in shown("element") if i in first] == first
+    drag(row("element", first[-1]), row("element", first[0]), "before")
+    want = [first[-1]] + first[:-1]
+    assert O.tree_order(sample.load(), "elements", num) == want
+    assert [i for i in shown("element") if i in want] == want
+    # ... and into another folder at a chosen place: one change, moved and ordered
+    arch = O.tree_order(sample.load(), "elements", folder["Architecture"])
+    drag(row("element", want[0]), row("element", arch[0]), "after")
+    m2 = sample.load()
+    assert m2["elements"][want[0]]["folder"] == folder["Architecture"]
+    assert O.tree_order(m2, "elements", folder["Architecture"]) == [arch[0], want[0]] + arch[1:]
+    # top-level folders; dropping on the middle of a folder still moves into it
+    tops = O.tree_order(m2, "folders", None)
+    drag(row("folder", tops[-1]), row("folder", tops[0]), "before")
+    assert O.tree_order(sample.load(), "folders", None) == [tops[-1]] + tops[:-1]
+    drag(row("diagram", dg["Risks"]), row("folder", folder["Architecture"]), "into")
+    assert sample.load()["diagrams"][dg["Risks"]]["folder"] == folder["Architecture"]
+    # REQ-USE-07: a folder with its sub-folders, from the context menu
+    inv = folder["Invoicing"]
+    assert num in shown("folder")
+    row("folder", inv).click(button="right")
+    pg.click("#menu >> text=Collapse with sub-folders")
+    assert num not in shown("folder")
+    pg.evaluate("(a) => { S.expanded.add(a); renderTree(); }", inv)
+    assert row("folder", num).locator(".tw").inner_text() == "▸"          # the sub-folder was closed too
+    row("folder", inv).click(button="right")
+    pg.click("#menu >> text=Expand with sub-folders")
+    assert row("folder", num).locator(".tw").inner_text() == "▾" and len(shown("element")) == len(m["elements"])
+    # REQ-USE-08: drag the lines between the panes
+    def pull(bar, dx, dy):
+        b = pg.query_selector(bar).bounding_box()
+        pg.mouse.move(b["x"] + b["width"] / 2, b["y"] + b["height"] / 2)
+        pg.mouse.down()
+        pg.mouse.move(b["x"] + b["width"] / 2 + dx, b["y"] + b["height"] / 2 + dy, steps=4)
+        pg.mouse.up()
+
+    size = lambda sel, dim: round(pg.query_selector(sel).bounding_box()[dim])
+    w = size("#tree", "width")
+    pull("#splitL", 80, 0)
+    assert size("#tree", "width") == w + 80
+    tree_w = w + 80
+    w = size("#props", "width")
+    pull("#splitR", -60, 0)
+    assert size("#props", "width") == w + 60
+    assert not pg.is_visible("#splitB")
+    pg.click("#btnCheck")
+    pg.wait_for_selector("#panel h3")
+    hgt = size("#panel", "height")
+    pull("#splitB", 0, -70)
+    assert size("#panel", "height") == hgt + 70
+    pg.reload()                                                            # the sizes are remembered by the browser
+    pg.wait_for_selector("#tree .row")
+    assert size("#tree", "width") == tree_w
+    pg.dblclick("#splitL")
+    assert size("#tree", "width") == 270
+    assert errors == [] and not V.errors(sample.load())

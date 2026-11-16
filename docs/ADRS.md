@@ -121,7 +121,7 @@ impact view. Coverage rules are optional, none by default, reported as warnings.
 **Consequences.** Teams must draw links in the "depends on / derives from" direction for impact to
 read correctly. The default link types are named accordingly.
 
-## ADR-009 — Branch rule  · stakes: medium
+## ADR-009 — Branch rule  · stakes: medium · **replaced by ADR-024**
 **Decision.** `settings.branch` (default `docs/specifications`) is stored in the model. On another
 branch the tool refuses changes and the pre-commit check refuses model commits. Empty value disables it.
 **Consequences.** Merging the specification branch into `main` is unaffected (no model change is made there).
@@ -279,3 +279,31 @@ not changed; the demo model keeps its hand-typed `REQ-001` style labels.
 label is not memorable and shows no order. Two 8-character prefixes in the same model are about a 1% chance in
 10,000 elements; the longer label then keeps them apart. `sg.py show`, search and the editor already accept an id
 prefix, so a label or the plain 8 characters both find the item.
+
+## ADR-024 — No branch rule; the explorer has a stored order  · stakes: medium · **approved by the owner 2026-11-16**
+**Context.** Owner decision (2026-11-16), version 0.2.0. (a) The tool must run on any branch, not only on
+`docs/specifications`. (b) People want to put the items of the explorer in their own order by dragging; until now the
+tree was sorted by name. (c) Folders are opened and closed together with their sub-folders, and the panes of the
+editor are resized by dragging the lines between them.
+**Decision.**
+1. The branch rule of ADR-009 is removed, not made optional: the tool, the commit check and the editor no longer
+   look at the branch. The operation `settings.put` is gone and a new model has an empty `settings`. A
+   `settings.branch` written by version 0.1 is left in the file and ignored, so no migration is needed. Teams that
+   want changes on one branch only protect it on the git server.
+2. Folders, diagrams and elements may carry an optional whole number `order`. The explorer shows the sub-folders,
+   then the diagrams, then the elements of a folder, each group by `order`, and the items without one after them by
+   name. The new operation `folder.order {id, kind, ids}` numbers the items of one kind in one folder (`ops.py`,
+   listed ids first). Moving an item to another folder removes its `order`; the editor sends the move and the new
+   order as one batch when an item is dropped between two items of another folder.
+3. `order` is a place in the tree, not content: it does not set an element's `modified` (ADR-016), and when two
+   branches order the same items the merge keeps ours without recording a conflict (one question per item would
+   be noise). Lock rules apply: the content of a folder locked by someone else cannot be reordered. A folder's own
+   `order` belongs to its parent, so a locked folder can be placed among its siblings by anyone who may change the
+   parent (`rules.check_change`).
+4. Which folders are open and how wide the panes are is not model data. The open folders live in the page; the
+   pane sizes are kept in the browser's `localStorage` and are lost with it. Nothing is written to the file.
+**Consequences.** Nothing stops a change on the wrong branch any more. `order` is an optional key, so the format
+version stays 2 and version 0.1 still reads the file (it ignores the order and still enforces an old
+`settings.branch`). The first reorder in a folder numbers all items of that kind there, which touches several
+lines of the file. An order chosen on the other branch can be lost in a merge; drag again. Items of different
+kinds cannot be mixed in the tree.

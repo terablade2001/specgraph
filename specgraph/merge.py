@@ -28,6 +28,8 @@ def _merge(base, ours, theirs, path, conflicts):
     if len(path) == 3 and path[0] == "elements" and path[2] == "modified" \
             and isinstance(ours, dict) and isinstance(theirs, dict):
         return theirs if str(theirs.get("at")) > str(ours.get("at")) else ours  # ADR-016: later one wins
+    if len(path) == 3 and path[0] in O.ORDER_KINDS and path[2] == "order":
+        return ours  # ADR-024: explorer order only; not worth one question per item
     if isinstance(ours, dict) and isinstance(theirs, dict) and (base is _MISSING or isinstance(base, dict)):
         b = {} if base is _MISSING else base
         out = {}

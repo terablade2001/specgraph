@@ -60,18 +60,22 @@ def test_sto07_no_silent_overwrite_of_outside_change(ada, bob, base):
     assert ada.load()["elements"][base["r2"]]["topic"] == "Changed by Bob meanwhile"
 
 
-def test_sto05_wrong_branch_is_refused(ada, base, repo):
-    """REQ-STO-05: edits happen on the configured branch; the name is configurable."""
+def test_sto05_the_tool_works_on_any_branch(ada, base, repo):
+    """REQ-STO-05 (ADR-024): no branch rule; a `settings.branch` written by version 0.1 is ignored."""
     from conftest import git, commit
+    from specgraph import audit as A, ops as O, stamp as S
+    assert ada.load()["settings"] == {}
     commit(repo)
-    git(repo, "switch", "-q", "-c", "main")
-    with pytest.raises(StoreError) as e:
-        do(ada, "folder.create", name="X")
-    assert e.value.code == "branch"
-    git(repo, "switch", "-q", "docs/specifications")
-    do(ada, "settings.put", branch="main")
-    git(repo, "switch", "-q", "main")
+    git(repo, "switch", "-q", "-c", "feature/x")
     do(ada, "folder.create", name="X")
+    m = ada.load()
+    m["settings"]["branch"] = "docs/specifications"          # a model made by version 0.1
+    S.make_stamp(m, "ada", ada.key(), "old tool", [m["stamp"]["id"]])
+    M.save(ada.path, m)
+    do(ada, "folder.create", name="Y")
+    assert not V.errors(ada.load()) and "branch" not in ada.state() and "settings.put" not in O.OPS
+    git(repo, "add", "-A")
+    assert A.check_staged(ada)[0] == []                       # the commit check has no branch finding either
 
 
 # --- elements --------------------------------------------------------------

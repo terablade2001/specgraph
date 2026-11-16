@@ -16,7 +16,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | STO-02 | Organizing the model (folders, diagrams) changes content only; no file per element, folder or diagram. |
 | STO-03 | An unchanged model serializes to identical bytes; changing one field gives a small diff. |
 | STO-04 | What changed, when and by whom can be read from Git history. |
-| STO-05 | Changes are made on a configured branch; the branch name is configurable. |
+| STO-05 | The tool works on whatever branch is checked out; there is no branch rule (ADR-024, replaces the configured branch of ADR-009). |
 | STO-06 | People working in parallel can merge: different items or fields merge cleanly, the same field changed twice is surfaced with both values kept. |
 | STO-07 | A session holding an old view is told to reload instead of overwriting newer changes. |
 | STO-08 | Agents read the file as plain JSON and change it through a command. |
@@ -38,6 +38,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 |---|---|
 | FLD-01 | Folders can be created, renamed and moved. |
 | FLD-02 | Elements and diagrams can be moved between folders. |
+| FLD-03 | The sub-folders, diagrams and elements of a folder can be put in an order, in the editor by drag and drop (ADR-024). |
 
 ## DGM — diagrams
 
@@ -138,6 +139,8 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | USE-02 | The editor server is local only (see ADR-002). |
 | USE-05 | The editor opens only for someone who can sign with the registered private key (ADR-021). |
 | USE-06 | The tool runs only when exactly one key is loaded in ssh-agent. |
+| USE-07 | A folder can be collapsed or expanded together with all its sub-folders. |
+| USE-08 | The widths of the explorer and the properties pane, and the height of the bottom panel, are changed by dragging the line next to them. |
 | DOC-05 | A demo model, built through the tool's own operations. |
 
 ## IDs with no recorded meaning
