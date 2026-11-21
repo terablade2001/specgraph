@@ -2,7 +2,7 @@
 
 - **Reviewed by:** Claude (model Opus 5.5), an AI model made by Anthropic, at the request of the project owner.
 - **Date:** 2026-11-21.
-- **Version:** 0.3.1: release 0.3.0 (commit `c01b3ed`) plus the fixes for two findings of this review
+- **Version:** 0.3.1: release 0.3.0 (commit `68dc2ab`) plus the fixes for two findings of this review
   (ADR-031). The files and hashes are listed at the end.
 - **Replaces:** the review of version 0.1.0 (2026-11-15, Claude, model Fable 5.2). This review was done again
   from the start. It did not reuse the earlier result.
