@@ -3,7 +3,7 @@
 Changes of the tool that a user or an agent can notice, newest first. The version is `VERSION` in
 `specgraph/__init__.py` (`python sg.py --version`). Design reasons are in `docs/ADRS.md`.
 
-## 0.3.0 — not released yet
+## 0.3.0 — 2026-11-21
 
 Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, ADR-029, ADR-030.
 
@@ -63,6 +63,23 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, A
 - PNG export of a very large diagram failed (the image was beyond the browser's limits). It is now scaled down.
 - Double-clicking a diagram in the explorer opens it again. The first click re-drew the tree, so the
   browser never reported the double-click.
+
+### Compatibility
+
+- The format version stays 2; nothing in the file changed shape. Version 0.2 reads a file written by 0.3.
+- Hooks installed by 0.2 keep checking the whole history on every push until `python sg.py install-hooks`
+  is run again.
+- Grid, snap, auto size and overview settings are kept by the browser, not in the model.
+
+### Documentation
+
+- The README screenshots show version 0.3.0. The stored example model (`specmodel.example.json`) is rebuilt.
+
+### Known gaps
+
+- `docs/SECURITY-REVIEW.md` reviews version 0.1.0; its file hashes no longer match. 0.3.0 adds one static file
+  (`favicon.svg`) to the server's fixed list and lets the pre-push hook read the refs git passes on stdin.
+- Elements laid out before 0.3.0 keep their sizes; select them and use *Fit to text* to apply auto size.
 
 ## 0.2.0 — 2026-11-16
 
