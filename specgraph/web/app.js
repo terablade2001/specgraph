@@ -134,6 +134,10 @@ function selNodes() {
   if (!S.multi.includes(S.sel.id)) return [S.sel.id];
   return S.multi.filter((id) => d.nodes[id] && id !== S.sel.id).concat([S.sel.id]);
 }
+function toggleNode(id) {
+  const cur = selNodes();
+  selectNodes(cur.includes(id) ? cur.filter((x) => x !== id) : cur.concat([id]));
+}
 function selectNodes(ids) {
   S.multi = ids.slice(); S.sel = ids.length ? { kind: 'element', id: ids[ids.length - 1] } : null;
   renderTree(); renderDiagram(); renderProps();
@@ -261,7 +265,8 @@ function renderTree() {
     kids('diagram', fid).forEach((id) =>
       put(root, row('diagram', id, depth + 1, [h('span', { class: 'tw' }), '▦', h('span', { class: 't' }, m.diagrams[id].name)], () => openDiagram(id))));
     kids('element', fid).forEach((id) => { const e = m.elements[id];
-      put(root, row('element', id, depth + 1, [h('span', { class: 'tw' }), chip(e.stereotype), h('span', { class: 't', title: e.topic }, elName(e))],
+      put(root, row('element', id, depth + 1, [h('span', { class: 'tw' }), chip(e.stereotype), h('span', { class: 't', title: e.topic }, elName(e)),
+        hasNotes(e) ? h('span', { class: 'nt', title: notesTip(e) }, '📜') : null],
         () => findInDiagrams(id))); });
   }
   kids('folder', null).forEach((id) => folder(id, 0));
@@ -386,7 +391,7 @@ function renderProps() {
       h('p', { class: 'mute' }, 'Right-click folders, elements and the diagram background for actions. Drag elements from the tree onto a diagram. ' +
         'Drag items in the tree to move or reorder them. Double-click a folder to open or close it (Ctrl: with all sub-folders, Alt: close all). Drag the lines between the panes to resize them. ' +
         'Drag from the blue dot of a selected element to another element to link them. ' +
-        'Ctrl+click elements, or Shift+drag a rectangle, to select several; drag one of them to move them all; right-click one of them for Align (left, center, right; top, center, bottom).'));
+        'Ctrl+click or Shift+click elements, or Shift+drag a rectangle, to select several; drag one of them to move them all; right-click one of them for Align (left, center, right; top, center, bottom).'));
     return;
   }
   if (sel.kind === 'element') propsElement(p, sel.id);
@@ -596,6 +601,8 @@ function midpoint(pts) {
 }
 
 // ---- diagrams: drawing ----------------------------------------------------
+const hasNotes = (el) => !!(el.notes && el.notes.trim());
+const notesTip = (el) => 'Notes: ' + (el.notes.trim().length > 300 ? el.notes.trim().slice(0, 300) + '…' : el.notes.trim());
 function drawNode(eid, n) {
   const el = S.model.elements[eid];
   if (!el) return null;
@@ -619,6 +626,10 @@ function drawNode(eid, n) {
     sv('text', { x: w / 2, y: hh - iy - 8.5, 'font-size': 10, 'font-weight': 600, 'text-anchor': 'middle', fill: '#ffffff' }, stText));
   if (lock) put(g, sv('rect', { x: -3, y: -3, width: w + 6, height: hh + 6, fill: 'none', stroke: '#b91c1c', 'stroke-width': 1, 'stroke-dasharray': '5 3' }),
     sv('circle', { cx: w - 4, cy: 2, r: 9, fill: '#ffffff', stroke: '#b91c1c' }), sv('text', { x: w - 4, y: 6, 'font-size': 11, 'text-anchor': 'middle' }, '🔒'));
+  if (hasNotes(el)) { const nx = lock ? w - 26 : w - 4;     // next to the lock when there is one
+    put(g, sv('g', { 'data-badge': 'notes' }, sv('title', {}, notesTip(el)),
+      sv('circle', { cx: nx, cy: 2, r: 9, fill: '#eff6ff', stroke: '#1d4ed8' }),
+      sv('text', { x: nx, y: 6, 'font-size': 11, 'text-anchor': 'middle' }, '📜'))); }
   if (sel) put(g, sv('rect', { 'data-ui': 1, x: -5, y: -5, width: w + 10, height: hh + 10, fill: 'none', stroke: '#1d4ed8', 'stroke-width': 1.5,
     'stroke-dasharray': chosen.length > 1 && chosen[chosen.length - 1] !== eid ? '5 3' : null }));
   if (sel && chosen.length === 1) put(g,
@@ -782,11 +793,8 @@ function bindCanvas() {
     bindCanvas.last = { t: now, x: e.clientX, y: e.clientY };
     if (last && now - last.t < 400 && Math.abs(e.clientX - last.x) + Math.abs(e.clientY - last.y) < 6) { bindCanvas.last = null; return onDouble(e); }
     svg.setPointerCapture(e.pointerId);
-    if (e.shiftKey) S.drag = { type: 'region', start: pt, to: null };
-    else if (t.kind === 'node' && (e.ctrlKey || e.metaKey)) {
-      const cur = selNodes();
-      selectNodes(cur.includes(t.id) ? cur.filter((x) => x !== t.id) : cur.concat([t.id]));
-    }
+    if (e.shiftKey) S.drag = { type: 'region', start: pt, to: null, node: t.kind === 'node' ? t.id : null, sx: e.clientX, sy: e.clientY };
+    else if (t.kind === 'node' && (e.ctrlKey || e.metaKey)) toggleNode(t.id);
     else if (t.kind === 'connect') S.drag = { type: 'connect', from: t.id, to: pt };
     else if (t.kind === 'resize') S.drag = { type: 'resize', id: t.id, start: pt, orig: Object.assign({}, d.nodes[t.id]) };
     else if (t.kind === 'bend') S.drag = { type: 'bend', id: t.id, i: t.i };
@@ -833,7 +841,11 @@ function bindCanvas() {
     if (!g || !S.active) return;
     const d = S.model.diagrams[S.active];
     if (g.type === 'pan') { if (!g.moved) select(null); return; }
-    if (g.type === 'region') { if (!g.to) return renderDiagram(); return selectNodes(nodesIn(regionRect(g))); }
+    if (g.type === 'region') {
+      // Shift+click (no drag) on a node: add or remove it, like Ctrl+click
+      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) < 4) { if (g.node) toggleNode(g.node); else renderDiagram(); return; }
+      return selectNodes(nodesIn(regionRect(g)));
+    }
     if (g.type === 'move' && !g.moved) { if (g.ids.length > 1) select('element', g.id); return; }
     if (g.type === 'connect') {
       const target = nodeAt(toDiagram(e));

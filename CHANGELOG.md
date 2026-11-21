@@ -5,10 +5,13 @@ Changes of the tool that a user or an agent can notice, newest first. The versio
 
 ## 0.3.0 — not released yet
 
-Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21).
+Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, ADR-029.
 
 ### Changed
 
+- **No "Decision date" field in new models.** ADR and TEMPORAL-ADR start with *Owner* only; the last change of
+  every element is recorded anyway. An existing model keeps the field until you delete it under
+  *Configure* → *Stereotypes*. The stored example model is rebuilt without it.
 - **A type change gives a new label.** Changing an element's stereotype (ADR to REQ) replaces its label by
   the generated label of the new type (`ADR-3d6e7863` becomes `REQ-3d6e7863`), also when the label was
   typed by hand (`ADR-001`). A label passed in the same `element.update` wins. References to the old
@@ -26,12 +29,15 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21).
 - **Double-click in the explorer on a folder** opens or closes it. Ctrl+double-click opens it with all
   sub-folders; Alt+double-click closes it with all sub-folders.
 
-- **Several elements on a diagram.** Ctrl+click adds or removes an element; Shift+drag selects every
+- **Several elements on a diagram.** Ctrl+click or Shift+click adds or removes an element; Shift+drag selects every
   element touching the rectangle. Dragging one moves them all as one change (one undo step); links follow
   while dragging. *Delete* removes all of them from the diagram.
 - **Alignment.** With two or more selected, right-click one for *Align* ▸ *Horizontal* ▸ *Left / Center /
   Right* (Ctrl+Shift+1/2/3) or *Align* ▸ *Vertical* ▸ *Top / Center / Bottom* (Alt+Shift+1/2/3). They line
   up with the last selected element. The same six buttons are in the properties pane.
+- **Notes mark.** An element with notes shows a 📜 badge on the diagram (next to the lock, if any) and in the
+  tree; point at it for the start of the notes.
+- **Tab icon.** The editor has its own icon in the browser tab.
 - **Export menu.** *Export SVG* and *Export PNG* are now in an *Export ▾* menu of the diagram tools, which
   also has *Copy image to clipboard* (a PNG).
 - **Overview of the diagram** at the bottom right of the canvas, with a box for the part in view: click to

@@ -203,7 +203,7 @@ Your browser opens the editor (it only listens on your own machine).
 - **Middle:** diagrams. Drag elements in from the tree, or right-click the background to create one there.
   Drag to move, corner handle to resize, blue dot to draw a link to another element.
   Double-click a link to add a bend (user-defined routing). *Delete* key removes from the diagram only.
-  - **Several elements:** Ctrl+click elements to add or remove them, or hold Shift and drag a rectangle
+  - **Several elements:** Ctrl+click or Shift+click elements to add or remove them, or hold Shift and drag a rectangle
     (every element it touches is selected). Drag one of them to move them all; links follow. *Delete*
     removes all of them from the diagram.
   - **Align:** right-click one of the selected elements, then *Align* ▸ *Horizontal* ▸ *Left / Center / Right*
@@ -232,6 +232,8 @@ Your browser opens the editor (it only listens on your own machine).
   afterwards if you want another one.
 - **Search** (top): id or the start of an id, label, or any text. Each result lists its diagrams;
   **double-click a diagram** to open it with the element centred and selected.
+- **Notes mark:** a 📜 badge on an element (on the diagram and in the tree) means it has notes; point at
+  it to read the start of them.
 - **Locks:** *Lock* on a folder says "I am working here". While it is set, nobody else changes the
   folder, its sub-folders or anything in them, and nobody else links to its elements; you still can.
   Others can view it and place its elements on their diagrams. It is meant to be temporary: when you

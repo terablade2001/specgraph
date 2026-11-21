@@ -223,7 +223,7 @@ contain `-` (`validate.KEY`), which the names need. `association` is a solid, ar
 that is not traceable. No link type limits which stereotypes it may connect, and no stereotype limits its statuses
 (owner decision: no built-in restrictions; a user adds limits in the configuration, `sources` and `targets` on a
 link type, `statuses` on a stereotype). Fields: priority and owner on REQ, B-REQ, U-REQ; owner on ISSUE, CONSTRAINT, FEAT and the
-tests; decision date and owner on both ADR kinds; severity and likelihood on RISK.
+tests; owner on both ADR kinds (a decision date was removed by ADR-029); severity and likelihood on RISK.
 **Consequences.** Only models created after this change get the new defaults; an existing
 `specmodel.json` keeps its own configuration and is changed through `config.put`. A tool older than
 this change rejects a model that uses a hyphenated key. Everything here is editable in the tool.
@@ -363,3 +363,15 @@ origin). A PNG is drawn at twice the size, less when that would pass the browser
 64 million pixels in all), so a very large diagram is scaled down instead of failing. *Fit* and the wheel zoom out to
 2% instead of 20%: text is unreadable there, but the whole diagram fits; nothing else depends on the zoom. The snap
 dots are not drawn when they would be closer than 4 screen pixels.
+
+## ADR-029 — No decision date field; notes mark, Shift+click and a tab icon  · stakes: low
+Owner decisions (2026-11-21). **Decision date:** the default ADR and TEMPORAL-ADR types no longer have a typed
+`decisionDate` field. Every element already records its last change (`modified`, ADR-016), and a date that matters
+for a decision goes into its notes. Only new models are affected; an existing model keeps the field and its values
+until someone deletes the field under Configure → Stereotypes. The example model is rebuilt without it.
+**Notes mark:** an element whose notes are not blank shows a scroll badge (📜 in a blue circle) at the top right of its box (left of
+the lock badge when both are shown) and a 📜 in the tree; the tooltip shows the first 300 characters of the notes. The badge
+is part of the drawing, so it is also exported. **Shift+click** on a node adds or removes it like Ctrl+click; a Shift
+press that moves more than 3 pixels is a rectangle selection, as before. **Tab icon:** `web/favicon.svg`, a page with a
+small graph on it (the owner's pick of four designs), served as one more file of the fixed static list (`server.STATIC`); `/favicon.ico` still answers
+204 for browsers that ask for it.

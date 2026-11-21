@@ -301,6 +301,9 @@ def test_cfg08_initial_configuration(ada):
     assert "association" in cfg["linkTypes"]
     assert len(cfg["statuses"]) >= 5 and len(cfg["linkTypes"]) >= 3
     assert cfg["coverageRules"] == {}  # REQ-TRC-05: none active by default
+    # no typed decision date: the last change of an element is recorded anyway (ADR-016, ADR-029)
+    assert cfg["stereotypes"]["ADR"]["fields"] == {"owner": {"label": "Owner", "type": "string"}}
+    assert not any(f["type"] == "date" for s in cfg["stereotypes"].values() for f in s["fields"].values())
 
 
 # --- search ----------------------------------------------------------------

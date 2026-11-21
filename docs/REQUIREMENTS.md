@@ -53,7 +53,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | DGM-06 | A link's look follows its link type. |
 | DGM-07 | Links between elements on a diagram appear from the model. |
 | DGM-08 | A diagram can be exported as an image (SVG and PNG file) or copied to the clipboard as an image, from the *Export* menu of the diagram tools. |
-| DGM-09 | Several elements of a diagram can be selected: Ctrl+click adds or removes one, Shift+drag selects every element touching the rectangle (ADR-027). |
+| DGM-09 | Several elements of a diagram can be selected: Ctrl+click or Shift+click adds or removes one, Shift+drag selects every element touching the rectangle (ADR-027). |
 | DGM-10 | Dragging one element of a selection moves them all as one change; links follow while dragging, and the bend points of links between selected elements move along. |
 | DGM-11 | The selected elements can be aligned with the last selected one, from the Align submenu or the keyboard: horizontally by left edge, centre or right edge (Ctrl+Shift+1/2/3), vertically by top edge, centre or bottom edge (Alt+Shift+1/2/3) (ADR-028). |
 | DGM-12 | Elements can snap to a grid when they are created, moved or resized; the grid size and the switch are in the diagram tools, start at the same default for everyone (20, on) and are kept by the browser. |
@@ -152,6 +152,8 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | USE-08 | The widths of the explorer and the properties pane, and the height of the bottom panel, are changed by dragging the line next to them. |
 | USE-09 | In the explorer, a double-click opens a diagram and opens or closes a folder; Ctrl+double-click opens a folder with all its sub-folders, Alt+double-click closes them all. |
 | USE-10 | "Find in explorer" opens the folders above the selected item, selects it there and scrolls it into view. |
+| USE-11 | An element with notes is marked on the diagram and in the tree; pointing at the mark shows the start of the notes. |
+| USE-12 | The editor has its own icon in the browser tab. |
 | DOC-05 | A demo model, built through the tool's own operations. |
 
 ## IDs with no recorded meaning

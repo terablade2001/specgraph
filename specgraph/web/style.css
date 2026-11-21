@@ -41,6 +41,7 @@ textarea { resize: vertical; }
 .row .tw { width: 12px; color: var(--mute); cursor: pointer; flex: none; }
 .row .t { overflow: hidden; text-overflow: ellipsis; }
 .row .lk { margin-left: auto; font-size: 11px; color: var(--bad); flex: none; }
+.row .nt { margin-left: auto; flex: none; font-size: 11px; padding-right: 2px; }
 .chip { display: inline-block; border: 1px solid; border-radius: 3px; padding: 0 4px; font-size: 10px; font-weight: 600; flex: none; }
 .mute { color: var(--mute); }
 #tabs { display: flex; background: #e9ecf1; border-bottom: 1px solid var(--line); min-height: 27px; overflow-x: auto; }

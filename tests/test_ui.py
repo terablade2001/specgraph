@@ -665,3 +665,47 @@ def test_dgm08_14_copy_to_clipboard_and_zoom_out_far(sample, page_for):
     pg.wait_for_timeout(200)
     assert pg.evaluate("view(S.active).k") == 0.02
     assert errors == []
+
+
+
+def test_dgm09_use11_12_shift_click_notes_mark_and_icon(sample, page_for):
+    """REQ-DGM-09: Shift+click adds or removes an element like Ctrl+click (Shift+drag still selects a
+    rectangle). REQ-USE-11: elements with notes are marked on the diagram and in the tree.
+    REQ-USE-12: the page has its own icon for the browser tab (ADR-029)."""
+    m = sample.load()
+    top = {e["topic"]: i for i, e in m["elements"].items()}
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    r1, r2 = top["Every invoice gets a unique number"], top["Numbering has no gaps"]
+    br1 = top["Invoice numbers are consecutive per fiscal year"]                # has notes, in a locked folder
+    pg, errors = page_for(sample)
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    node = lambda i: pg.locator('#canvas [data-kind=node][data-id="%s"]' % i).first
+
+    def click(i, mods=None):
+        node(i).click(position={"x": 20, "y": 30}, modifiers=mods or [])
+        pg.wait_for_timeout(450)
+
+    click(r1)
+    click(r2, ["Shift"])
+    assert pg.evaluate("selNodes()") == [r1, r2]
+    click(r2, ["Shift"])
+    assert pg.evaluate("selNodes()") == [r1]
+    # notes mark: on the diagram next to the lock, in the tree; appears when notes are added
+    badge = lambda i: pg.locator('#canvas [data-kind=node][data-id="%s"] [data-badge=notes]' % i)
+    tree_mark = lambda i: pg.locator('#tree .row[data-kind=element][data-id="%s"] .nt' % i)
+    assert badge(br1).count() == 1 and tree_mark(br1).count() == 1
+    assert "Tax authority rule" in badge(br1).locator("title").text_content()
+    assert badge(r1).count() == 0 and tree_mark(r1).count() == 0
+    do(sample, "element.update", id=r1, notes="Asked by the auditors.")
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
+    assert badge(r1).count() == 1 and tree_mark(r1).count() == 1
+    do(sample, "element.update", id=r1, notes="   ")
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
+    assert badge(r1).count() == 0                                          # blank notes are no notes
+    # the tab icon
+    icon = pg.evaluate("""async () => { const l = document.querySelector('link[rel=icon]'), r = await fetch(l.href);
+        return [l.getAttribute('href'), r.status, r.headers.get('content-type'), (await r.text()).slice(0, 4)]; }""")
+    assert icon == ["favicon.svg", 200, "image/svg+xml", "<svg"]
+    assert errors == []
