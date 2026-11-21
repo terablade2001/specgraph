@@ -39,7 +39,9 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, A
   always wider than tall (width / height above 1.2): when placed, when their topic, label or type changes, and
   while their width is dragged. Right-click → *Fit to text* fits one element or a selection at any time;
   switching *Auto size* on fits the selected elements.
-- **Ctrl+A** selects every element of the open diagram. In the tree the selected elements are grey, the last
+- **Selection in the explorer.** Ctrl+click and Shift+click work in the tree too; the tree and the open diagram
+  share one selection. Dragging a selected row moves or places all selected elements, as one change.
+- **Ctrl+A** selects every element of the open diagram. In the tree the selected elements are grey-green, the last
   selected (the reference for alignment) blue, so the ones not selected stand out.
 - **Notes mark.** An element with notes shows a 📜 badge on the diagram (next to the lock, if any) and in the
   tree; point at it for the start of the notes.

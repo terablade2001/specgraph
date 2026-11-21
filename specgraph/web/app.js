@@ -130,12 +130,18 @@ function select(kind, id) { S.sel = id ? { kind, id } : null; S.multi = id && ki
 /* The selected nodes of the open diagram, in the order they were selected; the last one is S.sel (ADR-027). */
 function selNodes() {
   const d = S.active && S.model.diagrams[S.active];
-  if (!d || !S.sel || S.sel.kind !== 'element' || !d.nodes[S.sel.id]) return [];
-  if (!S.multi.includes(S.sel.id)) return [S.sel.id];
-  return S.multi.filter((id) => d.nodes[id] && id !== S.sel.id).concat([S.sel.id]);
+  return d ? selElements().filter((id) => d.nodes[id]) : [];
 }
+/* The selected elements, in the order they were selected; the last one is S.sel. The explorer shows all of
+   them; the diagram works on those that are on it (selNodes), whose last one is its reference. */
+function selElements() {
+  if (!S.sel || S.sel.kind !== 'element' || !S.model.elements[S.sel.id]) return [];
+  if (!S.multi.includes(S.sel.id)) return [S.sel.id];
+  return S.multi.filter((id) => S.model.elements[id] && id !== S.sel.id).concat([S.sel.id]);
+}
+/* Ctrl+click or Shift+click, on the diagram or in the explorer: add or remove one element. */
 function toggleNode(id) {
-  const cur = selNodes();
+  const cur = selElements();
   selectNodes(cur.includes(id) ? cur.filter((x) => x !== id) : cur.concat([id]));
 }
 function selectNodes(ids) {
@@ -223,7 +229,7 @@ function setExpanded(fid, open) {
 /* Where a dragged tree item would land on a row: before or after it (same kind: reorder), or into a folder. */
 function dropZone(e, r, kind, id) {
   const d = S.treeDrag;
-  if (!d || (d.kind === kind && d.id === id)) return null;
+  if (!d || (d.kind === kind && (d.ids || [d.id]).includes(id))) return null;
   if (d.kind !== kind) return kind === 'folder' ? 'into' : null;
   const b = r.getBoundingClientRect(), y = (e.clientY - b.top) / b.height;
   if (kind === 'folder') return y < 0.3 ? 'before' : y > 0.7 ? 'after' : 'into';
@@ -236,7 +242,7 @@ function markDrop(r, zone) {
 function renderTree() {
   const m = S.model, root = clear($('tree'));
   // the other selected nodes of the open diagram: grey; the last selected (S.sel) keeps the blue of 'sel'
-  const also = new Set(selNodes().slice(0, -1));
+  const also = new Set(selElements().slice(0, -1));
   const toggle = (e, fid) => {
     e.stopPropagation();
     if (e.shiftKey) return setExpanded(fid, !S.expanded.has(fid));
@@ -247,7 +253,12 @@ function renderTree() {
     const r = h('div', Object.assign({
       class: 'row' + (S.sel && S.sel.kind === kind && S.sel.id === id ? ' sel' : kind === 'element' && also.has(id) ? ' sel2' : ''), style: 'padding-left:' + (6 + depth * 14) + 'px',
       'data-kind': kind, 'data-id': id, draggable: true,
-      ondragstart: (e) => { S.treeDrag = { kind, id }; e.dataTransfer.setData('text/plain', JSON.stringify({ kind, id })); e.dataTransfer.effectAllowed = 'move'; },
+      ondragstart: (e) => {
+        // a selected element takes the whole selection along; anything else moves alone
+        const all = selElements(), ids = kind === 'element' && all.length > 1 && all.includes(id) ? all : [id];
+        S.treeDrag = { kind, id, ids };
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind, id, ids })); e.dataTransfer.effectAllowed = 'move';
+      },
       ondragend: () => { S.treeDrag = null; },
       ondragover: (e) => { const z = dropZone(e, r, kind, id); markDrop(r, z); if (z) e.preventDefault(); },
       ondragleave: () => markDrop(r, null),
@@ -281,6 +292,7 @@ function renderTree() {
 /* A click on a tree row selects it; a second click on the same row soon after is a double-click.
    Own detection: the first click re-draws the tree, so the browser's dblclick does not fire. */
 function treeClick(e, kind, id, dbl) {
+  if (kind === 'element' && (e.ctrlKey || e.metaKey || e.shiftKey)) { treeClick.last = null; return toggleNode(id); }
   const last = treeClick.last, now = Date.now();
   treeClick.last = { kind, id, t: now };
   if (last && last.kind === kind && last.id === id && now - last.t < 450) { treeClick.last = null; return dbl && dbl(e); }
@@ -299,7 +311,11 @@ function moveInto(d, fid) {
   S.treeDrag = null;
   if (!d) return;
   if (d.kind === 'folder' && d.id !== fid) op('folder.move', { id: d.id, parent: fid });
-  else if (fid && d.kind === 'element') op('element.move', { id: d.id, folder: fid });
+  else if (fid && d.kind === 'element') {
+    const ops = (d.ids || [d.id]).filter((x) => S.model.elements[x] && S.model.elements[x].folder !== fid)
+      .map((x) => ({ op: 'element.move', args: { id: x, folder: fid } }));
+    if (ops.length) post(ops);
+  }
   else if (fid && d.kind === 'diagram') op('diagram.move', { id: d.id, folder: fid });
   if (fid) S.expanded.add(fid);
 }
@@ -310,10 +326,14 @@ function dropOnRow(zone, kind, id) {
   if (zone === 'into') return moveInto(d, id);
   S.treeDrag = null;
   if (!d || d.kind !== kind || !coll[d.id]) return;
-  const parent = parentOf(kind, coll[id]), ids = kids(kind, parent).filter((x) => x !== d.id);
-  ids.splice(ids.indexOf(id) + (zone === 'after' ? 1 : 0), 0, d.id);
-  const ops = [{ op: 'folder.order', args: { id: parent, kind: kind + 's', ids } }];
-  if (parentOf(kind, coll[d.id]) !== parent) ops.unshift({ op: kind + '.move', args: kind === 'folder' ? { id: d.id, parent } : { id: d.id, folder: parent } });
+  // the dragged items (a selection of elements, or one item) go there as a block, in their tree order
+  const moved = (d.ids || [d.id]).filter((x) => coll[x]), set = new Set(moved);
+  const parent = parentOf(kind, coll[id]), ids = kids(kind, parent).filter((x) => !set.has(x));
+  const block = kids(kind, parent).filter((x) => set.has(x)).concat(moved.filter((x) => parentOf(kind, coll[x]) !== parent));
+  ids.splice(ids.indexOf(id) + (zone === 'after' ? 1 : 0), 0, ...block);
+  const ops = moved.filter((x) => parentOf(kind, coll[x]) !== parent)
+    .map((x) => ({ op: kind + '.move', args: kind === 'folder' ? { id: x, parent } : { id: x, folder: parent } }));
+  ops.push({ op: 'folder.order', args: { id: parent, kind: kind + 's', ids } });
   post(ops);
 }
 function newFolder(parent) {
@@ -994,8 +1014,18 @@ function bindCanvas() {
     let d; try { d = JSON.parse(e.dataTransfer.getData('text/plain')); } catch (x) { return; }
     const pt = toDiagram(e).map(Math.round);
     if (d.kind !== 'element') return;
-    if (S.model.diagrams[S.active].nodes[d.id]) return toast('Already on this diagram');
-    placeAt(d.id, pt[0] - 95, pt[1] - 48);
+    const nodes = S.model.diagrams[S.active].nodes, ids = (d.ids || [d.id]).filter((x) => S.model.elements[x] && !nodes[x]);
+    if (!ids.length) return toast((d.ids || []).length > 1 ? 'All of them are already on this diagram' : 'Already on this diagram');
+    // several: in rows of four from the drop point, as one change
+    const ops = [], g = gridNow();
+    let x0 = pt[0] - 95, x = x0, y = pt[1] - 48, rowH = 0;
+    ids.forEach((id, i) => {
+      if (i && i % 4 === 0) { x = x0; y += rowH + 40; rowH = 0; }
+      const px = snap(x), py = snap(y), size = autoOn() ? fitSize(S.model.elements[id], px, py, 190) : { w: 190, h: 96 };
+      ops.push({ op: 'diagram.place', args: Object.assign({ diagram: S.active, element: id, x: px, y: py }, size) });
+      x = px + size.w + (g.snap ? g.size * 2 : 40); rowH = Math.max(rowH, size.h);
+    });
+    post(ops).then((r) => { if (r && (d.ids || []).length > ids.length) toast((d.ids.length - ids.length) + ' already on this diagram'); });
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { hideMenu(); if (!$('overlay').hidden) closeModal(); return; }

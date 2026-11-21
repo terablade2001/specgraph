@@ -155,6 +155,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | USE-10 | "Find in explorer" opens the folders above the selected item, selects it there and scrolls it into view. |
 | USE-11 | An element with notes is marked on the diagram and in the tree; pointing at the mark shows the start of the notes. |
 | USE-12 | The editor has its own icon in the browser tab. |
+| USE-13 | In the explorer, Ctrl+click and Shift+click add or remove elements from the one selection the explorer and the open diagram share; dragging one selected element moves all selected ones (into a folder, before or after an element, onto the diagram). |
 | DOC-05 | A demo model, built through the tool's own operations. |
 
 ## IDs with no recorded meaning

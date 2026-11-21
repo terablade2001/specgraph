@@ -203,7 +203,9 @@ Your browser opens the editor (it only listens on your own machine).
 - **Middle:** diagrams. Drag elements in from the tree, or right-click the background to create one there.
   Drag to move, corner handle to resize, blue dot to draw a link to another element.
   Double-click a link to add a bend (user-defined routing). *Delete* key removes from the diagram only.
-  - **Several elements:** in the tree the last selected element is blue and the other selected ones grey. Ctrl+A selects all. Ctrl+click or Shift+click elements to add or remove them, or hold Shift and drag a rectangle
+  - **Several elements:** Ctrl+click and Shift+click work in the tree too, and the tree and the diagram share
+    the selection. Drag one selected row to move all of them into a folder, between elements, or onto the
+    diagram. In the tree the last selected element is blue and the other selected ones grey-green. Ctrl+A selects all. Ctrl+click or Shift+click elements to add or remove them, or hold Shift and drag a rectangle
     (every element it touches is selected). Drag one of them to move them all; links follow. *Delete*
     removes all of them from the diagram.
   - **Align:** right-click one of the selected elements, then *Align* ▸ *Horizontal* ▸ *Left / Center / Right*

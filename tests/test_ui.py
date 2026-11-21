@@ -858,3 +858,65 @@ def test_dgm16_badges_fit_room_select_all_and_switching_auto_size_on(sample, pag
     assert after[r1]["w"] / after[r1]["h"] > 1.2 and after[r1] != before[r1]
     assert {i: n for i, n in after.items() if i != r1} == {i: n for i, n in before.items() if i != r1}
     assert errors == [] and not V.errors(sample.load())
+
+
+def test_use13_ctrl_and_shift_click_in_the_explorer(sample, page_for):
+    """REQ-USE-13: Ctrl+click and Shift+click on elements in the explorer add or remove them from the one selection
+    the explorer and the open diagram share; those on the diagram are selected there too."""
+    m = sample.load()
+    top = {e["topic"]: i for i, e in m["elements"].items()}
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    r1, r2 = top["Every invoice gets a unique number"], top["Numbering has no gaps"]
+    a1 = top["Allocate numbers from a database sequence table"]
+    r3 = top["Corrections are made by credit note"]                         # not on this diagram
+    pg, errors = page_for(sample)
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    row = lambda i: pg.locator('#tree .row[data-kind=element][data-id="%s"] .t' % i)
+    mark = lambda i: pg.evaluate("""(i) => { const r = document.querySelector('#tree .row[data-kind=element][data-id="' + i + '"]');
+        return r.classList.contains('sel') ? 'last' : r.classList.contains('sel2') ? 'also' : ''; }""", i)
+    row(r1).click()
+    row(r2).click(modifiers=["Control"])
+    row(a1).click(modifiers=["Shift"])
+    assert pg.evaluate("selNodes()") == [r1, r2, a1]
+    assert [mark(i) for i in (r1, r2, a1)] == ["also", "also", "last"]
+    # an element that is not on the diagram joins the explorer selection only
+    row(r3).click(modifiers=["Control"])
+    assert mark(r3) == "last" and mark(a1) == "also"
+    assert pg.evaluate("selNodes()") == [r1, r2, a1]                          # a1 is now the diagram's reference
+    # clicking a selected one again removes it, in the explorer and on the diagram
+    row(r2).click(modifiers=["Control"])
+    assert mark(r2) == "" and pg.evaluate("selNodes()") == [r1, a1]
+    # the diagram keeps the explorer-only element when it adds its own
+    k1 = top["Rollback leaves a gap in the sequence"]
+    pg.locator('#canvas [data-kind=node][data-id="%s"]' % k1).first.click(position={"x": 40, "y": 40}, modifiers=["Control"])
+    assert mark(r3) == "also" and mark(k1) == "last" and pg.evaluate("selNodes()") == [r1, a1, k1]
+    # a plain click starts again
+    row(r1).click()
+    assert pg.evaluate("selNodes()") == [r1] and mark(a1) == "" and mark(r3) == ""
+    # dragging one of several selected rows takes them all: onto the diagram ...
+    r4 = top["Invoices can be exported as PDF"]                             # not on this diagram either
+    row(r3).click()
+    row(r4).click(modifiers=["Control"])
+    row(r4).drag_to(pg.locator("#canvas"), target_position={"x": 400, "y": 600})
+    pg.wait_for_timeout(500)
+    n = sample.load()["diagrams"][d1]["nodes"]
+    assert r3 in n and r4 in n and n[r3]["y"] == n[r4]["y"] and n[r3]["x"] + n[r3]["w"] < n[r4]["x"]
+    # ... and into another folder
+    arch = [i for i, f in m["folders"].items() if f["name"] == "Architecture"][0]
+    row(r3).click()
+    row(r4).click(modifiers=["Shift"])
+    pg.locator('#tree .row[data-kind=folder][data-id="%s"] .t' % arch).hover()
+    row(r3).drag_to(pg.locator('#tree .row[data-kind=folder][data-id="%s"]' % arch))
+    pg.wait_for_timeout(500)
+    els = sample.load()["elements"]
+    assert els[r3]["folder"] == arch and els[r4]["folder"] == arch
+    # ... and before another element of that folder, as a block in their order
+    from specgraph import ops as O
+    first = O.tree_order(sample.load(), "elements", arch)[0]
+    assert first not in (r3, r4)
+    row(r3).click()
+    row(r4).click(modifiers=["Control"])
+    row(r4).drag_to(pg.locator('#tree .row[data-kind=element][data-id="%s"]' % first), target_position={"x": 60, "y": 2})
+    pg.wait_for_timeout(500)
+    assert O.tree_order(sample.load(), "elements", arch)[:3] == [r3, r4, first]
+    assert errors == [] and not V.errors(sample.load())

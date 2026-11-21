@@ -392,5 +392,10 @@ text is measured in the browser, so a change made with `sg.py apply` or by an ag
 fixes that later. For a type change the editor measures the label the server will generate (ADR-026).
 **Additions (same day):** the label ends left of the lock and notes badges, and the fitted width leaves them that room.
 Switching *Auto size* on fits the selected nodes at once. Ctrl+A selects every node of the open diagram; the tree
-shows the selected elements grey and the last selected (the alignment reference) blue. *Fit* keeps
+shows the selected elements grey-green and the last selected (the alignment reference) blue, each with a bar at the left.
+**One selection for explorer and diagram:** Ctrl+click and Shift+click on an element row add or remove it, as on the
+diagram (Shift does not select a range). The explorer shows every selected element; the diagram works on those that are
+on it, and the last of those is its alignment reference. Dragging a selected row takes all selected elements: into a
+folder, before or after an element (as a block, in tree order), or onto the diagram (those not yet on it, in rows of
+four from the drop point, fitted when Auto size is on). Each drop is one change. *Fit* keeps
 the corner of the overview free: it fits the diagram beside or above the overview, whichever gives the larger picture.
