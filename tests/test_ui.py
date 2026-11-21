@@ -122,7 +122,16 @@ def test_editor_end_to_end(sample, page_for):
     assert (after["x"], after["y"]) == (before["x"] + 200, before["y"] + 30)
     assert sample.load()["diagrams"][dg["Numbering"]]["nodes"][by["REQ-002"]] == m["diagrams"][dg["Numbering"]]["nodes"][by["REQ-002"]]
     # REQ-DGM-02: new element placed from the diagram, then linked by dragging
-    pg.mouse.click(cb["x"] + cb["width"] - 560, cb["y"] + cb["height"] - 220, button="right")  # clear of the overview
+    spot = pg.evaluate("""() => {                     // an empty place with room for a new node and its link dot
+        const c = document.getElementById('canvas').getBoundingClientRect();
+        const free = (x, y) => { const u = document.elementFromPoint(x, y); return u && u.id === 'canvas'; };
+        for (let y = c.top + 40; y < c.bottom - 140; y += 20) for (let x = c.left + 20; x < c.right - 450; x += 20) {
+          let ok = true;
+          for (let dx = 0; dx <= 240 && ok; dx += 20) for (let dy = 0; dy <= 110 && ok; dy += 10) ok = free(x + dx, y + dy);
+          if (ok) return [x, y];
+        }
+        return null; }""")
+    pg.mouse.click(spot[0], spot[1], button="right")
     pg.click("#menu >> text=New RISK here")
     pg.fill(".modal input", "Created from the UI")
     pg.press(".modal input", "Enter")
@@ -200,11 +209,13 @@ def test_editor_end_to_end(sample, page_for):
     pg.click(".modal >> text=Close")
     # REQ-DGM-08: export as image
     with pg.expect_download() as dl:
-        pg.click("text=Export SVG")
+        pg.click("#btnExport")
+        pg.click("#menu >> text=SVG file")
     svg = open(dl.value.path(), encoding="utf-8").read()
     assert svg.startswith("<svg") and "REQ-001" in svg and "data-ui" not in svg
     with pg.expect_download() as dl:
-        pg.click("text=Export PNG")
+        pg.click("#btnExport")
+        pg.click("#menu >> text=PNG file")
     assert open(dl.value.path(), "rb").read(4) == b"\x89PNG"
     assert errors == [] and not V.errors(sample.load())
 
@@ -613,4 +624,44 @@ def test_dgm13_overview_moves_the_view(sample, page_for):
     assert not pg.is_visible("#miniWrap") and not pg.is_checked("#miniOn")
     pg.check("#miniOn")
     assert pg.is_visible("#miniWrap")
+    assert errors == []
+
+
+
+def test_dgm08_14_copy_to_clipboard_and_zoom_out_far(sample, page_for):
+    """REQ-DGM-08: the Export menu also copies the diagram to the clipboard as a PNG image.
+    REQ-DGM-14: Fit and the mouse wheel zoom out down to 2%, so a large diagram fits."""
+    m = sample.load()
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    far = sorted(m["diagrams"][d1]["nodes"])[0]
+    do(sample, "diagram.layout", diagram=d1, element=far, x=30000, y=12000)
+    pg, errors = page_for(sample)
+    pg.context.grant_permissions(["clipboard-read", "clipboard-write"])
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    pg.click("#btnExport")
+    pg.click("#menu >> text=Copy image to clipboard")
+    pg.wait_for_selector("#toast >> text=copied")
+    got = pg.evaluate("""async () => { const items = await navigator.clipboard.read();
+        const b = await items[0].getType('image/png'); return [items[0].types, b.size]; }""")
+    assert "image/png" in got[0] and got[1] > 1000
+    with pg.expect_download() as dl:                                       # large: the PNG is scaled down, not refused
+        pg.click("#btnExport")
+        pg.click("#menu >> text=PNG file")
+    assert open(dl.value.path(), "rb").read(4) == b"\x89PNG"
+    # Fit shows every node, far below the old 20% limit
+    pg.click("#dtools >> text=Fit")
+    k = pg.evaluate("view(S.active).k")
+    assert 0.02 <= k < 0.05
+    canvas = pg.locator("#canvas").bounding_box()
+    for i in m["diagrams"][d1]["nodes"]:
+        b = pg.locator('#canvas [data-kind=node][data-id="%s"]' % i).first.bounding_box()
+        assert canvas["x"] <= b["x"] and b["x"] + b["width"] <= canvas["x"] + canvas["width"] + 1
+        assert canvas["y"] <= b["y"] and b["y"] + b["height"] <= canvas["y"] + canvas["height"] + 1
+    assert pg.locator("#canvas #grid").count() == 0                       # too dense to show at this zoom
+    # the wheel stops at 2%
+    pg.mouse.move(canvas["x"] + 300, canvas["y"] + 300)
+    for _ in range(30):
+        pg.mouse.wheel(0, 300)
+    pg.wait_for_timeout(200)
+    assert pg.evaluate("view(S.active).k") == 0.02
     assert errors == []

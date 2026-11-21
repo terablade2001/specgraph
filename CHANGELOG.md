@@ -32,6 +32,8 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21).
 - **Alignment.** With two or more selected, right-click one for *Align* ▸ *Horizontal* ▸ *Left / Center /
   Right* (Ctrl+Shift+1/2/3) or *Align* ▸ *Vertical* ▸ *Top / Center / Bottom* (Alt+Shift+1/2/3). They line
   up with the last selected element. The same six buttons are in the properties pane.
+- **Export menu.** *Export SVG* and *Export PNG* are now in an *Export ▾* menu of the diagram tools, which
+  also has *Copy image to clipboard* (a PNG).
 - **Overview of the diagram** at the bottom right of the canvas, with a box for the part in view: click to
   look there, drag the box to move the view. *Overview* in the diagram tools hides it.
 - **Snap to grid**, on by default. *Grid* (size in diagram pixels, default 20) and *Snap* in the diagram
@@ -41,6 +43,8 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21).
 
 ### Fixed
 
+- *Fit* and the mouse wheel stopped at 20%, so a large diagram did not fit. They now go down to 2%.
+- PNG export of a very large diagram failed (the image was beyond the browser's limits). It is now scaled down.
 - Double-clicking a diagram in the explorer opens it again. The first click re-drew the tree, so the
   browser never reported the double-click.
 

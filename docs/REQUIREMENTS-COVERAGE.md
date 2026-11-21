@@ -24,10 +24,11 @@
 | DGM-04 | core `test_dgm04_*`; ui (override + bend by double-click) |
 | DGM-05, DGM-06 | ui (stereotype marker, status pill, link stroke/dash asserted) |
 | DGM-07 | ui (links appear from the model) |
-| DGM-08 | ui (SVG and PNG download) |
+| DGM-08 | ui (SVG and PNG download from the Export menu); ui `test_dgm08_14_*` (clipboard holds a PNG; PNG of a very large diagram is scaled down, not refused) |
 | DGM-09..11 | ui `test_dgm09_10_*` (Ctrl+click on and off, Shift+drag rectangle, group move with a bend point and a link to an outside node redrawn mid-drag, one undo step, two alignments through the Align submenu, all six shortcuts, two buttons in the properties). *Delete* on a selection, the alignment buttons in the properties) |
 | DGM-12 | ui `test_dgm12_*` (default 20/on, snap grid replaces the plain dots, move, group move keeps spacing, resize, drop from the tree, kept after a reload, off = no rounding). Placing from the context menu and *Place on current diagram* have no automated test |
 | DGM-13 | ui `test_dgm13_*` (one box per node, a click centres that node, dragging the box moves it and the view, the model is unchanged, hidden and remembered after a reload) |
+| DGM-14 | ui `test_dgm08_14_*` (Fit of a 30000-pixel-wide diagram shows every node at under 5%, no snap dots there, the wheel stops at 2%) |
 | LNK-01..03 | core `test_lnk01_02_03_*` |
 | TRC-01..03 | core `test_trc01_02_03_*`; ui |
 | TRC-04 | core `test_trc04_matrix`, impact in `test_trc01_*`; ui |

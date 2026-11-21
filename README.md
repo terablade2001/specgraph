@@ -211,6 +211,8 @@ Your browser opens the editor (it only listens on your own machine).
     pane has the same six buttons. The last selected element stays where it is (solid outline; the others are
     dashed); after a Shift+drag that is the lowest one. If Alt+Shift switches your keyboard language in
     Windows, use the menu.
+  - **Export ▾** in the diagram tools: *SVG file*, *PNG file*, or *Copy image to clipboard* (paste it into a
+    document or chat). *Fit* shows the whole diagram, zooming out as far as 2%; so does the mouse wheel.
   - **Overview:** the small map at the bottom right shows the whole diagram and a box for the part in view.
     Click anywhere in it to look there, or drag the box. *Overview* in the diagram tools hides it.
   - **Snap to grid:** on by default. *Snap* in the diagram tools switches it, *Grid* sets the size in diagram

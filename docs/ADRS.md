@@ -357,3 +357,9 @@ under it. **Alignment** replaces the two centre alignments of ADR-027 with six, 
 Alt+Shift+1/2/3, same y). This swaps the meaning of the earlier names: *vertical center* (Alt+Shift+2) now lines
 centres up in one row, *horizontal center* (Ctrl+Shift+2) in one column. The menu helper gains submenus
 (`[label, [items]]`), opened on hover and to the left near the right edge of the window.
+**Export and zoom** (owner request, same day): *Export SVG* and *Export PNG* move into an *Export* menu, which also
+copies the diagram to the clipboard as a PNG image (Clipboard API; the editor's 127.0.0.1 address counts as a secure
+origin). A PNG is drawn at twice the size, less when that would pass the browsers' canvas limits (16000 pixels a side,
+64 million pixels in all), so a very large diagram is scaled down instead of failing. *Fit* and the wheel zoom out to
+2% instead of 20%: text is unreadable there, but the whole diagram fits; nothing else depends on the zoom. The snap
+dots are not drawn when they would be closer than 4 screen pixels.

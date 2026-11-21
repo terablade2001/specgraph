@@ -517,8 +517,10 @@ function renderTabs() {
   if (!S.active) return;
   const lts = cfg().linkTypes;
   put(t, 'New links are:', selectIn(Object.keys(lts).filter((k) => !lts[k].retired).map((k) => [k, lts[k].label]), S.linkType, (v) => { S.linkType = v; }),
-    h('button', { onclick: fit }, 'Fit'), h('button', { onclick: () => exportDiagram('svg') }, 'Export SVG'),
-    h('button', { onclick: () => exportDiagram('png') }, 'Export PNG'),
+    h('button', { onclick: fit }, 'Fit'),
+    h('button', { id: 'btnExport', onclick: (e) => { const r = e.currentTarget.getBoundingClientRect();
+      menu({ preventDefault() {}, clientX: r.left, clientY: r.bottom + 2 }, [['SVG file', () => exportDiagram('svg')],
+        ['PNG file', () => exportDiagram('png')], ['Copy image to clipboard', () => exportDiagram('clip')]]); } }, 'Export ▾'),
     h('label', { title: 'Grid size in diagram pixels (at 100% zoom)' }, 'Grid ',
       h('input', { id: 'gridSize', type: 'number', min: 2, max: 200, step: 1, value: String(gridNow().size), style: 'width:4.5em',
         onchange: (e) => { const v = parseInt(e.target.value, 10); if (v >= 2 && v <= 200) setGrid({ size: v }); else e.target.value = String(gridNow().size); } })),
@@ -651,7 +653,7 @@ function renderDiagram() {
   renderDiagram.chosen = selNodes();
   const gr = gridNow();
   svg.classList.toggle('snapping', gr.snap);           // the snap grid replaces the plain background dots
-  if (gr.snap) { const s = gr.size * v.k;
+  if (gr.snap && gr.size * v.k >= 4) { const s = gr.size * v.k;   // not shown when the dots would be too dense
     put(svg, sv('defs', {}, sv('pattern', { id: 'grid', patternUnits: 'userSpaceOnUse', width: s, height: s, x: v.x, y: v.y },
       sv('circle', { cx: 0.75, cy: 0.75, r: 0.75, fill: '#9ca3af' }))),
       sv('rect', { width: '100%', height: '100%', fill: 'url(#grid)', 'pointer-events': 'none' })); }
@@ -746,11 +748,14 @@ function nodesIn(r) {
   return Object.keys(nodes).filter((id) => { const n = nodes[id]; return n.x <= r[2] && n.x + n.w >= r[0] && n.y <= r[3] && n.y + n.h >= r[1]; })
     .sort((p, q) => (nodes[p].y - nodes[q].y) || (nodes[p].x - nodes[q].x));
 }
+/* Smallest zoom of Fit and the mouse wheel: 2%, so large diagrams fit; text is unreadable down there,
+   which is fine for finding your way (use the overview or zoom in). */
+const MIN_ZOOM = 0.02;
 function fit() {
   const d = S.model.diagrams[S.active], ns = Object.values(d.nodes), r = $('canvas').getBoundingClientRect(), v = view(S.active);
   if (!ns.length) { v.x = 40; v.y = 40; v.k = 1; return renderDiagram(); }
   const b = bounds(d);
-  v.k = Math.max(0.2, Math.min(1.5, (r.width - 60) / (b.w || 1), (r.height - 60) / (b.h || 1)));
+  v.k = Math.max(MIN_ZOOM, Math.min(1.5, (r.width - 60) / (b.w || 1), (r.height - 60) / (b.h || 1)));
   v.x = (r.width - b.w * v.k) / 2 - b.x * v.k; v.y = (r.height - b.h * v.k) / 2 - b.y * v.k;
   renderDiagram();
 }
@@ -862,7 +867,7 @@ function bindCanvas() {
     if (!S.active) return;
     e.preventDefault();
     const v = view(S.active), r = svg.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-    const k = Math.max(0.2, Math.min(3, v.k * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
+    const k = Math.max(MIN_ZOOM, Math.min(3, v.k * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
     v.x = mx - (mx - v.x) * k / v.k; v.y = my - (my - v.y) * k / v.k; v.k = k;
     renderDiagram();
   }, { passive: false });
@@ -926,11 +931,21 @@ function exportDiagram(kind) {
   const save = (blob, ext) => { const a = h('a', { href: URL.createObjectURL(blob), download: name + '.' + ext }); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
   const blob = new Blob([text], { type: 'image/svg+xml' });
   if (kind === 'svg') return save(blob, 'svg');
-  const img = new Image(), url = URL.createObjectURL(blob);
-  img.onload = () => { const c = h('canvas', { width: Math.ceil(b.w) * 2, height: Math.ceil(b.h) * 2 }); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    URL.revokeObjectURL(url); c.toBlob((png) => save(png, 'png'), 'image/png'); };
-  img.onerror = () => toast('PNG export failed; use SVG', true);
-  img.src = url;
+  // PNG at twice the size, less for a very large diagram (browsers refuse canvases over about 16000 pixels
+  // a side or 64 million pixels in all); for the clipboard the promise goes straight into the ClipboardItem, which keeps
+  // the click's permission to write while the image is drawn
+  const png = new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(blob);
+    const k = Math.min(2, 16000 / Math.max(b.w, b.h), Math.sqrt(64e6 / (b.w * b.h)));
+    img.onload = () => { const c = h('canvas', { width: Math.max(1, Math.round(b.w * k)), height: Math.max(1, Math.round(b.h * k)) }); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); c.toBlob((p) => (p ? resolve(p) : reject(new Error('no image'))), 'image/png'); };
+    img.onerror = () => reject(new Error('no image'));
+    img.src = url;
+  });
+  if (kind === 'png') return png.then((p) => save(p, 'png'), () => toast('PNG export failed; use SVG', true));
+  if (!navigator.clipboard || typeof ClipboardItem === 'undefined') return toast('This browser cannot copy images; use PNG file', true);
+  navigator.clipboard.write([new ClipboardItem({ 'image/png': png })])
+    .then(() => toast('Diagram copied to the clipboard as an image'), (e) => toast('Copy failed: ' + e.message + '. Use PNG file.', true));
 }
 
 // ---- bottom panel: search, trace, history, check ---------------------------
