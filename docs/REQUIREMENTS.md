@@ -53,12 +53,13 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | DGM-06 | A link's look follows its link type. |
 | DGM-07 | Links between elements on a diagram appear from the model. |
 | DGM-08 | A diagram can be exported as an image (SVG and PNG file) or copied to the clipboard as an image, from the *Export* menu of the diagram tools. |
-| DGM-09 | Several elements of a diagram can be selected: Ctrl+click or Shift+click adds or removes one, Shift+drag selects every element touching the rectangle (ADR-027). |
+| DGM-09 | Several elements of a diagram can be selected: Ctrl+A selects all, Ctrl+click or Shift+click adds or removes one, Shift+drag selects every element touching the rectangle (ADR-027). |
 | DGM-10 | Dragging one element of a selection moves them all as one change; links follow while dragging, and the bend points of links between selected elements move along. |
 | DGM-11 | The selected elements can be aligned with the last selected one, from the Align submenu or the keyboard: horizontally by left edge, centre or right edge (Ctrl+Shift+1/2/3), vertically by top edge, centre or bottom edge (Alt+Shift+1/2/3) (ADR-028). |
 | DGM-12 | Elements can snap to a grid when they are created, moved or resized; the grid size and the switch are in the diagram tools, start at the same default for everyone (20, on) and are kept by the browser. |
 | DGM-13 | An overview of the whole diagram shows which part is in view; a click there moves the view to that point and dragging its box moves the view. It can be hidden (ADR-028). |
 | DGM-14 | *Fit* and the mouse wheel zoom out down to 2%, so a large diagram fits in the window. |
+| DGM-15 | With *Auto size* on (the default), an element on a diagram is sized to show its whole text without changing a font, and is always wider than tall (width / height above 1.2): when it is created, when its topic, label or type changes, and when its width is dragged. *Fit to text* does the same on demand (ADR-030). |
 
 ## LNK — links
 

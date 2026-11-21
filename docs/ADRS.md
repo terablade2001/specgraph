@@ -375,3 +375,22 @@ is part of the drawing, so it is also exported. **Shift+click** on a node adds o
 press that moves more than 3 pixels is a rectangle selection, as before. **Tab icon:** `web/favicon.svg`, a page with a
 small graph on it (the owner's pick of four designs), served as one more file of the fixed static list (`server.STATIC`); `/favicon.ico` still answers
 204 for browsers that ask for it.
+
+## ADR-030 — Auto size: whole text visible, always landscape  · stakes: low
+Owner request (2026-11-21). **Rule** (`app.js`, `fitSize`): fonts never change. The width of a node is a minimum
+(190 for a new one); it grows when the top line («type» and label), the status pill or the longest word of the
+topic would not fit. The topic is wrapped at that width and the height is just enough for all its lines, the top line
+and the pill (an ellipse needs more, its text area is smaller). The box is always landscape: width / height above
+1.2, never equal; when the text would need a portrait box the width grows instead, in grid steps when snapping
+(10 pixels otherwise), and both sides end on the grid. **When:** with *Auto size* on (diagram tools, kept by the
+browser like *Snap*, on by default) a node is fitted when it is placed, when the element's topic, label or type
+changes (on every diagram it is on, in the same change as the edit, so one undo step; diagrams in a folder locked by
+someone else are left alone, since their change would refuse the whole edit), and while its width is dragged (the
+height follows; dragging the height alone does nothing). *Fit to text* in the context menu fits one node or a
+selection whatever the switch says. With the switch off, sizes are manual and any shape is allowed. **Limit:**
+text is measured in the browser, so a change made with `sg.py apply` or by an agent is not fitted; *Fit to text*
+fixes that later. For a type change the editor measures the label the server will generate (ADR-026).
+**Additions (same day):** the label ends left of the lock and notes badges, and the fitted width leaves them that room.
+Switching *Auto size* on fits the selected nodes at once. Ctrl+A selects every node of the open diagram; the tree
+shows the selected elements grey and the last selected (the alignment reference) blue. *Fit* keeps
+the corner of the overview free: it fits the diagram beside or above the overview, whichever gives the larger picture.

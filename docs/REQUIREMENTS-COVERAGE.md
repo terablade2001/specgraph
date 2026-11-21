@@ -30,6 +30,8 @@
 | DGM-12 | ui `test_dgm12_*` (default 20/on, snap grid replaces the plain dots, move, group move keeps spacing, resize, drop from the tree, kept after a reload, off = no rounding). Placing from the context menu and *Place on current diagram* have no automated test |
 | DGM-13 | ui `test_dgm13_*` (one box per node, a click centres that node, dragging the box moves it and the view, the model is unchanged, hidden and remembered after a reload) |
 | DGM-14 | ui `test_dgm08_14_*` (Fit of a 30000-pixel-wide diagram shows every node at under 5%, no snap dots there, the wheel stops at 2%) |
+| DGM-15 | ui `test_dgm15_*` (topic change resizes on all three diagrams in one undo step, shorter text shrinks the height, dragged width, new element, switched off: no resizing and portrait allowed by hand, Fit to text for one and for a selection). A type or label change resizes through the same code path and has no own test |
+| DGM-09 (Ctrl+A), DGM-14 (overview), DGM-15 (badges, switching on) | ui `test_dgm16_*` (label clear of two badges and of one badge after Fit to text, Fit leaves the overview free, Ctrl+A, switching Auto size on fits only the selection) |
 | LNK-01..03 | core `test_lnk01_02_03_*` |
 | TRC-01..03 | core `test_trc01_02_03_*`; ui |
 | TRC-04 | core `test_trc04_matrix`, impact in `test_trc01_*`; ui |

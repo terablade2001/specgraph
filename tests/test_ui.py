@@ -709,3 +709,152 @@ def test_dgm09_use11_12_shift_click_notes_mark_and_icon(sample, page_for):
         return [l.getAttribute('href'), r.status, r.headers.get('content-type'), (await r.text()).slice(0, 4)]; }""")
     assert icon == ["favicon.svg", 200, "image/svg+xml", "<svg"]
     assert errors == []
+
+
+def test_dgm15_auto_size_keeps_text_visible_and_landscape(sample, page_for):
+    """REQ-DGM-15 (ADR-030): with Auto size on (the default), a node is sized so that its whole topic, type and
+    label show, with width / height above 1.2: when it is created, when its topic, label or type change (on every
+    diagram, one undo step) and when its width is dragged. Off: sizes stay manual, any shape. Fit to text works
+    either way."""
+    m = sample.load()
+    top = {e["topic"]: i for i, e in m["elements"].items()}
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    a1 = top["Allocate numbers from a database sequence table"]              # on all three diagrams
+    r2 = top["Numbering has no gaps"]
+    sample.undo_steps = 20
+    pg, errors = page_for(sample)
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    assert pg.is_checked("#autoSize")
+    on_diagrams = lambda i: {d: dd["nodes"][i] for d, dd in sample.load()["diagrams"].items() if i in dd["nodes"]}
+    landscape = lambda n: n["w"] / n["h"] > 1.2
+    shows_all = lambda i: pg.evaluate("""(i) => { const g = document.querySelector('#canvas [data-kind=node][data-id="' + i + '"]');
+        return !!g && ![...g.querySelectorAll('text')].some((t) => t.textContent.includes('…')); }""", i)
+    long_topic = ("Allocate invoice numbers from a database sequence table that is locked per fiscal year, "
+                  "reset on the first of January and audited every quarter by the finance team")
+    # a topic change resizes the node on every diagram (not locked by someone else), as one undo step
+    steps = pg.evaluate("S.undo.steps")
+    pg.evaluate("(i) => select('element', i)", a1)
+    pg.fill('#props .f:has(label:text-is("Topic")) textarea', long_topic)
+    pg.locator("#canvas").click(position={"x": 5, "y": 5})                 # leave the field: saved
+    pg.wait_for_timeout(500)
+    sizes = on_diagrams(a1)
+    assert len(sizes) == 3 and all(landscape(n) for n in sizes.values()), sizes
+    assert all(n["h"] > 96 for n in sizes.values())                          # grew to show the text
+    assert shows_all(a1) and pg.evaluate("S.undo.steps") == steps + 1
+    # shorter text: the height shrinks again, the width stays
+    pg.evaluate("(i) => select('element', i)", a1)
+    pg.fill('#props .f:has(label:text-is("Topic")) textarea', "Use a sequence")
+    pg.locator("#canvas").click(position={"x": 5, "y": 5})
+    pg.wait_for_timeout(500)
+    short = on_diagrams(a1)[d1]
+    assert short["h"] < sizes[d1]["h"] and short["w"] == sizes[d1]["w"] and landscape(short)
+    # dragging the width: the height follows, and it never turns portrait
+    pg.evaluate("(i) => select('element', i)", r2)
+    do(sample, "element.update", id=r2, topic=long_topic)
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
+    h = pg.locator('#canvas [data-kind=resize][data-id="%s"]' % r2).bounding_box()
+    pg.mouse.move(h["x"] + 5, h["y"] + 5)
+    pg.mouse.down()
+    pg.mouse.move(h["x"] - 150, h["y"] + 200, steps=5)
+    pg.mouse.up()
+    pg.wait_for_timeout(500)
+    n = on_diagrams(r2)[d1]
+    assert landscape(n) and shows_all(r2), n
+    # a new element is created at its fitted size
+    pg.evaluate("() => { const v = view(S.active); v.k = 0.5; v.x = 20; v.y = 20; renderDiagram(); }")
+    spot = pg.evaluate("""() => {                      // an empty place: the diagram fills the top left only
+        const c = document.getElementById('canvas').getBoundingClientRect(), v = view(S.active), d = S.model.diagrams[S.active];
+        const b = bounds(d); return [c.left + Math.min(c.width - 400, v.x + (b.x + b.w) * v.k + 30), c.top + 30]; }""")
+    pg.mouse.click(spot[0], spot[1], button="right")
+    pg.click("#menu >> text=New RISK here")
+    pg.fill(".modal input", long_topic)
+    pg.press(".modal input", "Enter")
+    pg.wait_for_timeout(500)
+    new = [i for i, e in sample.load()["elements"].items() if e["topic"] == long_topic and e["stereotype"] == "RISK"][0]
+    n = on_diagrams(new)[d1]
+    assert landscape(n) and n["h"] > 96 and shows_all(new), n
+    # switched off: nothing is resized, and a manual resize may make any shape
+    pg.uncheck("#autoSize")
+    before = on_diagrams(a1)
+    pg.evaluate("(i) => select('element', i)", a1)
+    pg.fill('#props .f:has(label:text-is("Topic")) textarea', long_topic)
+    pg.locator("#canvas").click(position={"x": 5, "y": 5})
+    pg.wait_for_timeout(500)
+    assert on_diagrams(a1) == before and not shows_all(a1)
+    pg.evaluate("(i) => select('element', i)", r2)
+    h = pg.locator('#canvas [data-kind=resize][data-id="%s"]' % r2).bounding_box()
+    pg.mouse.move(h["x"] + 5, h["y"] + 5)
+    pg.mouse.down()
+    pg.mouse.move(h["x"] - 120, h["y"] + 300, steps=5)
+    pg.mouse.up()
+    pg.wait_for_timeout(500)
+    assert not landscape(on_diagrams(r2)[d1])                                # portrait on purpose
+    # Fit to text works with the switch off, for one element or a selection
+    pg.locator('#canvas [data-kind=node][data-id="%s"]' % a1).first.click(button="right", position={"x": 20, "y": 30})
+    pg.click("#menu >> text=Fit to text")
+    pg.wait_for_timeout(500)
+    assert landscape(on_diagrams(a1)[d1]) and shows_all(a1)
+    pg.evaluate("(ids) => selectNodes(ids)", [a1, r2])
+    pg.locator('#canvas [data-kind=node][data-id="%s"]' % r2).first.click(button="right", position={"x": 20, "y": 30})
+    pg.click("#menu >> text=Fit to text")
+    pg.wait_for_timeout(500)
+    assert landscape(on_diagrams(r2)[d1]) and shows_all(r2)
+    assert errors == [] and not V.errors(sample.load())
+
+
+def test_dgm16_badges_fit_room_select_all_and_switching_auto_size_on(sample, page_for):
+    """ADR-030: the label stays clear of the lock and notes badges, also in the fitted size; Fit keeps nodes out
+    from under the overview; Ctrl+A selects every node of the diagram; switching Auto size on fits the selection."""
+    m = sample.load()
+    top = {e["topic"]: i for i, e in m["elements"].items()}
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    br1 = top["Invoice numbers are consecutive per fiscal year"]                # locked folder and notes: two badges
+    r1, r2 = top["Every invoice gets a unique number"], top["Numbering has no gaps"]
+    do(sample, "diagram.layout", diagram=d1, element=r1, w=90, h=200)          # unfitted
+    pg, errors = page_for(sample)
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    nodes = lambda: sample.load()["diagrams"][d1]["nodes"]
+
+    def clear_of_badges(i):
+        return pg.evaluate("""([i, label]) => { const g = document.querySelector('#canvas [data-kind=node][data-id="' + i + '"]');
+            const t = [...g.querySelectorAll('text')].find((x) => x.textContent === label).getBoundingClientRect();
+            const marks = [...g.querySelectorAll('circle')].map((c) => c.getBoundingClientRect()).filter((c) => c.top < t.bottom);
+            return marks.length > 0 && marks.every((c) => t.right <= c.left); }""", [i, m["elements"][i]["label"]])
+    assert clear_of_badges(br1)
+    pg.evaluate("(i) => select('element', i)", br1)
+    do(sample, "folder.unlock", id=m["elements"][br1]["folder"])              # ada's own lock; still the notes badge
+    do(sample, "element.update", id=br1, label="CONSTRAINT-LONG-LABEL-0001")
+    m = sample.load()
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
+    pg.locator('#canvas [data-kind=node][data-id="%s"]' % br1).first.click(button="right", position={"x": 60, "y": 50})
+    pg.click("#menu >> text=Fit to text")
+    pg.wait_for_timeout(400)
+    assert clear_of_badges(br1)
+    # Fit: no node under the overview
+    pg.click("#dtools >> text=Fit")
+    mini = pg.locator("#miniWrap").bounding_box()
+    for i in nodes():
+        b = pg.locator('#canvas [data-kind=node][data-id="%s"]' % i).first.bounding_box()
+        assert b["x"] + b["width"] <= mini["x"] or b["y"] + b["height"] <= mini["y"], i
+    # Ctrl+A selects every node of the open diagram
+    pg.locator("#canvas").click(position={"x": 5, "y": 5})
+    pg.keyboard.press("Control+a")
+    assert sorted(pg.evaluate("selNodes()")) == sorted(nodes())
+    # in the tree: the last selected is blue (sel), the others grey (sel2), the rest unmarked
+    last = pg.evaluate("S.sel.id")
+    marks = pg.evaluate("""() => Object.fromEntries([...document.querySelectorAll('#tree .row[data-kind=element]')]
+        .map((r) => [r.getAttribute('data-id'), r.classList.contains('sel') ? 'sel' : r.classList.contains('sel2') ? 'sel2' : '']))""")
+    assert marks[last] == "sel" and all(marks[i] == "sel2" for i in nodes() if i != last)
+    assert all(v == "" for i, v in marks.items() if i not in nodes())
+    # switching Auto size on fits the selected nodes, and only those
+    pg.uncheck("#autoSize")
+    pg.evaluate("(ids) => selectNodes(ids)", [r1])
+    before = nodes()
+    pg.check("#autoSize")
+    pg.wait_for_timeout(400)
+    after = nodes()
+    assert after[r1]["w"] / after[r1]["h"] > 1.2 and after[r1] != before[r1]
+    assert {i: n for i, n in after.items() if i != r1} == {i: n for i, n in before.items() if i != r1}
+    assert errors == [] and not V.errors(sample.load())

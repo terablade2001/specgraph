@@ -5,7 +5,7 @@ Changes of the tool that a user or an agent can notice, newest first. The versio
 
 ## 0.3.0 — not released yet
 
-Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, ADR-029.
+Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, ADR-029, ADR-030.
 
 ### Changed
 
@@ -35,6 +35,12 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, A
 - **Alignment.** With two or more selected, right-click one for *Align* ▸ *Horizontal* ▸ *Left / Center /
   Right* (Ctrl+Shift+1/2/3) or *Align* ▸ *Vertical* ▸ *Top / Center / Bottom* (Alt+Shift+1/2/3). They line
   up with the last selected element. The same six buttons are in the properties pane.
+- **Auto size**, on by default. Elements are sized to show their whole text without changing fonts and are
+  always wider than tall (width / height above 1.2): when placed, when their topic, label or type changes, and
+  while their width is dragged. Right-click → *Fit to text* fits one element or a selection at any time;
+  switching *Auto size* on fits the selected elements.
+- **Ctrl+A** selects every element of the open diagram. In the tree the selected elements are grey, the last
+  selected (the reference for alignment) blue, so the ones not selected stand out.
 - **Notes mark.** An element with notes shows a 📜 badge on the diagram (next to the lock, if any) and in the
   tree; point at it for the start of the notes.
 - **Tab icon.** The editor has its own icon in the browser tab.
@@ -49,6 +55,8 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, A
 
 ### Fixed
 
+- The lock and notes badges no longer cover the end of an element's label.
+- *Fit* no longer puts elements under the overview.
 - *Fit* and the mouse wheel stopped at 20%, so a large diagram did not fit. They now go down to 2%.
 - PNG export of a very large diagram failed (the image was beyond the browser's limits). It is now scaled down.
 - Double-clicking a diagram in the explorer opens it again. The first click re-drew the tree, so the

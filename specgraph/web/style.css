@@ -35,6 +35,7 @@ textarea { resize: vertical; }
 .row { display: flex; align-items: center; gap: 4px; padding: 2px 6px; white-space: nowrap; cursor: default; border-radius: 3px; }
 .row:hover { background: #e8ebf1; }
 .row.sel { background: #dbe4ff; }
+.row.sel2 { background: #dcdfe5; }
 .row.drop { outline: 2px dashed var(--accent); }
 .row.drop-before { box-shadow: inset 0 2px 0 var(--accent); }
 .row.drop-after { box-shadow: inset 0 -2px 0 var(--accent); }

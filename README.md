@@ -203,7 +203,7 @@ Your browser opens the editor (it only listens on your own machine).
 - **Middle:** diagrams. Drag elements in from the tree, or right-click the background to create one there.
   Drag to move, corner handle to resize, blue dot to draw a link to another element.
   Double-click a link to add a bend (user-defined routing). *Delete* key removes from the diagram only.
-  - **Several elements:** Ctrl+click or Shift+click elements to add or remove them, or hold Shift and drag a rectangle
+  - **Several elements:** in the tree the last selected element is blue and the other selected ones grey. Ctrl+A selects all. Ctrl+click or Shift+click elements to add or remove them, or hold Shift and drag a rectangle
     (every element it touches is selected). Drag one of them to move them all; links follow. *Delete*
     removes all of them from the diagram.
   - **Align:** right-click one of the selected elements, then *Align* ▸ *Horizontal* ▸ *Left / Center / Right*
@@ -213,6 +213,11 @@ Your browser opens the editor (it only listens on your own machine).
     Windows, use the menu.
   - **Export ▾** in the diagram tools: *SVG file*, *PNG file*, or *Copy image to clipboard* (paste it into a
     document or chat). *Fit* shows the whole diagram, zooming out as far as 2%; so does the mouse wheel.
+  - **Auto size** (diagram tools, on by default): elements get the size that shows their whole text, and are
+    always wider than tall (width / height above 1.2). It applies when an element is placed, when its topic,
+    label or type changes (on every diagram), and while you drag its width. Right-click → *Fit to text* fits
+    one element or a selection at any time, for example after a change made by an agent. Switching it on
+    fits the selected elements at once. Switch it off for manual sizes of any shape.
   - **Overview:** the small map at the bottom right shows the whole diagram and a box for the part in view.
     Click anywhere in it to look there, or drag the box. *Overview* in the diagram tools hides it.
   - **Snap to grid:** on by default. *Snap* in the diagram tools switches it, *Grid* sets the size in diagram
