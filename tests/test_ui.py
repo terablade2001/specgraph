@@ -539,3 +539,21 @@ def test_dgm12_snap_to_grid(sample, page_for):
     drag(node(r2), 7, 3)
     assert not (on(nodes()[r2]["x"]) and on(nodes()[r2]["y"]))
     assert errors == [] and not V.errors(sample.load())
+
+
+def test_elm07_type_change_in_the_editor_shows_the_new_label(sample, page_for):
+    """REQ-ELM-07 (ADR-026): picking another stereotype in the properties gives the generated label of
+    the new type, in the properties, the tree and on the diagram."""
+    m = sample.load()
+    eid = [i for i, e in m["elements"].items() if e["topic"] == "Allocate numbers from a database sequence table"][0]
+    want = "REQ-" + eid.replace("-", "")[:8]
+    pg, errors = page_for(sample)
+    pg.evaluate("(i) => select('element', i)", eid)
+    pg.select_option('#props .f:has(label:text-is("Stereotype")) select', "REQ")
+    pg.wait_for_timeout(400)
+    assert sample.load()["elements"][eid]["label"] == want
+    assert pg.input_value('#props .f:has(label:text-is("Label")) input') == want
+    assert want in pg.locator('#tree .row[data-kind=element][data-id="%s"]' % eid).inner_text()
+    pg.evaluate("(i) => openDiagram(Object.keys(S.model.diagrams).find((d) => S.model.diagrams[d].nodes[i]), i)", eid)
+    assert want in pg.locator('#canvas [data-kind=node][data-id="%s"]' % eid).first.text_content()
+    assert errors == [] and not V.errors(sample.load())

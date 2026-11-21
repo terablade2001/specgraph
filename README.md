@@ -222,7 +222,9 @@ Your browser opens the editor (it only listens on your own machine).
   `specmodel.deleted.jsonl` with their last commit; commit that file with the model.
 - Every element shows who last changed it and when; the ⧉ button next to an id copies it.
 - The tool version is shown next to the name in the top bar (`python sg.py --version`).
-- **Right:** properties of what is selected. Edits apply when you leave the field.
+- **Right:** properties of what is selected. Edits apply when you leave the field. Changing the
+  *Stereotype* gives the element a new label of that type (`ADR-…` becomes `REQ-…`); type the label again
+  afterwards if you want another one.
 - **Search** (top): id or the start of an id, label, or any text. Each result lists its diagrams;
   **double-click a diagram** to open it with the element centred and selected.
 - **Locks:** *Lock* on a folder says "I am working here". While it is set, nobody else changes the
@@ -255,8 +257,13 @@ element shows it in words ("status Proposed → Validated, by bob, 2026-11-13").
 |---|---|
 | every change in the tool | validation of the change, lock rules, identity, signed stamp |
 | `git commit` (hook) | `sg.py check --staged`: valid model, intact stamp, known signer, locks respected |
-| `git push` (hook) | `sg.py audit --quiet` over the branch history |
-| any time | `sg.py audit` reports every commit that broke a rule, even if hooks were skipped |
+| `git push` (hook) | `sg.py audit --push`: only the commits being pushed that the remote does not have yet |
+| any time | `sg.py audit` reports every commit of the history that broke a rule, even if hooks were skipped |
+| any time | `sg.py audit <from> <to>` checks only the commits from `<from>` to `<to>`, both included (`<to>` defaults to `HEAD`) |
+
+An old finding that is already on the remote no longer blocks a push; `sg.py audit` still reports it.
+Hooks installed by version 0.2 or older check the whole history on every push: run `python sg.py install-hooks`
+once to update them.
 
 ## For AI agents
 

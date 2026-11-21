@@ -7,8 +7,20 @@ Changes of the tool that a user or an agent can notice, newest first. The versio
 
 Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21).
 
+### Changed
+
+- **A type change gives a new label.** Changing an element's stereotype (ADR to REQ) replaces its label by
+  the generated label of the new type (`ADR-3d6e7863` becomes `REQ-3d6e7863`), also when the label was
+  typed by hand (`ADR-001`). A label passed in the same `element.update` wins. References to the old
+  label no longer find the element; its id prefix still does.
+- **The pre-push hook checks only the commits being pushed** (those the remote does not have yet), so an
+  old finding no longer blocks every push and `--no-verify` is not needed for it. Run
+  `python sg.py install-hooks` once to update hooks installed by an older version.
+
 ### Added
 
+- **`sg.py audit <from> [<to>]`** checks only the commits from `<from>` to `<to>`, both included (`<to>`
+  defaults to `HEAD`). `sg.py audit` without commits still checks the whole history.
 - **Find in explorer.** Right-click an element on a diagram, or use the button in the properties of an
   element, diagram or folder: the folders above it open, it is selected and the explorer scrolls to it.
 - **Double-click in the explorer on a folder** opens or closes it. Ctrl+double-click opens it with all

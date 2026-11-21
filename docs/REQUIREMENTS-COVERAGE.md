@@ -16,6 +16,7 @@
 | ELM-03 | core `test_elm03_*`; integ `test_sto06_parallel_*` |
 | ELM-05 | core `test_elm05_dgm03_*`; ui |
 | ELM-06 | core `test_elm06_*`, `test_cli_delete_requires_confirmation`; ui (dialog shows usage) |
+| ELM-07 | core `test_elm07_*` (generated and hand-typed labels, back to the old type, label given wins, no type change keeps it); ui `test_elm07_*` (properties, tree, diagram) |
 | FLD-01, FLD-02 | core `test_fld01_02_*`; ui (tree) |
 | FLD-03 | changes `test_fld03_*` (3 tests: order per folder and kind, locks, merge); ui `test_tree_order_*` (drag before/after, into another folder, top-level folders) |
 | DGM-01, DGM-03 | core `test_elm05_dgm03_*` |
@@ -51,6 +52,8 @@
 | LCK-06 | integ `test_sto06_same_field_*` (two people lock the same folder); ADR-005 |
 | CHK-01, CHK-02 | integ `test_chk01_02_*` |
 | CHK-03 | integ `test_chk03_*` |
+| CHK-04 | integ `test_chk04_*` (whole history, a range with and without a finding, the first commit, `<from>` up to HEAD) |
+| CHK-05 | integ `test_chk05_*` (old finding on the remote does not block, new branch, new finding blocks, branch deletion) |
 | HST-01 | integ `test_sto04_hst01_*` |
 | USE-01 | ui |
 | USE-02 | integ `test_use02_*` |

@@ -105,6 +105,25 @@ def test_elm02_label_grows_when_the_short_id_is_taken():
     assert O._auto_label(m, "X", eid) == ""
 
 
+
+def test_elm07_type_change_gives_a_new_label(ada, base):
+    """REQ-ELM-07 (ADR-026): changing the type replaces the label by a generated one for the new type,
+    also a hand-typed one; a label passed in the same change wins."""
+    short = base["a1"].replace("-", "")[:8]
+    label = lambda: ada.load()["elements"][base["a1"]]["label"]
+    assert label() == "ADR-" + short
+    do(ada, "element.update", id=base["a1"], stereotype="REQ")
+    assert label() == "REQ-" + short
+    do(ada, "element.update", id=base["a1"], stereotype="ADR")          # back again: its own old label is free
+    assert label() == "ADR-" + short
+    do(ada, "element.update", id=base["a1"], label="ADR-001")
+    do(ada, "element.update", id=base["a1"], stereotype="RISK")
+    assert label() == "RISK-" + short
+    do(ada, "element.update", id=base["a1"], stereotype="REQ", label="REQ-777")
+    assert label() == "REQ-777"
+    do(ada, "element.update", id=base["a1"], topic="Same type, other topic")
+    assert label() == "REQ-777"                                           # no type change: the label stays
+
 def test_elm03_ids_unique_across_parallel_creation():
     """REQ-ELM-03: random 122-bit ids need no coordination."""
     assert len({M.new_id() for _ in range(20000)}) == 20000

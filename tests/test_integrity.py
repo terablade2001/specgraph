@@ -272,6 +272,74 @@ def test_chk03_audit_finds_bypassed_rules(ada, bob, eve, base, repo, keys):
     assert main(["--file", ada.path, "audit", "--quiet"]) == 1
 
 
+
+def _hand_edit(store, eid, text):
+    m = M.load(store.path)
+    m["elements"][eid]["topic"] = text
+    M.save(store.path, m)
+
+
+def test_chk04_audit_of_a_range_of_commits(ada, base, repo, capsys):
+    """REQ-CHK-04 (ADR-025): `audit` checks the whole history; `audit <from> <to>` only those commits,
+    both included; `audit <from>` up to HEAD."""
+    head = lambda: git(repo, "rev-parse", "HEAD").strip()
+    commit(repo, "c1 ok")
+    c1 = head()
+    _hand_edit(ada, base["r2"], "hand edit")
+    commit(repo, "c2 hand edit")
+    c2 = head()
+    ada.adopt()
+    commit(repo, "c3 adopt")
+    c3 = head()
+    do(ada, "element.update", id=base["r2"], topic="Tool edit")
+    commit(repo, "c4 ok")
+    c4 = head()
+    run = lambda *a: (main(["--file", ada.path, "audit"] + list(a)), capsys.readouterr().out)
+    code, out = run()
+    assert code == 1 and all(c[:10] in out for c in (c1, c2, c3, c4))
+    code, out = run(c3, c4)
+    assert code == 0 and c3[:10] in out and c4[:10] in out and c2[:10] not in out and "2 commit(s) checked" in out
+    code, out = run(c1, c2)
+    assert code == 1 and "FAIL %s" % c2[:10] in out and c3[:10] not in out
+    code, out = run(c1, c1)                                               # the first commit of the repository
+    assert code == 0 and "1 commit(s) checked" in out
+    code, out = run(c3)                                                   # from c3 up to HEAD
+    assert code == 0 and "2 commit(s) checked" in out
+
+
+def test_chk05_pre_push_checks_only_the_pushed_commits(ada, base, repo, tmp_path):
+    """REQ-CHK-05 (ADR-025): the pre-push hook audits only commits the remote does not have yet, so an
+    old finding does not block a push, and a new one does."""
+    def push(*a):
+        p = subprocess.run(["git", "push"] + list(a), cwd=str(repo), capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        return p.returncode, p.stdout + p.stderr
+    remote = tmp_path / "remote.git"
+    git(tmp_path, "init", "-q", "--bare", str(remote))
+    git(repo, "remote", "add", "origin", str(remote))
+    _hand_edit(ada, base["r2"], "old hand edit")
+    commit(repo, "old hand edit")
+    ada.adopt()
+    commit(repo, "adopt")
+    assert push("--no-verify", "-u", "origin", "HEAD")[0] == 0             # the history already holds a finding
+    assert main(["--file", ada.path, "audit", "--quiet"]) == 1
+    hooks.install(ada)
+    do(ada, "element.update", id=base["r2"], topic="Good change")
+    commit(repo, "good")
+    code, err = push()
+    assert code == 0, err                                                  # the old finding does not block
+    git(repo, "switch", "-q", "-c", "feature")
+    do(ada, "element.update", id=base["r2"], topic="On a new branch")
+    commit(repo, "feature work")
+    code, err = push("-u", "origin", "feature")
+    assert code == 0, err                                                  # a new branch: only its own commits
+    _hand_edit(ada, base["r2"], "new hand edit")
+    commit(repo, "new hand edit")
+    code, err = push()
+    assert code != 0 and "push blocked" in err and "outside the tool" in err
+    code, err = push("origin", ":feature")                                 # deleting a branch checks nothing
+    assert code == 0, err
+
 def test_sto04_hst01_history_in_human_terms(ada, bob, base, repo):
     """REQ-STO-04 / REQ-HST-01: what changed, when and by whom, from git history."""
     commit(repo, "create")

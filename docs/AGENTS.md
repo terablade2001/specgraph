@@ -33,6 +33,8 @@ python sg.py apply '[{"op": "element.update", "args": {"id": "<id>", "status": "
   message on stderr when refused (validation, lock, identity).
 - `element.delete` needs `--yes`; without it the command prints where the element is used and exits 3.
 - `python sg.py ops` lists every operation with its arguments.
+- `element.update` with a new `stereotype` also replaces the label by a generated one of the new type
+  (ADR-026); pass `label` in the same call to keep or set another.
 - The tool works on whatever branch is checked out; choosing the branch is up to the user.
 - The order of the explorer: `{"op": "folder.order", "args": {"id": "<folder id or null>", "kind": "elements", "ids": [...]}}`
   (`kind`: `folders`, `diagrams` or `elements`). Leave it alone unless the user asks for an order.

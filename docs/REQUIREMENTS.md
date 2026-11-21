@@ -31,6 +31,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | ELM-04 | The status of an element is one of the configured statuses. |
 | ELM-05 | An element exists once in the model and may appear on several diagrams. |
 | ELM-06 | Removing an element from a diagram keeps it; deleting shows where it is used and removes its links. |
+| ELM-07 | Changing the stereotype of an element gives it a new generated label of the new type, unless a label is given in the same change (ADR-026). |
 
 ## FLD — folders
 
@@ -133,6 +134,8 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | CHK-01 | A pre-commit hook blocks hand edits and invalid models. |
 | CHK-02 | One command installs the hooks and the merge driver. |
 | CHK-03 | A history audit reports integrity, lock and identity violations. |
+| CHK-04 | The audit run by hand checks the whole history, or only the commits from one given commit to another, both included (ADR-025). |
+| CHK-05 | The pre-push hook checks only the commits that the remote does not have yet. |
 
 ## HST, USE, DOC
 

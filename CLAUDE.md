@@ -161,6 +161,8 @@ sg.py apply '[{"op": "element.update", "args": {"id": "<id>", "status": "approve
 - `sg.py ops` lists every operation and its arguments. Details: `docs/AGENTS.md`.
 - `element.delete` needs `--yes`; without it, usage is printed and the exit code is 3.
 - Exit code 2 = refused (validation, lock, identity); read stderr.
+- `sg.py audit` checks the whole history; `sg.py audit <from> <to>` only that range (both included). The
+  pre-push hook checks only the commits being pushed (ADR-025).
 - A folder lock by another user blocks changes to everything under it, and new links to it
   (ADR-022). A lock means "someone is working there". Do not work around it. Anyone may
   unlock (`folder.unlock`, `--yes` for another user's lock), but never do that on your own:

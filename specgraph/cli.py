@@ -144,7 +144,17 @@ def cmd_check(store, a):
 def cmd_audit(store, a):
     if not store.root:
         raise StoreError("not inside a git repository")
-    report = A.audit_history(store, a.rev, a.since)
+    if a.push is not None:
+        revs = A.push_revs(store, a.push, sys.stdin.read().splitlines())
+        if revs is None:
+            return 0
+        report = A.audit_history(store, revs=revs)
+    elif a.commits:
+        if len(a.commits) > 2:
+            raise StoreError("audit takes at most two commits: <from> [<to>]")
+        report = A.audit_history(store, revs=A.range_revs(*a.commits))
+    else:
+        report = A.audit_history(store, a.rev, a.since)
     bad = 0
     for e in report:
         if e["findings"]:
@@ -247,7 +257,11 @@ def build_parser():
     add("validate", cmd_validate, "validate the model")
     sp = add("check", cmd_check, "all checks on the working or staged file (used by hooks)")
     sp.add_argument("--staged", action="store_true")
-    sp = add("audit", cmd_audit, "check every commit of the branch history")
+    sp = add("audit", cmd_audit, "check every commit of the branch history, or the commits <from> to <to> "
+             "(both included; <to> defaults to HEAD)")
+    sp.add_argument("commits", nargs="*", metavar="commit", help="<from> [<to>]")
+    sp.add_argument("--push", metavar="REMOTE", help="(used by the pre-push hook) check only the commits "
+                    "being pushed, read from stdin as git gives them")
     sp.add_argument("--rev", default="HEAD")
     sp.add_argument("--since", help="only commits after this revision")
     sp.add_argument("--quiet", action="store_true")
