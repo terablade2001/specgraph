@@ -29,8 +29,11 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21).
 - **Several elements on a diagram.** Ctrl+click adds or removes an element; Shift+drag selects every
   element touching the rectangle. Dragging one moves them all as one change (one undo step); links follow
   while dragging. *Delete* removes all of them from the diagram.
-- **Alignment.** With two or more selected, right-click one for *Align vertical center* (Alt+Shift+2) or
-  *Align horizontal center* (Ctrl+Shift+2). The centres line up with the last selected element.
+- **Alignment.** With two or more selected, right-click one for *Align* ▸ *Horizontal* ▸ *Left / Center /
+  Right* (Ctrl+Shift+1/2/3) or *Align* ▸ *Vertical* ▸ *Top / Center / Bottom* (Alt+Shift+1/2/3). They line
+  up with the last selected element. The same six buttons are in the properties pane.
+- **Overview of the diagram** at the bottom right of the canvas, with a box for the part in view: click to
+  look there, drag the box to move the view. *Overview* in the diagram tools hides it.
 - **Snap to grid**, on by default. *Grid* (size in diagram pixels, default 20) and *Snap* in the diagram
   tools. With snap on, elements land on the grid when they are created, moved or resized; the grid is
   shown as dots in place of the plain background dots.

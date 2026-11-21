@@ -55,8 +55,9 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | DGM-08 | A diagram can be exported as an image (SVG and PNG). |
 | DGM-09 | Several elements of a diagram can be selected: Ctrl+click adds or removes one, Shift+drag selects every element touching the rectangle (ADR-027). |
 | DGM-10 | Dragging one element of a selection moves them all as one change; links follow while dragging, and the bend points of links between selected elements move along. |
-| DGM-11 | The centres of the selected elements can be aligned on the vertical line (Alt+Shift+2) or horizontal line (Ctrl+Shift+2) of the last selected one. |
+| DGM-11 | The selected elements can be aligned with the last selected one, from the Align submenu or the keyboard: horizontally by left edge, centre or right edge (Ctrl+Shift+1/2/3), vertically by top edge, centre or bottom edge (Alt+Shift+1/2/3) (ADR-028). |
 | DGM-12 | Elements can snap to a grid when they are created, moved or resized; the grid size and the switch are in the diagram tools, start at the same default for everyone (20, on) and are kept by the browser. |
+| DGM-13 | An overview of the whole diagram shows which part is in view; a click there moves the view to that point and dragging its box moves the view. It can be hidden (ADR-028). |
 
 ## LNK — links
 

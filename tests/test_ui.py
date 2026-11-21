@@ -122,7 +122,7 @@ def test_editor_end_to_end(sample, page_for):
     assert (after["x"], after["y"]) == (before["x"] + 200, before["y"] + 30)
     assert sample.load()["diagrams"][dg["Numbering"]]["nodes"][by["REQ-002"]] == m["diagrams"][dg["Numbering"]]["nodes"][by["REQ-002"]]
     # REQ-DGM-02: new element placed from the diagram, then linked by dragging
-    pg.mouse.click(cb["x"] + cb["width"] - 330, cb["y"] + cb["height"] - 120, button="right")
+    pg.mouse.click(cb["x"] + cb["width"] - 560, cb["y"] + cb["height"] - 220, button="right")  # clear of the overview
     pg.click("#menu >> text=New RISK here")
     pg.fill(".modal input", "Created from the UI")
     pg.press(".modal input", "Enter")
@@ -370,7 +370,7 @@ def test_use09_10_explorer_double_click_and_find(sample, page_for):
 def test_dgm09_10_select_several_move_and_align(sample, page_for):
     """REQ-DGM-09: Ctrl+click and Shift+drag select several nodes. REQ-DGM-10: a selection moves as one
     (links follow while dragging, bend points between selected nodes move along, one undo step).
-    REQ-DGM-11: align centres to the last selected node, from the menu and the keyboard (ADR-027)."""
+    REQ-DGM-11: align edges or centres to the last selected node, from the menu and the keyboard (ADR-027, ADR-028)."""
     m = sample.load()
     top = {e["topic"]: i for i, e in m["elements"].items()}
     d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
@@ -433,42 +433,50 @@ def test_dgm09_10_select_several_move_and_align(sample, page_for):
     pg.keyboard.up("Shift")
     pg.wait_for_timeout(300)
     assert sorted(chosen()) == sorted([a1, k1])
-    # REQ-DGM-11: align to the last selected node
+    # REQ-DGM-11: align to the last selected node, from the Align submenu, the keyboard and the properties
+    do(sample, "diagram.layout", diagram=d1, element=r1, w=250, h=120)     # sizes differ: left, centre, right differ
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
     click(r1)
     click(k1, ["Control"])
     click(a1, ["Control"])
-    node(r1).click(button="right", position={"x": 20, "y": 30})
-    pg.click("#menu >> text=Align vertical center")
-    pg.wait_for_timeout(400)
-    n = nodes()
-    cx = lambda i: n[i]["x"] + n[i]["w"] / 2
-    cy = lambda i: n[i]["y"] + n[i]["h"] / 2
-    assert cx(r1) == cx(k1) == cx(a1) and n[a1] == after[a1]
-    pg.keyboard.press("Control+Shift+Digit2")
-    pg.wait_for_timeout(400)
-    n = nodes()
-    assert cy(r1) == cy(k1) == cy(a1) and cx(r1) == cx(a1)
-    do(sample, "diagram.layout", diagram=d1, element=r1, x=0, y=0)
-    pg.evaluate("load()")
-    pg.wait_for_timeout(300)
-    pg.keyboard.press("Alt+Shift+Digit2")
-    pg.wait_for_timeout(400)
-    n = nodes()
-    assert cx(r1) == cx(a1)
-    do(sample, "diagram.layout", diagram=d1, element=r1, x=0, y=0)
-    pg.evaluate("load()")
-    pg.wait_for_timeout(300)
-    pg.click("#props >> text=Align horizontal center")
-    pg.wait_for_timeout(400)
-    n = nodes()
-    assert cy(r1) == cy(k1) == cy(a1)
-    do(sample, "diagram.layout", diagram=d1, element=r1, x=0, y=0)
-    pg.evaluate("load()")
-    pg.wait_for_timeout(300)
-    pg.click("#props >> text=Align vertical center")
-    pg.wait_for_timeout(400)
-    n = nodes()
-    assert cx(r1) == cx(k1) == cx(a1)
+    ref = nodes()[a1]
+
+    def scatter():
+        do(sample, "diagram.layout", diagram=d1, element=r1, x=13, y=7)
+        do(sample, "diagram.layout", diagram=d1, element=k1, x=900, y=650)
+        pg.evaluate("load()")
+        pg.wait_for_timeout(300)
+
+    edge = {("x", "start"): lambda n: n["x"], ("x", "center"): lambda n: n["x"] + n["w"] / 2,
+            ("x", "end"): lambda n: n["x"] + n["w"], ("y", "start"): lambda n: n["y"],
+            ("y", "center"): lambda n: n["y"] + n["h"] / 2, ("y", "end"): lambda n: n["y"] + n["h"]}
+
+    def aligned(axis, where):
+        n = nodes()
+        f = edge[(axis, where)]
+        return f(n[r1]) == f(n[k1]) == f(n[a1]) and n[a1] == ref
+
+    for path, axis, where in ((["Align", "Horizontal", "Left"], "x", "start"), (["Align", "Vertical", "Bottom"], "y", "end")):
+        scatter()
+        node(r1).click(button="right", position={"x": 20, "y": 30})
+        for label in path[:-1]:
+            pg.hover("#menu .sub >> text=%s" % label)
+        pg.click("#menu .submenu >> text=%s" % path[-1])
+        pg.wait_for_timeout(400)
+        assert aligned(axis, where), path
+    for key, axis, where in (("Control+Shift+Digit1", "x", "start"), ("Control+Shift+Digit2", "x", "center"),
+                             ("Control+Shift+Digit3", "x", "end"), ("Alt+Shift+Digit1", "y", "start"),
+                             ("Alt+Shift+Digit2", "y", "center"), ("Alt+Shift+Digit3", "y", "end")):
+        scatter()
+        pg.keyboard.press(key)
+        pg.wait_for_timeout(400)
+        assert aligned(axis, where), key
+    for axis, where in (("x", "center"), ("y", "start")):
+        scatter()
+        pg.click('#props button[data-align="%s:%s"]' % (axis, where))
+        pg.wait_for_timeout(400)
+        assert aligned(axis, where), (axis, where)
     assert pg.locator("#props .note").inner_text().startswith("3 elements are selected")
     pg.locator("#canvas").click(position={"x": 5, "y": 5})                # leave the properties pane
     pg.evaluate("(ids) => selectNodes(ids)", [r1, k1, a1])
@@ -557,3 +565,52 @@ def test_elm07_type_change_in_the_editor_shows_the_new_label(sample, page_for):
     pg.evaluate("(i) => openDiagram(Object.keys(S.model.diagrams).find((d) => S.model.diagrams[d].nodes[i]), i)", eid)
     assert want in pg.locator('#canvas [data-kind=node][data-id="%s"]' % eid).first.text_content()
     assert errors == [] and not V.errors(sample.load())
+
+
+
+def test_dgm13_overview_moves_the_view(sample, page_for):
+    """REQ-DGM-13 (ADR-028): a small overview of the whole diagram at the bottom right with a box for the
+    part in view. A click centres the view there; dragging the box moves the view; it can be hidden."""
+    m = sample.load()
+    top = {e["topic"]: i for i, e in m["elements"].items()}
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    k1 = top["Rollback leaves a gap in the sequence"]
+    pg, errors = page_for(sample)
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    pg.evaluate("() => { const v = view(S.active); v.k = 2; v.x = 0; v.y = 0; renderDiagram(); }")   # zoomed in: part in view
+    assert pg.is_visible("#miniWrap")
+    assert pg.locator("#mini [data-mini-node]").count() == len(m["diagrams"][d1]["nodes"])
+    canvas = pg.locator("#canvas").bounding_box()
+    mid = (canvas["x"] + canvas["width"] / 2, canvas["y"] + canvas["height"] / 2)
+
+    def centre(loc):
+        b = loc.bounding_box()
+        return b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
+
+    # a click on k1 in the overview brings k1 to the middle of the canvas
+    pg.mouse.click(*centre(pg.locator('#mini [data-mini-node="%s"]' % k1)))
+    pg.wait_for_timeout(200)
+    x, y = centre(pg.locator('#canvas [data-kind=node][data-id="%s"]' % k1).first)
+    assert abs(x - mid[0]) < 12 and abs(y - mid[1]) < 12
+    # dragging the box moves it and the view with it
+    box = pg.locator("#miniView")
+    b0, v0 = box.bounding_box(), pg.evaluate("Object.assign({}, view(S.active))")
+    bx, by = centre(box)
+    pg.mouse.move(bx, by)
+    pg.mouse.down()
+    pg.mouse.move(bx - 20, by - 10, steps=4)
+    b1, v1 = box.bounding_box(), pg.evaluate("Object.assign({}, view(S.active))")
+    pg.mouse.up()
+    assert abs(b1["x"] - b0["x"] + 20) < 2 and abs(b1["y"] - b0["y"] + 10) < 2
+    assert v1["x"] > v0["x"] and v1["y"] > v0["y"] and v1["k"] == v0["k"]
+    assert sample.load()["diagrams"][d1] == m["diagrams"][d1]               # the view is not model data
+    # it can be hidden, and the browser remembers that
+    pg.uncheck("#miniOn")
+    assert not pg.is_visible("#miniWrap")
+    pg.reload()
+    pg.wait_for_selector("#tree .row")
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    assert not pg.is_visible("#miniWrap") and not pg.is_checked("#miniOn")
+    pg.check("#miniOn")
+    assert pg.is_visible("#miniWrap")
+    assert errors == []

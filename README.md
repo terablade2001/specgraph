@@ -206,10 +206,13 @@ Your browser opens the editor (it only listens on your own machine).
   - **Several elements:** Ctrl+click elements to add or remove them, or hold Shift and drag a rectangle
     (every element it touches is selected). Drag one of them to move them all; links follow. *Delete*
     removes all of them from the diagram.
-  - **Align:** right-click one of the selected elements for *Align vertical center* (Alt+Shift+2: same
-    column) or *Align horizontal center* (Ctrl+Shift+2: same row). The last selected element stays where it
-    is (solid outline; the others are dashed); after a Shift+drag that is the lowest one. If Alt+Shift
-    switches your keyboard language in Windows, use the menu.
+  - **Align:** right-click one of the selected elements, then *Align* ▸ *Horizontal* ▸ *Left / Center / Right*
+    (Ctrl+Shift+1/2/3) or *Align* ▸ *Vertical* ▸ *Top / Center / Bottom* (Alt+Shift+1/2/3). The properties
+    pane has the same six buttons. The last selected element stays where it is (solid outline; the others are
+    dashed); after a Shift+drag that is the lowest one. If Alt+Shift switches your keyboard language in
+    Windows, use the menu.
+  - **Overview:** the small map at the bottom right shows the whole diagram and a box for the part in view.
+    Click anywhere in it to look there, or drag the box. *Overview* in the diagram tools hides it.
   - **Snap to grid:** on by default. *Snap* in the diagram tools switches it, *Grid* sets the size in diagram
     pixels (default 20). New, moved and resized elements land on the grid, which is shown as darker dots
     in place of the plain background. When several move, the

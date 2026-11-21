@@ -138,16 +138,21 @@ function selectNodes(ids) {
   S.multi = ids.slice(); S.sel = ids.length ? { kind: 'element', id: ids[ids.length - 1] } : null;
   renderTree(); renderDiagram(); renderProps();
 }
-/* Put the centres of the selected nodes on the vertical (axis 'x') or horizontal ('y') line through
-   the centre of the last selected node. One change, one undo step. */
-function align(axis) {
+/* Align the selected nodes to the last selected one (ADR-027, ADR-028). axis 'x' is horizontal
+   alignment (left, centre, right edges), 'y' vertical (top, centre, bottom); where is
+   'start', 'center' or 'end'. One change, one undo step; not snapped to the grid. */
+const ALIGN = [['x', 'Horizontal', [['start', 'Left', 'Ctrl+Shift+1'], ['center', 'Center', 'Ctrl+Shift+2'], ['end', 'Right', 'Ctrl+Shift+3']]],
+               ['y', 'Vertical', [['start', 'Top', 'Alt+Shift+1'], ['center', 'Center', 'Alt+Shift+2'], ['end', 'Bottom', 'Alt+Shift+3']]]];
+function align(axis, where) {
   const ids = selNodes(), d = S.active && S.model.diagrams[S.active];
   if (ids.length < 2) return toast('Select two or more elements on the diagram first');
-  const ref = d.nodes[ids[ids.length - 1]], size = axis === 'x' ? 'w' : 'h', c = ref[axis] + ref[size] / 2;
-  const ops = ids.slice(0, -1).map((id) => ({ op: 'diagram.layout', args: { diagram: S.active, element: id, [axis]: Math.round(c - d.nodes[id][size] / 2) } }))
+  const ref = d.nodes[ids[ids.length - 1]], size = axis === 'x' ? 'w' : 'h', f = { start: 0, center: 0.5, end: 1 }[where];
+  const line = ref[axis] + ref[size] * f;
+  const ops = ids.slice(0, -1).map((id) => ({ op: 'diagram.layout', args: { diagram: S.active, element: id, [axis]: Math.round(line - d.nodes[id][size] * f) } }))
     .filter((o) => o.args[axis] !== d.nodes[o.args.element][axis]);
   if (ops.length) post(ops);
 }
+const alignMenu = () => ['Align', ALIGN.map(([axis, label, wheres]) => [label, wheres.map(([w, l, key]) => [l + ' (' + key + ')', () => align(axis, w)])])];
 function chip(stKey) {
   const st = stOf(stKey);
   return h('span', { class: 'chip', style: 'background:' + st.fill + ';border-color:' + st.border + ';color:' + st.border },
@@ -381,7 +386,7 @@ function renderProps() {
       h('p', { class: 'mute' }, 'Right-click folders, elements and the diagram background for actions. Drag elements from the tree onto a diagram. ' +
         'Drag items in the tree to move or reorder them. Double-click a folder to open or close it (Ctrl: with all sub-folders, Alt: close all). Drag the lines between the panes to resize them. ' +
         'Drag from the blue dot of a selected element to another element to link them. ' +
-        'Ctrl+click elements, or Shift+drag a rectangle, to select several; drag one of them to move them all; right-click one to align them.'));
+        'Ctrl+click elements, or Shift+drag a rectangle, to select several; drag one of them to move them all; right-click one of them for Align (left, center, right; top, center, bottom).'));
     return;
   }
   if (sel.kind === 'element') propsElement(p, sel.id);
@@ -400,7 +405,8 @@ function propsElement(p, id) {
   put(p, h('h3', {}, chip(el.stereotype), 'Element'), idLine(id));
   const many = selNodes().length;
   if (many > 1) put(p, h('div', { class: 'note' }, many + ' elements are selected on the diagram; this one, the last selected, is the reference for alignment.',
-    h('div', { class: 'btns' }, h('button', { onclick: () => align('x') }, 'Align vertical center'), h('button', { onclick: () => align('y') }, 'Align horizontal center'))));
+    ALIGN.map(([axis, label, wheres]) => h('div', { class: 'btns' }, h('span', { class: 'mute' }, label + ':'),
+      wheres.map(([w, l, key]) => h('button', { 'data-align': axis + ':' + w, title: key, onclick: () => align(axis, w) }, l))))));
   const dis = lockNote(p, el.folder);
   put(p, 
     field('Label', textIn(el.label, (v) => up({ label: v }), { disabled: dis })),
@@ -513,11 +519,13 @@ function renderTabs() {
   put(t, 'New links are:', selectIn(Object.keys(lts).filter((k) => !lts[k].retired).map((k) => [k, lts[k].label]), S.linkType, (v) => { S.linkType = v; }),
     h('button', { onclick: fit }, 'Fit'), h('button', { onclick: () => exportDiagram('svg') }, 'Export SVG'),
     h('button', { onclick: () => exportDiagram('png') }, 'Export PNG'),
-    h('label', { title: 'Grid size in diagram pixels (at 100% zoom)' }, 'Grid',
+    h('label', { title: 'Grid size in diagram pixels (at 100% zoom)' }, 'Grid ',
       h('input', { id: 'gridSize', type: 'number', min: 2, max: 200, step: 1, value: String(gridNow().size), style: 'width:4.5em',
         onchange: (e) => { const v = parseInt(e.target.value, 10); if (v >= 2 && v <= 200) setGrid({ size: v }); else e.target.value = String(gridNow().size); } })),
     h('label', { title: 'Place, move and resize elements on the grid' },
       h('input', { id: 'gridSnap', type: 'checkbox', checked: gridNow().snap, onchange: (e) => setGrid({ snap: e.target.checked }) }), 'Snap'),
+    h('label', { title: 'Small overview of the whole diagram at the bottom right' },
+      h('input', { id: 'miniOn', type: 'checkbox', checked: miniOn(), onchange: (e) => setMiniOn(e.target.checked) }), 'Overview'),
     lockOf(S.model.diagrams[S.active].folder) ? h('span', { class: 'lk', style: 'color:#b91c1c' }, '🔒 diagram locked by ' + lockOf(S.model.diagrams[S.active].folder).owner) : null);
 }
 
@@ -638,7 +646,7 @@ function renderDiagram() {
   const svg = clear($('canvas')), d = S.active && S.model.diagrams[S.active];
   $('empty').textContent = !d ? 'Double-click a diagram in the tree to open it, or right-click a folder → New diagram.'
     : Object.keys(d.nodes).length ? '' : 'Empty diagram. Drag elements here from the tree, or right-click here to create one.';
-  if (!d) return;
+  if (!d) return renderMini();
   const v = view(S.active);
   renderDiagram.chosen = selNodes();
   const gr = gridNow();
@@ -655,6 +663,63 @@ function renderDiagram() {
   if (S.drag && S.drag.type === 'region' && S.drag.to) { const r = regionRect(S.drag);
     put(vp, sv('rect', { x: r[0], y: r[1], width: r[2] - r[0], height: r[3] - r[1], fill: 'rgba(29,78,216,.08)', stroke: '#1d4ed8', 'stroke-dasharray': '4 3', 'pointer-events': 'none' })); }
   put(svg, vp);
+  renderMini();
+}
+
+// ---- diagrams: overview (ADR-028) ---------------------------------------------
+const MINI = { w: 200, h: 140, pad: 6 };
+function miniOn() { try { return localStorage.getItem('sgmini') !== '0'; } catch (e) { return S.miniOff !== true; } }
+function setMiniOn(on) { try { localStorage.setItem('sgmini', on ? '1' : '0'); } catch (e) { S.miniOff = !on; } renderMini(); }
+/* The part of the diagram in view, in diagram coordinates: [x, y, w, h]. */
+function viewRect() {
+  const r = $('canvas').getBoundingClientRect(), v = view(S.active);
+  return [-v.x / v.k, -v.y / v.k, r.width / v.k, r.height / v.k];
+}
+/* Scale and offset from diagram coordinates to the overview: the whole diagram and the view fit in. */
+function miniMap(d) {
+  const vr = viewRect();
+  let x1 = vr[0], y1 = vr[1], x2 = vr[0] + vr[2], y2 = vr[1] + vr[3];
+  if (Object.keys(d.nodes).length) { const b = bounds(d); x1 = Math.min(x1, b.x); y1 = Math.min(y1, b.y); x2 = Math.max(x2, b.x + b.w); y2 = Math.max(y2, b.y + b.h); }
+  const W = MINI.w - 2 * MINI.pad, Hh = MINI.h - 2 * MINI.pad, s = Math.min(W / ((x2 - x1) || 1), Hh / ((y2 - y1) || 1));
+  return { s, ox: MINI.pad + (W - (x2 - x1) * s) / 2 - x1 * s, oy: MINI.pad + (Hh - (y2 - y1) * s) / 2 - y1 * s };
+}
+function renderMini() {
+  const wrap = $('miniWrap'), d = S.active && S.model && S.model.diagrams[S.active];
+  wrap.hidden = !d || !miniOn();
+  if (wrap.hidden) return;
+  const svg = clear($('mini')), mp = (S.miniDrag && S.miniDrag.map) || miniMap(d), vr = viewRect();
+  const X = (x) => x * mp.s + mp.ox, Y = (y) => y * mp.s + mp.oy;
+  visibleLinks(d).forEach((lid) => { const l = S.model.links[lid], a = centerOf(d.nodes[l.source]), b = centerOf(d.nodes[l.target]);
+    put(svg, sv('line', { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), stroke: '#9ca3af', 'stroke-width': 1 })); });
+  Object.keys(d.nodes).forEach((eid) => { const n = d.nodes[eid], el = S.model.elements[eid];
+    if (!el) return;
+    const st = stOf(el.stereotype);
+    put(svg, sv('rect', { 'data-mini-node': eid, x: X(n.x), y: Y(n.y), width: Math.max(2, n.w * mp.s), height: Math.max(2, n.h * mp.s),
+      fill: st.fill, stroke: st.border, 'stroke-width': 0.75 })); });
+  put(svg, sv('rect', { id: 'miniView', x: X(vr[0]), y: Y(vr[1]), width: vr[2] * mp.s, height: vr[3] * mp.s,
+    fill: 'rgba(29,78,216,.10)', stroke: '#1d4ed8', 'stroke-width': 1.5, style: 'cursor:move' }));
+}
+/* A click centres the view on that point; pressing on the box keeps the grip; then dragging moves the view.
+   The scale is kept while dragging, so the box follows the pointer. */
+function bindMini() {
+  const svg = $('mini');
+  const at = (e, mp) => { const r = svg.getBoundingClientRect(); return [(e.clientX - r.left - mp.ox) / mp.s, (e.clientY - r.top - mp.oy) / mp.s]; };
+  const go = (pt) => { const v = view(S.active), g = S.miniDrag; v.x = -(pt[0] - g.off[0]) * v.k; v.y = -(pt[1] - g.off[1]) * v.k; renderDiagram(); };
+  svg.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || !S.active) return;
+    e.preventDefault(); hideMenu();
+    const mp = miniMap(S.model.diagrams[S.active]), pt = at(e, mp), vr = viewRect();
+    const inside = pt[0] >= vr[0] && pt[0] <= vr[0] + vr[2] && pt[1] >= vr[1] && pt[1] <= vr[1] + vr[3];
+    S.miniDrag = { map: mp, off: inside ? [pt[0] - vr[0], pt[1] - vr[1]] : [vr[2] / 2, vr[3] / 2] };
+    svg.setPointerCapture(e.pointerId);
+    go(pt);
+  });
+  svg.addEventListener('pointermove', (e) => { if (S.miniDrag && S.active) go(at(e, S.miniDrag.map)); });
+  const end = () => { if (S.miniDrag) { S.miniDrag = null; renderMini(); } };
+  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointercancel', end);
+  $('miniWrap').addEventListener('contextmenu', (e) => e.preventDefault());
+  $('miniWrap').addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 }
 
 // ---- diagrams: interaction ------------------------------------------------
@@ -808,7 +873,7 @@ function bindCanvas() {
     if (t.kind === 'node' || t.kind === 'resize' || t.kind === 'connect') {
       const cur = selNodes();
       if (cur.length > 1 && cur.includes(t.id)) return menu(e, [
-        ['Align vertical center (Alt+Shift+2)', () => align('x')], ['Align horizontal center (Ctrl+Shift+2)', () => align('y')], null,
+        alignMenu(), null,
         ['Remove ' + cur.length + ' elements from this diagram', () => post(cur.map((id) => ({ op: 'diagram.remove', args: { diagram: S.active, element: id } })))]]);
       select('element', t.id);
       menu(e, [['Find in explorer', () => findInExplorer('element', t.id)], ['Find in all diagrams', () => findInDiagrams(t.id)], ['Trace', () => showPanel({ kind: 'trace', id: t.id })], ['History', () => showPanel({ kind: 'history', id: t.id })], null,
@@ -837,7 +902,8 @@ function bindCanvas() {
     if (e.key === 'Escape') { hideMenu(); if (!$('overlay').hidden) closeModal(); return; }
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) || !$('overlay').hidden) return;
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z') { e.preventDefault(); return undo(); }
-    if (e.code === 'Digit2' && e.shiftKey && (e.altKey !== (e.ctrlKey || e.metaKey))) { e.preventDefault(); return align(e.altKey ? 'x' : 'y'); }
+    const num = { Digit1: 'start', Digit2: 'center', Digit3: 'end' }[e.code];
+    if (num && e.shiftKey && (e.altKey !== (e.ctrlKey || e.metaKey))) { e.preventDefault(); return align(e.altKey ? 'y' : 'x', num); }
     if (e.key === 'Delete' && selNodes().length)
       post(selNodes().map((id) => ({ op: 'diagram.remove', args: { diagram: S.active, element: id } })));
   });
@@ -932,8 +998,12 @@ async function adopt() {
 function menu(e, items) {
   e.preventDefault();
   const m = clear($('menu'));
-  items.forEach((it) => put(m, it ? h('div', { onclick: () => { hideMenu(); it[1](); } }, it[0]) : h('hr')));
+  const entry = (it) => !it ? h('hr') : Array.isArray(it[1])
+    ? h('div', { class: 'sub' }, h('span', {}, it[0]), h('span', { class: 'arr' }, '▸'), h('div', { class: 'submenu' }, it[1].map(entry)))
+    : h('div', { onclick: (e) => { e.stopPropagation(); hideMenu(); it[1](); } }, it[0]);
+  items.forEach((it) => put(m, entry(it)));
   m.hidden = false;
+  m.classList.toggle('flip', Math.min(e.clientX, innerWidth - 200) + 560 > innerWidth);   // submenus open to the left
   m.style.left = Math.min(e.clientX, innerWidth - 200) + 'px';
   m.style.top = Math.min(e.clientY, innerHeight - m.offsetHeight - 8) + 'px';
 }
@@ -1145,7 +1215,7 @@ function boot() {
     S.token = sessionStorage.getItem('sgtoken');
   } catch (e) { S.token = m && m[1]; }
   if (!S.token) { put($('banner'), h('div', { class: 'err' }, 'Open the tool with the link printed by "serve" (it carries a one-time access token).')); return; }
-  bindCanvas(); bindSplitters();
+  bindCanvas(); bindMini(); bindSplitters();
   load().then(() => { if (S.model) { Object.keys(S.model.folders).forEach((f) => { if (S.model.folders[f].parent == null) S.expanded.add(f); }); renderTree(); } });
   setInterval(poll, 3000);
 }

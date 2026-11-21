@@ -341,8 +341,19 @@ lost on a type change; type the label again if it is still wanted.
 Ctrl+click adds or removes a node of a diagram from the selection; Shift+drag on the empty canvas selects every node
 touching the rectangle. A selection moves as one: its nodes and the bend points of links between them move
 together, links to other nodes follow while dragging, and the result is one `diagram.layout` batch (one undo
-step). Alignment puts the centres of the selected nodes on the vertical line (same x) or horizontal line (same y)
-of the last selected node. The grid size and the snap switch are view state kept in the browser (like the pane
+step). Alignment lines the selected nodes up with the last selected node (the set of alignments is in ADR-028). The grid size and the snap switch are view state kept in the browser (like the pane
 sizes, ADR-024); nothing is stored in the model. Everyone starts with the same default: a 20-pixel grid, snap on. Snapping puts the top-left corner of a node on the grid when it is created or moved (in a group move: the dragged
 node; the others keep their distance to it) and the lower-right corner when it is resized. Alignment is not snapped:
-the centres must line up exactly. While snapping is on, the grid is shown as dots in place of the plain background dots; it is not exported.
+the edges or centres must line up exactly. While snapping is on, the grid is shown as dots in place of the plain background dots; it is not exported.
+
+## ADR-028 — Editor: an overview of the diagram and six alignments in a submenu  · stakes: low
+Owner request (2026-11-21). **Overview:** a small map of the whole open diagram at the bottom right of the canvas,
+with a box for the part in view. A click there centres the view on that point; dragging the box moves the view. It
+scales to fit the diagram and the view together, keeps that scale while dragging, draws nodes in their type colours
+and links as straight lines, and is not exported. An *Overview* switch in the diagram tools hides it; the browser
+keeps that choice (view state, like the grid). It covers a corner of the canvas: pan or hide it to reach what is
+under it. **Alignment** replaces the two centre alignments of ADR-027 with six, in a submenu Align ▸ Horizontal
+(left, center, right: Ctrl+Shift+1/2/3, same x of an edge or the centre) and Align ▸ Vertical (top, center, bottom:
+Alt+Shift+1/2/3, same y). This swaps the meaning of the earlier names: *vertical center* (Alt+Shift+2) now lines
+centres up in one row, *horizontal center* (Ctrl+Shift+2) in one column. The menu helper gains submenus
+(`[label, [items]]`), opened on hover and to the left near the right edge of the window.
