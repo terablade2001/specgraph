@@ -3,6 +3,32 @@
 Changes of the tool that a user or an agent can notice, newest first. The version is `VERSION` in
 `specgraph/__init__.py` (`python sg.py --version`). Design reasons are in `docs/ADRS.md`.
 
+## 0.3.0 — not released yet
+
+Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21).
+
+### Added
+
+- **Find in explorer.** Right-click an element on a diagram, or use the button in the properties of an
+  element, diagram or folder: the folders above it open, it is selected and the explorer scrolls to it.
+- **Double-click in the explorer on a folder** opens or closes it. Ctrl+double-click opens it with all
+  sub-folders; Alt+double-click closes it with all sub-folders.
+
+- **Several elements on a diagram.** Ctrl+click adds or removes an element; Shift+drag selects every
+  element touching the rectangle. Dragging one moves them all as one change (one undo step); links follow
+  while dragging. *Delete* removes all of them from the diagram.
+- **Alignment.** With two or more selected, right-click one for *Align vertical center* (Alt+Shift+2) or
+  *Align horizontal center* (Ctrl+Shift+2). The centres line up with the last selected element.
+- **Snap to grid**, on by default. *Grid* (size in diagram pixels, default 20) and *Snap* in the diagram
+  tools. With snap on, elements land on the grid when they are created, moved or resized; the grid is
+  shown as dots in place of the plain background dots.
+  The browser remembers the settings; they are not part of the model.
+
+### Fixed
+
+- Double-clicking a diagram in the explorer opens it again. The first click re-drew the tree, so the
+  browser never reported the double-click.
+
 ## 0.2.0 — 2026-11-16
 
 Design: ADR-024 (approved by the owner).

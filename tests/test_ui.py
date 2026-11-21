@@ -302,3 +302,240 @@ def test_tree_order_collapse_and_pane_sizes(sample, page_for):
     pg.dblclick("#splitL")
     assert size("#tree", "width") == 270
     assert errors == [] and not V.errors(sample.load())
+
+
+def test_use09_10_explorer_double_click_and_find(sample, page_for):
+    """REQ-USE-09: double-click in the explorer opens a diagram and opens/closes a folder (Ctrl: with all
+    sub-folders, Alt: closes all). REQ-USE-10: Find in explorer opens the folders and shows the item."""
+    pg, errors = page_for(sample)
+    m, by, dg = ids(sample)
+    folder = {f["name"].split()[0]: i for i, f in m["folders"].items()}
+    row = lambda kind, id_: pg.locator('#tree .row[data-kind=%s][data-id="%s"]' % (kind, id_))
+    arrow = lambda fid: row("folder", fid).locator(".tw").inner_text()
+
+    def twice(loc, mods=None):
+        # two separate clicks as a person makes them; the first one re-draws the tree
+        loc.click(modifiers=mods or [])
+        pg.wait_for_timeout(120)
+        loc.click(modifiers=mods or [])
+        pg.wait_for_timeout(200)
+
+    twice(row("diagram", dg["Risks"]).locator(".t"))
+    assert pg.evaluate("S.active") == dg["Risks"]
+    inv, num = folder["Invoicing"], folder["Numbering"]
+    pg.evaluate("setExpanded(null, false)")
+    twice(row("folder", inv).locator(".t"))
+    assert arrow(inv) == "▾" and arrow(num) == "▸"
+    twice(row("folder", inv).locator(".t"))
+    assert arrow(inv) == "▸"
+    twice(row("folder", inv).locator(".t"), ["Control"])
+    assert arrow(inv) == "▾" and arrow(num) == "▾"
+    twice(row("folder", inv).locator(".t"), ["Alt"])
+    assert arrow(inv) == "▸"
+    pg.evaluate("(a) => { S.expanded.add(a); renderTree(); }", inv)
+    assert arrow(num) == "▸"                                           # Alt closed the sub-folders too
+
+    # REQ-USE-10: from the diagram, with a short explorer that must scroll
+    pg.set_viewport_size({"width": 1500, "height": 420})
+    pg.evaluate("setExpanded(null, true)")
+    eid = sorted(m["diagrams"][dg["Risks"]]["nodes"], key=lambda i: m["elements"][i]["folder"] != num)[0]
+    pg.evaluate("setExpanded(null, false)")
+    pg.evaluate("(d) => openDiagram(d)", dg["Risks"])
+    pg.locator('#canvas [data-kind=node][data-id="%s"]' % eid).first.click(button="right")
+    pg.click("#menu >> text=Find in explorer")
+    pg.wait_for_timeout(300)
+
+    def shown_in_tree(kind, id_):
+        return pg.evaluate("""([k, i]) => { const r = document.querySelector('#tree .row[data-kind=' + k + '][data-id="' + i + '"]');
+            if (!r) return false; const a = r.getBoundingClientRect(), t = document.getElementById('tree').getBoundingClientRect();
+            return r.classList.contains('sel') && a.top >= t.top && a.bottom <= t.bottom; }""", [kind, id_])
+    assert shown_in_tree("element", eid)
+    # from the properties pane, for an element and for a diagram
+    other = [i for i in m["elements"] if m["elements"][i]["folder"] != m["elements"][eid]["folder"]][0]
+    pg.evaluate("setExpanded(null, false)")
+    pg.evaluate("(i) => select('element', i)", other)
+    pg.click("#props >> text=Find in explorer")
+    assert shown_in_tree("element", other)
+    pg.evaluate("setExpanded(null, false)")
+    pg.evaluate("(i) => select('diagram', i)", dg["Risks"])
+    pg.click("#props >> text=Find in explorer")
+    assert shown_in_tree("diagram", dg["Risks"])
+    pg.evaluate("setExpanded(null, false)")
+    pg.evaluate("(i) => select('folder', i)", num)
+    pg.click("#props >> text=Find in explorer")
+    assert shown_in_tree("folder", num)
+    assert errors == []
+
+
+def test_dgm09_10_select_several_move_and_align(sample, page_for):
+    """REQ-DGM-09: Ctrl+click and Shift+drag select several nodes. REQ-DGM-10: a selection moves as one
+    (links follow while dragging, bend points between selected nodes move along, one undo step).
+    REQ-DGM-11: align centres to the last selected node, from the menu and the keyboard (ADR-027)."""
+    m = sample.load()
+    top = {e["topic"]: i for i, e in m["elements"].items()}
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    r1, r2 = top["Every invoice gets a unique number"], top["Numbering has no gaps"]
+    a1 = top["Allocate numbers from a database sequence table"]
+    k1 = top["Rollback leaves a gap in the sequence"]
+    dep = [i for i, l in m["links"].items() if (l["source"], l["target"]) == (r2, r1)][0]
+    imp = [i for i, l in m["links"].items() if (l["source"], l["target"]) == (a1, r1)][0]
+    do(sample, "diagram.link", diagram=d1, link=dep, routing="custom", points=[[400, 150]])
+    sample.undo_steps = 20                                             # as `serve` sets it
+    pg, errors = page_for(sample)
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    node = lambda i: pg.locator('#canvas [data-kind=node][data-id="%s"]' % i).first
+    nodes = lambda: sample.load()["diagrams"][d1]["nodes"]
+    chosen = lambda: pg.evaluate("selNodes()")
+
+    def centre(i):
+        b = node(i).bounding_box()
+        return b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
+
+    def click(i, mods=None):
+        pg.mouse.move(*centre(i))
+        node(i).click(position={"x": 20, "y": 30}, modifiers=mods or [])
+        pg.wait_for_timeout(450)                                      # not a double-click
+
+    # REQ-DGM-09: Ctrl+click adds and removes
+    click(r1)
+    click(r2, ["Control"])
+    click(a1, ["Control"])
+    assert chosen() == [r1, r2, a1]
+    click(a1, ["Control"])
+    assert chosen() == [r1, r2]
+    # REQ-DGM-10: drag one of them, the other follows; the link to a node outside follows while dragging
+    before, path0 = nodes(), pg.locator('#canvas [data-kind=link][data-id="%s"] path' % imp).first.get_attribute("d")
+    steps0 = pg.evaluate("S.undo.steps")
+    x, y = centre(r1)
+    pg.mouse.move(x, y)
+    pg.mouse.down()
+    pg.mouse.move(x + 60, y + 40, steps=5)
+    assert pg.locator('#canvas [data-kind=link][data-id="%s"] path' % imp).first.get_attribute("d") != path0
+    pg.mouse.up()
+    pg.wait_for_timeout(500)
+    after = nodes()
+    dx, dy = after[r1]["x"] - before[r1]["x"], after[r1]["y"] - before[r1]["y"]
+    assert dx > 0 and dy > 0
+    assert (after[r2]["x"] - before[r2]["x"], after[r2]["y"] - before[r2]["y"]) == (dx, dy)
+    assert after[a1] == before[a1] and after[k1] == before[k1]
+    assert sample.load()["diagrams"][d1]["links"][dep]["points"] == [[400 + dx, 150 + dy]]
+    assert pg.evaluate("S.undo.steps") == steps0 + 1 and chosen() == [r1, r2]
+    # a click without moving on one of them selects only that one
+    click(r2)
+    assert chosen() == [r2]
+    # Shift+drag over empty canvas: every node touching the rectangle
+    a, k = node(a1).bounding_box(), node(k1).bounding_box()
+    pg.keyboard.down("Shift")
+    pg.mouse.move(a["x"] + 20, a["y"] + a["height"] + 30)
+    pg.mouse.down()
+    pg.mouse.move(k["x"] + 10, k["y"] + 10, steps=5)
+    pg.mouse.up()
+    pg.keyboard.up("Shift")
+    pg.wait_for_timeout(300)
+    assert sorted(chosen()) == sorted([a1, k1])
+    # REQ-DGM-11: align to the last selected node
+    click(r1)
+    click(k1, ["Control"])
+    click(a1, ["Control"])
+    node(r1).click(button="right", position={"x": 20, "y": 30})
+    pg.click("#menu >> text=Align vertical center")
+    pg.wait_for_timeout(400)
+    n = nodes()
+    cx = lambda i: n[i]["x"] + n[i]["w"] / 2
+    cy = lambda i: n[i]["y"] + n[i]["h"] / 2
+    assert cx(r1) == cx(k1) == cx(a1) and n[a1] == after[a1]
+    pg.keyboard.press("Control+Shift+Digit2")
+    pg.wait_for_timeout(400)
+    n = nodes()
+    assert cy(r1) == cy(k1) == cy(a1) and cx(r1) == cx(a1)
+    do(sample, "diagram.layout", diagram=d1, element=r1, x=0, y=0)
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
+    pg.keyboard.press("Alt+Shift+Digit2")
+    pg.wait_for_timeout(400)
+    n = nodes()
+    assert cx(r1) == cx(a1)
+    do(sample, "diagram.layout", diagram=d1, element=r1, x=0, y=0)
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
+    pg.click("#props >> text=Align horizontal center")
+    pg.wait_for_timeout(400)
+    n = nodes()
+    assert cy(r1) == cy(k1) == cy(a1)
+    do(sample, "diagram.layout", diagram=d1, element=r1, x=0, y=0)
+    pg.evaluate("load()")
+    pg.wait_for_timeout(300)
+    pg.click("#props >> text=Align vertical center")
+    pg.wait_for_timeout(400)
+    n = nodes()
+    assert cx(r1) == cx(k1) == cx(a1)
+    assert pg.locator("#props .note").inner_text().startswith("3 elements are selected")
+    pg.locator("#canvas").click(position={"x": 5, "y": 5})                # leave the properties pane
+    pg.evaluate("(ids) => selectNodes(ids)", [r1, k1, a1])
+    pg.keyboard.press("Delete")
+    pg.wait_for_timeout(400)
+    assert set(nodes()) == set(before) - {r1, k1, a1}
+    assert set(sample.load()["elements"]) == set(m["elements"])          # still in the model
+    assert errors == [] and not V.errors(sample.load())
+
+
+def test_dgm12_snap_to_grid(sample, page_for):
+    """REQ-DGM-12 (ADR-027): a grid size and a snap switch in the diagram tools, the same default for
+    everyone (20, on), kept by the browser; the snap grid replaces the plain background dots. With snap on, created, moved and resized nodes land on the grid."""
+    m = sample.load()
+    top = {e["topic"]: i for i, e in m["elements"].items()}
+    d1 = [i for i, d in m["diagrams"].items() if d["name"] == "Numbering overview"][0]
+    r1, r2 = top["Every invoice gets a unique number"], top["Numbering has no gaps"]
+    r3 = top["Corrections are made by credit note"]
+    pg, errors = page_for(sample)
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    node = lambda i: pg.locator('#canvas [data-kind=node][data-id="%s"]' % i).first
+    nodes = lambda: sample.load()["diagrams"][d1]["nodes"]
+    plain_dots = lambda: pg.evaluate("getComputedStyle(document.getElementById('canvas')).backgroundImage") != "none"
+    assert pg.input_value("#gridSize") == "20" and pg.is_checked("#gridSnap")
+    assert pg.locator("#canvas #grid").count() == 1 and not plain_dots()  # the snap grid replaces the plain dots
+    pg.uncheck("#gridSnap")
+    assert pg.locator("#canvas #grid").count() == 0 and plain_dots()
+    pg.fill("#gridSize", "25")
+    pg.press("#gridSize", "Enter")
+    pg.check("#gridSnap")
+    assert pg.locator("#canvas #grid").count() == 1 and not plain_dots()
+    on = lambda v: v % 25 == 0
+
+    def drag(loc, dx, dy, at=None):
+        b = loc.bounding_box()
+        x, y = (b["x"] + at[0], b["y"] + at[1]) if at else (b["x"] + 20, b["y"] + 30)
+        pg.mouse.move(x, y)
+        pg.mouse.down()
+        pg.mouse.move(x + dx, y + dy, steps=5)
+        pg.mouse.up()
+        pg.wait_for_timeout(500)
+
+    # move: one node, then a selection keeps its spacing and the dragged one lands on the grid
+    drag(node(r1), 37, 23)
+    n = nodes()
+    assert on(n[r1]["x"]) and on(n[r1]["y"])
+    gap = (n[r2]["x"] - n[r1]["x"], n[r2]["y"] - n[r1]["y"])
+    pg.evaluate("(ids) => selectNodes(ids)", [r2, r1])
+    drag(node(r1), 61, 12)
+    n = nodes()
+    assert on(n[r1]["x"]) and on(n[r1]["y"]) and (n[r2]["x"] - n[r1]["x"], n[r2]["y"] - n[r1]["y"]) == gap
+    # resize: the lower right corner lands on the grid
+    pg.evaluate("(i) => select('element', i)", r1)
+    drag(pg.locator('#canvas [data-kind=resize][data-id="%s"]' % r1), 33, 19, at=(5, 5))
+    n = nodes()
+    assert on(n[r1]["x"] + n[r1]["w"]) and on(n[r1]["y"] + n[r1]["h"])
+    # create: dropped from the tree
+    pg.locator('#tree .row[data-kind=element][data-id="%s"]' % r3).drag_to(pg.locator("#canvas"), target_position={"x": 333, "y": 211})
+    pg.wait_for_timeout(500)
+    n = nodes()
+    assert r3 in n and on(n[r3]["x"]) and on(n[r3]["y"])
+    # kept by the browser; with snap off nothing is rounded
+    pg.reload()
+    pg.wait_for_selector("#tree .row")
+    pg.evaluate("(d) => openDiagram(d)", d1)
+    assert pg.input_value("#gridSize") == "25" and pg.is_checked("#gridSnap")
+    pg.uncheck("#gridSnap")
+    drag(node(r2), 7, 3)
+    assert not (on(nodes()[r2]["x"]) and on(nodes()[r2]["y"]))
+    assert errors == [] and not V.errors(sample.load())

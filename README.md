@@ -11,7 +11,7 @@ through a command.
 - No third-party code is bundled. Test-only extras: `pytest`, and optionally `playwright`.
 - MIT licensed.
 
-**Status: version 0.2.0, an early release.** It works for the author's own use, and the file format
+**Status: version 0.3.0, an early release.** It works for the author's own use, and the file format
 and commands may still change. It has been run on Windows (Git Bash) with Python 3.13 only; Linux,
 macOS and older Python versions are expected to work but have not been checked. The signing and
 integrity checks have not been reviewed by anyone independent: read ADR-003 in `docs/ADRS.md` for
@@ -188,7 +188,11 @@ survives restarts of the terminal. This path is not covered by the tests.
 Your browser opens the editor (it only listens on your own machine).
 
 - **Left:** folder tree. Right-click a folder for *New REQ / ADR / …*, *New diagram*, *Lock*.
-  Drag items between folders. Double-click a diagram to open it.
+  Drag items between folders. Double-click a diagram to open it, or a folder to open or close it
+  (Ctrl+double-click: with all sub-folders, Alt+double-click: close them all).
+  - **Find in explorer:** in the right-click menu of an element on a diagram, and as a button in the
+    properties of an element, diagram or folder. It opens the folders above the item, selects it and
+    scrolls the explorer to it.
   - **Order:** drag an item onto the upper or lower edge of another item of the same kind (folder, diagram,
     element) to put it before or after it; a line shows where it lands. The middle of a folder moves it into
     that folder. The order is saved in the model. New items go to the end of their group.
@@ -199,6 +203,18 @@ Your browser opens the editor (it only listens on your own machine).
 - **Middle:** diagrams. Drag elements in from the tree, or right-click the background to create one there.
   Drag to move, corner handle to resize, blue dot to draw a link to another element.
   Double-click a link to add a bend (user-defined routing). *Delete* key removes from the diagram only.
+  - **Several elements:** Ctrl+click elements to add or remove them, or hold Shift and drag a rectangle
+    (every element it touches is selected). Drag one of them to move them all; links follow. *Delete*
+    removes all of them from the diagram.
+  - **Align:** right-click one of the selected elements for *Align vertical center* (Alt+Shift+2: same
+    column) or *Align horizontal center* (Ctrl+Shift+2: same row). The last selected element stays where it
+    is (solid outline; the others are dashed); after a Shift+drag that is the lowest one. If Alt+Shift
+    switches your keyboard language in Windows, use the menu.
+  - **Snap to grid:** on by default. *Snap* in the diagram tools switches it, *Grid* sets the size in diagram
+    pixels (default 20). New, moved and resized elements land on the grid, which is shown as darker dots
+    in place of the plain background. When several move, the
+    one you drag lands on the grid and the others keep their distance. Alignment is not snapped. The
+    browser remembers both settings; they are not part of the model.
 - **Undo**: the *Undo* button or Ctrl+Z takes back your last changes in this editor session
   (20 steps; `serve --undo N` or `SPECGRAPH_UNDO=N` to change, 0 = off). The list is emptied when
   the editor stops or the file is changed by something else (a command, `git pull`).

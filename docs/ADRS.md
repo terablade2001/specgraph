@@ -99,7 +99,7 @@ normally: they were legitimate when made.
 history. Deleting an element is refused if that would alter a locked diagram or a link owned by a
 locked element.
 
-## ADR-006 — Local checks: git hooks plus an after-the-fact audit  · stakes: medium
+## ADR-006 — Local checks: git hooks plus an after-the-fact audit  · stakes: medium · amended by ADR-025
 **Context.** REQ-CHK-01..03.
 **Decision.** `install-hooks` writes `pre-commit` (`check --staged`) and `pre-push` (`audit`), and
 never overwrites a foreign hook without `--force`. `audit` replays the same checks for every commit
@@ -266,7 +266,7 @@ others once they have pulled it, so lock, then commit and push. There is no expi
 is a deliberate act. Replaces REQ-LCK-04 as written (linking to locked content) and the "owner or
 administrator" part of REQ-LCK-02.
 
-## ADR-023 — Generated labels are the type prefix plus the first 8 id characters  · stakes: medium
+## ADR-023 — Generated labels are the type prefix plus the first 8 id characters  · stakes: medium · amended by ADR-026
 **Context.** Owner decision (2026-11-15): sequential labels (`REQ-014`, highest number plus one) clash when two
 branches create elements in parallel, and a number is reused after a delete, so an old reference in a document can
 point at something else. A short form of the id works like a short git hash. Four characters were rejected as too
@@ -307,3 +307,42 @@ version stays 2 and version 0.1 still reads the file (it ignores the order and s
 `settings.branch`). The first reorder in a folder numbers all items of that kind there, which touches several
 lines of the file. An order chosen on the other branch can be lost in a merge; drag again. Items of different
 kinds cannot be mixed in the tree.
+
+## ADR-025 — The pre-push hook checks only the commits being pushed  · stakes: medium · **approved by the owner 2026-11-21**
+**Context.** Owner request (2026-11-21), version 0.3.0. The pre-push hook of ADR-006 audits the whole history on
+every push. One old finding then blocks every later push, and the user is pushed towards `--no-verify`, which
+skips the check for the new commits too.
+**Decision.**
+1. The pre-push hook reads the refs git hands it on stdin and audits only the commits that the remote does not have
+   yet: for each pushed ref, `<local sha> --not <remote sha> --remotes=<remote>`. A deleted ref is skipped. A new
+   branch is checked from where it leaves what the remote already has. Findings in these commits block the push,
+   as before.
+2. `sg.py audit` run by hand still checks the whole history of `HEAD` and reports every finding. A new form
+   `sg.py audit <from> <to>` checks only the commits from `<from>` to `<to>`, both included. `--rev` and `--since`
+   stay for scripts.
+3. Hooks installed by an older version keep auditing the whole history until `sg.py install-hooks` is run again;
+   it replaces its own hooks without `--force`.
+**Consequences.** A push no longer re-checks old commits, so an old finding is no longer reported on every push:
+it is seen only when someone runs `sg.py audit`. Pushing a branch that is not on the remote yet checks all its
+commits that are not on any branch of that remote.
+
+## ADR-026 — Changing an element's type gives it a new generated label  · stakes: medium · **approved by the owner 2026-11-21**
+**Context.** Owner request (2026-11-21). After a type change (ADR to REQ) the label still shows the old prefix
+(`ADR-3d6e7863`), which reads as the wrong type. ADR-023 said existing labels are never changed.
+**Decision.** When `element.update` changes the stereotype and the call does not pass a `label`, the label is
+replaced by a new generated one for the new type (`ops._auto_label`, ADR-023), for example `REQ-3d6e7863`. This
+applies to every old label, also a hand-typed one such as `ADR-001`. A new type with an empty prefix gives no
+label. A `label` passed in the same call wins. ADR-023 is amended: labels are not changed, except on a type change.
+**Consequences.** The label always matches the type after a type change. A reference to the old label in a
+document, commit message or report no longer finds the element; the id prefix still does. Hand-typed labels are
+lost on a type change; type the label again if it is still wanted.
+
+## ADR-027 — Editor: multi-selection, alignment and a snap grid  · stakes: low · **approved by the owner 2026-11-21**
+Ctrl+click adds or removes a node of a diagram from the selection; Shift+drag on the empty canvas selects every node
+touching the rectangle. A selection moves as one: its nodes and the bend points of links between them move
+together, links to other nodes follow while dragging, and the result is one `diagram.layout` batch (one undo
+step). Alignment puts the centres of the selected nodes on the vertical line (same x) or horizontal line (same y)
+of the last selected node. The grid size and the snap switch are view state kept in the browser (like the pane
+sizes, ADR-024); nothing is stored in the model. Everyone starts with the same default: a 20-pixel grid, snap on. Snapping puts the top-left corner of a node on the grid when it is created or moved (in a group move: the dragged
+node; the others keep their distance to it) and the lower-right corner when it is resized. Alignment is not snapped:
+the centres must line up exactly. While snapping is on, the grid is shown as dots in place of the plain background dots; it is not exported.

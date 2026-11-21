@@ -24,6 +24,8 @@
 | DGM-05, DGM-06 | ui (stereotype marker, status pill, link stroke/dash asserted) |
 | DGM-07 | ui (links appear from the model) |
 | DGM-08 | ui (SVG and PNG download) |
+| DGM-09..11 | ui `test_dgm09_10_*` (Ctrl+click on and off, Shift+drag rectangle, group move with a bend point and a link to an outside node redrawn mid-drag, one undo step, both alignments from the menu and both shortcuts). *Delete* on a selection, the alignment buttons in the properties) |
+| DGM-12 | ui `test_dgm12_*` (default 20/on, snap grid replaces the plain dots, move, group move keeps spacing, resize, drop from the tree, kept after a reload, off = no rounding). Placing from the context menu and *Place on current diagram* have no automated test |
 | LNK-01..03 | core `test_lnk01_02_03_*` |
 | TRC-01..03 | core `test_trc01_02_03_*`; ui |
 | TRC-04 | core `test_trc04_matrix`, impact in `test_trc01_*`; ui |
@@ -56,6 +58,8 @@
 | USE-06 | integ `test_use06_*` (two keys loaded: prove, apply and serve refuse) |
 | USE-07 | ui `test_tree_order_*` (context menu). Shift+click on the arrow and the two entries of the tree background menu have no automated test |
 | USE-08 | ui `test_tree_order_*` (three lines dragged, size kept after a reload, double-click resets) |
+| USE-09 | ui `test_use09_10_*` (diagram opens; folder opens and closes; Ctrl and Alt with sub-folders; two separate clicks as a person makes them) |
+| USE-10 | ui `test_use09_10_*` (from the diagram's context menu with a scrolled explorer, from the properties of an element, a diagram and a folder) |
 | USE-03, USE-04, DOC-01..04 | documents; not testable |
 | DOC-05 | ui `test_sample_model_is_valid`; example `test_doc05_*` (2 tests: the README example builds and is valid, the stored `specmodel.example.json` matches the builder) |
 | ADR-016 author and date on every element | changes `test_adr016_*` (5 tests: set on change, untouched otherwise, validation, version-1 upgrade, merge) |
