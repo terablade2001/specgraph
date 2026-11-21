@@ -161,6 +161,8 @@ sg.py apply '[{"op": "element.update", "args": {"id": "<id>", "status": "approve
 - `sg.py ops` lists every operation and its arguments. Details: `docs/AGENTS.md`.
 - `element.delete` needs `--yes`; without it, usage is printed and the exit code is 3.
 - Exit code 2 = refused (validation, lock, identity); read stderr.
+- `sg.py audit` checks the whole history; `sg.py audit <from> <to>` only that range (both included). The
+  pre-push hook checks only the commits being pushed (ADR-025).
 - A folder lock by another user blocks changes to everything under it, and new links to it
   (ADR-022). A lock means "someone is working there". Do not work around it. Anyone may
   unlock (`folder.unlock`, `--yes` for another user's lock), but never do that on your own:
@@ -180,6 +182,7 @@ After changes: `sg.py validate`, then commit normally. The pre-commit hook runs
 | "content does not match its stamp" | File was edited outside the tool. `git checkout -- specmodel.json`, or `sg.py adopt` to take responsibility |
 | "model is edited on branch X but you are on Y" | A copy of the tool older than 0.2.0 is running; since ADR-024 there is no branch rule |
 | "not valid JSON … conflict markers" | Merge ran without the driver: `sg.py resolve` |
+| "… version was changed outside the tool, so it is not merged" | One side of a merge was hand-edited (ADR-031): `git merge --abort`; that branch's author runs `sg.py adopt` there or restores the file |
 | Merge conflicts listed under Check | A person chooses per conflict in the editor, then `git add` + commit |
 | "ssh-keygen was not found" | Install Git/OpenSSH or set `SPECGRAPH_SSH_KEYGEN` |
 | "signing failed" / "cannot prove that you hold the private key" / "no key is loaded in ssh-agent" | Key not in `ssh-agent`: `ssh-add` (first-time item 5) |

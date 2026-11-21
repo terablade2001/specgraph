@@ -24,8 +24,7 @@ def default_stereotypes():
     priority = {"priority": _f("Priority", "enum", ["Must", "Should", "Could"]), "owner": _f("Owner")}
     levels = ["Low", "Medium", "High"]
     table = {
-        "ADR": ("#dbeafe", "#1d4ed8", "⚖", "rounded", "ADR",
-                {"decisionDate": _f("Decision date", "date"), "owner": _f("Owner")}),
+        "ADR": ("#dbeafe", "#1d4ed8", "⚖", "rounded", "ADR", owner),
         "REQ": ("#dcfce7", "#15803d", "☑", "rect", "REQ", priority),
         "NAMESPACE": ("#e0e7ff", "#4338ca", "◫", "rect", "NS", None),
         "RISK": ("#fee2e2", "#b91c1c", "⚠", "ellipse", "RISK",
@@ -34,8 +33,7 @@ def default_stereotypes():
         "B-REQ": ("#d1fae5", "#047857", "◆", "rect", "B-REQ", priority),
         "U-REQ": ("#ccfbf1", "#0f766e", "☺", "rounded", "U-REQ", priority),
         "CONSTRAINT": ("#fef3c7", "#b45309", "⊗", "hexagon", "CON", owner),
-        "TEMPORAL-ADR": ("#cffafe", "#0e7490", "◷", "rounded", "T-ADR",
-                         {"decisionDate": _f("Decision date", "date"), "owner": _f("Owner")}),
+        "TEMPORAL-ADR": ("#cffafe", "#0e7490", "◷", "rounded", "T-ADR", owner),
         "FEAT": ("#fef9c3", "#a16207", "★", "rounded", "FEAT", owner),
         "TEST-E2E": ("#ede9fe", "#6d28d9", "⇄", "rect", "E2E", owner),
         "TEST-INT": ("#fae8ff", "#a21caf", "⇆", "rect", "INT", owner),

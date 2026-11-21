@@ -26,7 +26,7 @@ line (plus the stamp block).
 
 - Every folder, element, link and diagram is stored under its **id**, a random UUID
   (e.g. `0ee71cd1-...`) generated on creation. Ids never change and all references use them.
-- `label` on an element is the optional short human name; unique when not empty. Generated as the type's `labelPrefix` plus the first 8 characters of the id (`REQ-3d6e7863`, ADR-023); editable.
+- `label` on an element is the optional short human name; unique when not empty. Generated as the type's `labelPrefix` plus the first 8 characters of the id (`REQ-3d6e7863`, ADR-023); editable. A change of stereotype replaces it by the generated label of the new type (ADR-026).
 - `stereotype`, `status` and link `type` hold the **key** of a configuration entry
   (`"REQ"`, `"approved"`, `"implements"`), never its display label, so labels can be renamed.
 

@@ -3,7 +3,7 @@
 'use strict';
 
 const S = { token: null, model: null, head: null, me: {}, locks: {}, problems: [], integrity: [], treeDrag: null,
-            open: [], active: null, sel: null, expanded: new Set(), views: {}, drag: null, panel: null,
+            open: [], active: null, sel: null, multi: [], expanded: new Set(), views: {}, drag: null, panel: null,
             linkType: null, undo: { steps: 0, next: null }, version: '' };
 const $ = (id) => document.getElementById(id);
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -108,9 +108,13 @@ function toast(msg, err) {
 
 // ---- model helpers --------------------------------------------------------
 const cfg = () => S.model.config;
-const stOf = (key) => cfg().stereotypes[key] || { label: key, fill: '#eeeeee', border: '#666666', icon: '?', shape: 'rect', fields: {} };
-const statusOf = (key) => cfg().statuses[key] || { label: key, color: '#666666', symbol: '?' };
-const ltOf = (key) => cfg().linkTypes[key] || { label: key, color: '#666666', lineStyle: 'solid', sourceArrow: 'none', targetArrow: 'open', showLabel: true, routing: 'straight' };
+/* Colours go into styles and drawings: only #rrggbb is used, whatever a hand-edited file holds (security review 0.3.0) */
+const hex = (c, dflt) => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : dflt);
+const stOf = (key) => { const st = cfg().stereotypes[key] || { label: key, icon: '?', shape: 'rect', fields: {} };
+  return Object.assign({}, st, { fill: hex(st.fill, '#eeeeee'), border: hex(st.border, '#666666') }); };
+const statusOf = (key) => { const s = cfg().statuses[key] || { label: key, symbol: '?' }; return Object.assign({}, s, { color: hex(s.color, '#666666') }); };
+const ltOf = (key) => { const lt = cfg().linkTypes[key] || { label: key, lineStyle: 'solid', sourceArrow: 'none', targetArrow: 'open', showLabel: true, routing: 'straight' };
+  return Object.assign({}, lt, { color: hex(lt.color, '#666666') }); };
 const elName = (el) => (el.label ? el.label + ' ' : '') + el.topic;
 const byName = (f) => (a, b) => f(a[1]).localeCompare(f(b[1]));
 function allowedStatuses(stKey, current) {
@@ -126,7 +130,43 @@ function folderPath(fid) {
 const lockOf = (fid) => S.locks[fid] || null;
 const lockedOut = (fid) => { const l = lockOf(fid); return !!l && l.owner !== S.me.user; };
 const readOnly = () => !S.me.user || S.integrity.length > 0;
-function select(kind, id) { S.sel = id ? { kind, id } : null; renderTree(); renderDiagram(); renderProps(); }
+function select(kind, id) { S.sel = id ? { kind, id } : null; S.multi = id && kind === 'element' ? [id] : []; renderTree(); renderDiagram(); renderProps(); }
+/* The selected nodes of the open diagram, in the order they were selected; the last one is S.sel (ADR-027). */
+function selNodes() {
+  const d = S.active && S.model.diagrams[S.active];
+  return d ? selElements().filter((id) => d.nodes[id]) : [];
+}
+/* The selected elements, in the order they were selected; the last one is S.sel. The explorer shows all of
+   them; the diagram works on those that are on it (selNodes), whose last one is its reference. */
+function selElements() {
+  if (!S.sel || S.sel.kind !== 'element' || !S.model.elements[S.sel.id]) return [];
+  if (!S.multi.includes(S.sel.id)) return [S.sel.id];
+  return S.multi.filter((id) => S.model.elements[id] && id !== S.sel.id).concat([S.sel.id]);
+}
+/* Ctrl+click or Shift+click, on the diagram or in the explorer: add or remove one element. */
+function toggleNode(id) {
+  const cur = selElements();
+  selectNodes(cur.includes(id) ? cur.filter((x) => x !== id) : cur.concat([id]));
+}
+function selectNodes(ids) {
+  S.multi = ids.slice(); S.sel = ids.length ? { kind: 'element', id: ids[ids.length - 1] } : null;
+  renderTree(); renderDiagram(); renderProps();
+}
+/* Align the selected nodes to the last selected one (ADR-027, ADR-028). axis 'x' is horizontal
+   alignment (left, centre, right edges), 'y' vertical (top, centre, bottom); where is
+   'start', 'center' or 'end'. One change, one undo step; not snapped to the grid. */
+const ALIGN = [['x', 'Horizontal', [['start', 'Left', 'Ctrl+Shift+1'], ['center', 'Center', 'Ctrl+Shift+2'], ['end', 'Right', 'Ctrl+Shift+3']]],
+               ['y', 'Vertical', [['start', 'Top', 'Alt+Shift+1'], ['center', 'Center', 'Alt+Shift+2'], ['end', 'Bottom', 'Alt+Shift+3']]]];
+function align(axis, where) {
+  const ids = selNodes(), d = S.active && S.model.diagrams[S.active];
+  if (ids.length < 2) return toast('Select two or more elements on the diagram first');
+  const ref = d.nodes[ids[ids.length - 1]], size = axis === 'x' ? 'w' : 'h', f = { start: 0, center: 0.5, end: 1 }[where];
+  const line = ref[axis] + ref[size] * f;
+  const ops = ids.slice(0, -1).map((id) => ({ op: 'diagram.layout', args: { diagram: S.active, element: id, [axis]: Math.round(line - d.nodes[id][size] * f) } }))
+    .filter((o) => o.args[axis] !== d.nodes[o.args.element][axis]);
+  if (ops.length) post(ops);
+}
+const alignMenu = () => ['Align', ALIGN.map(([axis, label, wheres]) => [label, wheres.map(([w, l, key]) => [l + ' (' + key + ')', () => align(axis, w)])])];
 function chip(stKey) {
   const st = stOf(stKey);
   return h('span', { class: 'chip', style: 'background:' + st.fill + ';border-color:' + st.border + ';color:' + st.border },
@@ -193,7 +233,7 @@ function setExpanded(fid, open) {
 /* Where a dragged tree item would land on a row: before or after it (same kind: reorder), or into a folder. */
 function dropZone(e, r, kind, id) {
   const d = S.treeDrag;
-  if (!d || (d.kind === kind && d.id === id)) return null;
+  if (!d || (d.kind === kind && (d.ids || [d.id]).includes(id))) return null;
   if (d.kind !== kind) return kind === 'folder' ? 'into' : null;
   const b = r.getBoundingClientRect(), y = (e.clientY - b.top) / b.height;
   if (kind === 'folder') return y < 0.3 ? 'before' : y > 0.7 ? 'after' : 'into';
@@ -205,22 +245,29 @@ function markDrop(r, zone) {
 }
 function renderTree() {
   const m = S.model, root = clear($('tree'));
+  // the other selected nodes of the open diagram: grey; the last selected (S.sel) keeps the blue of 'sel'
+  const also = new Set(selElements().slice(0, -1));
   const toggle = (e, fid) => {
     e.stopPropagation();
     if (e.shiftKey) return setExpanded(fid, !S.expanded.has(fid));
     if (S.expanded.has(fid)) S.expanded.delete(fid); else S.expanded.add(fid);
     renderTree();
   };
-  const row = (kind, id, depth, parts, extra) => {
+  const row = (kind, id, depth, parts, dbl) => {
     const r = h('div', Object.assign({
-      class: 'row' + (S.sel && S.sel.kind === kind && S.sel.id === id ? ' sel' : ''), style: 'padding-left:' + (6 + depth * 14) + 'px',
+      class: 'row' + (S.sel && S.sel.kind === kind && S.sel.id === id ? ' sel' : kind === 'element' && also.has(id) ? ' sel2' : ''), style: 'padding-left:' + (6 + depth * 14) + 'px',
       'data-kind': kind, 'data-id': id, draggable: true,
-      ondragstart: (e) => { S.treeDrag = { kind, id }; e.dataTransfer.setData('text/plain', JSON.stringify({ kind, id })); e.dataTransfer.effectAllowed = 'move'; },
+      ondragstart: (e) => {
+        // a selected element takes the whole selection along; anything else moves alone
+        const all = selElements(), ids = kind === 'element' && all.length > 1 && all.includes(id) ? all : [id];
+        S.treeDrag = { kind, id, ids };
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind, id, ids })); e.dataTransfer.effectAllowed = 'move';
+      },
       ondragend: () => { S.treeDrag = null; },
       ondragover: (e) => { const z = dropZone(e, r, kind, id); markDrop(r, z); if (z) e.preventDefault(); },
       ondragleave: () => markDrop(r, null),
       ondrop: (e) => { const z = dropZone(e, r, kind, id); markDrop(r, null); if (z) { e.preventDefault(); e.stopPropagation(); dropOnRow(z, kind, id); } },
-      onclick: () => select(kind, id), oncontextmenu: (e) => treeMenu(e, kind, id) }, extra || {}), parts);
+      onclick: (e) => treeClick(e, kind, id, dbl), oncontextmenu: (e) => treeMenu(e, kind, id) }), parts);
     return r;
   };
   function folder(fid, depth) {
@@ -229,14 +276,15 @@ function renderTree() {
       h('span', { class: 'tw', title: 'Shift+click: with all sub-folders', onclick: (e) => toggle(e, fid) }, open ? '▾' : '▸'),
       '📁', h('span', { class: 't' }, f.name),
       lock ? h('span', { class: 'lk', title: 'Locked by ' + lock.owner + (lock.reason ? ': ' + lock.reason : '') }, '🔒 ' + lock.owner) : null],
-      { ondblclick: (e) => toggle(e, fid) }));
+      (e) => { if (e.ctrlKey || e.metaKey) setExpanded(fid, true); else if (e.altKey) setExpanded(fid, false); else toggle(e, fid); }));
     if (!open) return;
     kids('folder', fid).forEach((id) => folder(id, depth + 1));
     kids('diagram', fid).forEach((id) =>
-      put(root, row('diagram', id, depth + 1, [h('span', { class: 'tw' }), '▦', h('span', { class: 't' }, m.diagrams[id].name)], { ondblclick: () => openDiagram(id) })));
+      put(root, row('diagram', id, depth + 1, [h('span', { class: 'tw' }), '▦', h('span', { class: 't' }, m.diagrams[id].name)], () => openDiagram(id))));
     kids('element', fid).forEach((id) => { const e = m.elements[id];
-      put(root, row('element', id, depth + 1, [h('span', { class: 'tw' }), chip(e.stereotype), h('span', { class: 't', title: e.topic }, elName(e))],
-        { ondblclick: () => findInDiagrams(id) })); });
+      put(root, row('element', id, depth + 1, [h('span', { class: 'tw' }), chip(e.stereotype), h('span', { class: 't', title: e.topic }, elName(e)),
+        hasNotes(e) ? h('span', { class: 'nt', title: notesTip(e) }, '📜') : null],
+        () => findInDiagrams(id))); });
   }
   kids('folder', null).forEach((id) => folder(id, 0));
   put(root, h('div', { class: 'row mute', style: 'margin-top:6px', onclick: () => newFolder(null),
@@ -245,11 +293,33 @@ function renderTree() {
   root.oncontextmenu = (e) => { if (e.target === root) { e.preventDefault(); menu(e, [['New top-level folder…', () => newFolder(null)], null,
     ['Expand all folders', () => setExpanded(null, true)], ['Collapse all folders', () => setExpanded(null, false)]]); } };
 }
+/* A click on a tree row selects it; a second click on the same row soon after is a double-click.
+   Own detection: the first click re-draws the tree, so the browser's dblclick does not fire. */
+function treeClick(e, kind, id, dbl) {
+  if (kind === 'element' && (e.ctrlKey || e.metaKey || e.shiftKey)) { treeClick.last = null; return toggleNode(id); }
+  const last = treeClick.last, now = Date.now();
+  treeClick.last = { kind, id, t: now };
+  if (last && last.kind === kind && last.id === id && now - last.t < 450) { treeClick.last = null; return dbl && dbl(e); }
+  select(kind, id);
+}
+/* Find in explorer: open the folders above an item, select it and scroll it into view. */
+function findInExplorer(kind, id) {
+  const m = S.model, item = m[kind + 's'][id];
+  if (!item) return;
+  for (let f = kind === 'folder' ? item.parent : parentOf(kind, item); f; f = m.folders[f] && m.folders[f].parent) S.expanded.add(f);
+  select(kind, id);
+  const r = $('tree').querySelector('.row[data-kind="' + kind + '"][data-id="' + id + '"]');
+  if (r) r.scrollIntoView({ block: 'nearest' });
+}
 function moveInto(d, fid) {
   S.treeDrag = null;
   if (!d) return;
   if (d.kind === 'folder' && d.id !== fid) op('folder.move', { id: d.id, parent: fid });
-  else if (fid && d.kind === 'element') op('element.move', { id: d.id, folder: fid });
+  else if (fid && d.kind === 'element') {
+    const ops = (d.ids || [d.id]).filter((x) => S.model.elements[x] && S.model.elements[x].folder !== fid)
+      .map((x) => ({ op: 'element.move', args: { id: x, folder: fid } }));
+    if (ops.length) post(ops);
+  }
   else if (fid && d.kind === 'diagram') op('diagram.move', { id: d.id, folder: fid });
   if (fid) S.expanded.add(fid);
 }
@@ -260,10 +330,14 @@ function dropOnRow(zone, kind, id) {
   if (zone === 'into') return moveInto(d, id);
   S.treeDrag = null;
   if (!d || d.kind !== kind || !coll[d.id]) return;
-  const parent = parentOf(kind, coll[id]), ids = kids(kind, parent).filter((x) => x !== d.id);
-  ids.splice(ids.indexOf(id) + (zone === 'after' ? 1 : 0), 0, d.id);
-  const ops = [{ op: 'folder.order', args: { id: parent, kind: kind + 's', ids } }];
-  if (parentOf(kind, coll[d.id]) !== parent) ops.unshift({ op: kind + '.move', args: kind === 'folder' ? { id: d.id, parent } : { id: d.id, folder: parent } });
+  // the dragged items (a selection of elements, or one item) go there as a block, in their tree order
+  const moved = (d.ids || [d.id]).filter((x) => coll[x]), set = new Set(moved);
+  const parent = parentOf(kind, coll[id]), ids = kids(kind, parent).filter((x) => !set.has(x));
+  const block = kids(kind, parent).filter((x) => set.has(x)).concat(moved.filter((x) => parentOf(kind, coll[x]) !== parent));
+  ids.splice(ids.indexOf(id) + (zone === 'after' ? 1 : 0), 0, ...block);
+  const ops = moved.filter((x) => parentOf(kind, coll[x]) !== parent)
+    .map((x) => ({ op: kind + '.move', args: kind === 'folder' ? { id: x, parent } : { id: x, folder: parent } }));
+  ops.push({ op: 'folder.order', args: { id: parent, kind: kind + 's', ids } });
   post(ops);
 }
 function newFolder(parent) {
@@ -276,7 +350,9 @@ function newFolder(parent) {
 function newElement(stKey, fid, place) {
   formDialog('New ' + stOf(stKey).label, [{ key: 'topic', label: 'Topic' }], async (v) => {
     const ops = [{ op: 'element.create', args: { stereotype: stKey, topic: v.topic, folder: fid } }];
-    if (place) ops.push({ op: 'diagram.place', args: { diagram: place.diagram, element: '$0', x: place.x, y: place.y } });
+    if (place) { const x = snap(place.x), y = snap(place.y);
+      ops.push({ op: 'diagram.place', args: Object.assign({ diagram: place.diagram, element: '$0', x, y },
+        autoOn() ? fitSize({ stereotype: stKey, topic: v.topic, label: guessLabel(stKey), folder: fid }, x, y, 190) : {}) }); }
     const r = await post(ops);
     if (r) { S.expanded.add(fid); select('element', r[0]); }
     return !!r;
@@ -341,8 +417,9 @@ function renderProps() {
   if (!sel) {
     put(p, h('h3', {}, 'Properties'), h('p', { class: 'mute' }, 'Select something in the tree or on a diagram.'),
       h('p', { class: 'mute' }, 'Right-click folders, elements and the diagram background for actions. Drag elements from the tree onto a diagram. ' +
-        'Drag items in the tree to move or reorder them. Drag the lines between the panes to resize them. ' +
-        'Drag from the blue dot of a selected element to another element to link them.'));
+        'Drag items in the tree to move or reorder them. Double-click a folder to open or close it (Ctrl: with all sub-folders, Alt: close all). Drag the lines between the panes to resize them. ' +
+        'Drag from the blue dot of a selected element to another element to link them. ' +
+        'Ctrl+click or Shift+click elements, Shift+drag a rectangle, or Ctrl+A for all, to select several; drag one of them to move them all; right-click one of them for Align (left, center, right; top, center, bottom).'));
     return;
   }
   if (sel.kind === 'element') propsElement(p, sel.id);
@@ -357,8 +434,20 @@ function lockNote(p, fid) {
 }
 function propsElement(p, id) {
   const m = S.model, el = m.elements[id], st = stOf(el.stereotype);
-  const up = (args) => op('element.update', Object.assign({ id }, args));
+  const up = (args) => {
+    const ops = [{ op: 'element.update', args: Object.assign({ id }, args) }];
+    if (autoOn() && ('topic' in args || 'label' in args || 'stereotype' in args)) {
+      const after = Object.assign({}, el, args);
+      if ('stereotype' in args && !('label' in args)) after.label = guessLabel(args.stereotype, id);
+      ops.push(...fitOps(id, after));                    // same change, one undo step
+    }
+    return post(ops);
+  };
   put(p, h('h3', {}, chip(el.stereotype), 'Element'), idLine(id));
+  const many = selNodes().length;
+  if (many > 1) put(p, h('div', { class: 'note' }, many + ' elements are selected on the diagram; this one, the last selected, is the reference for alignment.',
+    ALIGN.map(([axis, label, wheres]) => h('div', { class: 'btns' }, h('span', { class: 'mute' }, label + ':'),
+      wheres.map(([w, l, key]) => h('button', { 'data-align': axis + ':' + w, title: key, onclick: () => align(axis, w) }, l))))));
   const dis = lockNote(p, el.folder);
   put(p, 
     field('Label', textIn(el.label, (v) => up({ label: v }), { disabled: dis })),
@@ -380,6 +469,7 @@ function propsElement(p, id) {
     field('Last changed', h('div', { id: 'modified' }, el.modified ? el.modified.at.slice(0, 16).replace('T', ' ') + ' UTC by ' + el.modified.by
       : 'not recorded yet (added with the next change to the model)')));
   put(p, h('div', { class: 'btns' },
+    h('button', { onclick: () => findInExplorer('element', id) }, 'Find in explorer'),
     h('button', { onclick: () => findInDiagrams(id) }, 'Find in diagrams'),
     h('button', { onclick: () => showPanel({ kind: 'trace', id }) }, 'Trace'),
     h('button', { onclick: () => showPanel({ kind: 'history', id }) }, 'History'),
@@ -425,6 +515,7 @@ function propsFolder(p, id) {
   put(p, field('Name', textIn(f.name, (v) => op('folder.update', { id, name: v }), { disabled: dis })),
     field('Path', h('div', {}, folderPath(id))),
     h('div', { class: 'btns' },
+      h('button', { onclick: () => findInExplorer('folder', id) }, 'Find in explorer'),
       f.lock ? h('button', { onclick: () => unlockFolder(id) }, 'Unlock') : h('button', { onclick: () => lockFolder(id) }, 'Lock…'),
       h('button', { class: 'danger', onclick: () => deleteFolder(id) }, 'Delete folder…')),
     h('p', { class: 'mute' }, 'A lock tells others that someone works here: nobody else changes this folder, its sub-folders and everything in them, or links to it, until it is unlocked. Anyone can unlock it after a confirmation.'));
@@ -436,6 +527,7 @@ function propsDiagram(p, id) {
   put(p, field('Name', textIn(d.name, (v) => op('diagram.update', { id, name: v }), { disabled: dis })),
     field('Folder', h('div', {}, folderPath(d.folder))),
     h('div', { class: 'btns' }, h('button', { onclick: () => openDiagram(id) }, 'Open'),
+      h('button', { onclick: () => findInExplorer('diagram', id) }, 'Find in explorer'),
       h('button', { class: 'danger', onclick: () => confirmDialog('Delete diagram "' + d.name + '"? Its elements stay in the model.', () => op('diagram.delete', { id })) }, 'Delete diagram')));
   const hidden = Object.entries(d.links).filter(([, o]) => o.hidden);
   if (hidden.length) {
@@ -466,8 +558,22 @@ function renderTabs() {
   if (!S.active) return;
   const lts = cfg().linkTypes;
   put(t, 'New links are:', selectIn(Object.keys(lts).filter((k) => !lts[k].retired).map((k) => [k, lts[k].label]), S.linkType, (v) => { S.linkType = v; }),
-    h('button', { onclick: fit }, 'Fit'), h('button', { onclick: () => exportDiagram('svg') }, 'Export SVG'),
-    h('button', { onclick: () => exportDiagram('png') }, 'Export PNG'),
+    h('button', { onclick: fit }, 'Fit'),
+    h('button', { id: 'btnExport', onclick: (e) => { const r = e.currentTarget.getBoundingClientRect();
+      menu({ preventDefault() {}, clientX: r.left, clientY: r.bottom + 2 }, [['SVG file', () => exportDiagram('svg')],
+        ['PNG file', () => exportDiagram('png')], ['Copy image to clipboard', () => exportDiagram('clip')]]); } }, 'Export ▾'),
+    h('label', { title: 'Grid size in diagram pixels (at 100% zoom)' }, 'Grid ',
+      h('input', { id: 'gridSize', type: 'number', min: 2, max: 200, step: 1, value: String(gridNow().size), style: 'width:4.5em',
+        onchange: (e) => { const v = parseInt(e.target.value, 10); if (v >= 2 && v <= 200) setGrid({ size: v }); else e.target.value = String(gridNow().size); } })),
+    h('label', { title: 'Place, move and resize elements on the grid' },
+      h('input', { id: 'gridSnap', type: 'checkbox', checked: gridNow().snap, onchange: (e) => setGrid({ snap: e.target.checked }) }), 'Snap'),
+    h('label', { title: 'Size elements to show their whole text, always wider than tall (when created, edited or made narrower)' },
+      h('input', { id: 'autoSize', type: 'checkbox', checked: autoOn(), onchange: (e) => {
+        setAutoOn(e.target.checked);
+        if (e.target.checked && selNodes().length) fitToText(selNodes(), true);    // switched on: fit what is selected
+      } }), 'Auto size'),
+    h('label', { title: 'Small overview of the whole diagram at the bottom right' },
+      h('input', { id: 'miniOn', type: 'checkbox', checked: miniOn(), onchange: (e) => setMiniOn(e.target.checked) }), 'Overview'),
     lockOf(S.model.diagrams[S.active].folder) ? h('span', { class: 'lk', style: 'color:#b91c1c' }, '🔒 diagram locked by ' + lockOf(S.model.diagrams[S.active].folder).owner) : null);
 }
 
@@ -487,6 +593,62 @@ function wrap(text, maxW, maxLines) {
   return lines.map((l) => { while (l.length > 2 && measure(l, 12) > maxW) l = l.slice(0, -2) + '…'; return l; });
 }
 const centerOf = (n) => [n.x + n.w / 2, n.y + n.h / 2];
+/* Room the lock and notes badges take at the right end of the top line (badges: 0, 1 or 2). */
+const badgeRoom = (badges) => (badges ? 16 + 22 * (badges - 1) : 0);
+const badgesOf = (el) => (el.folder && lockOf(el.folder) ? 1 : 0) + (hasNotes(el) ? 1 : 0);
+/* Room between the outline of a shape and its text: [left/right, top/bottom]. */
+function insets(shape, w, h) {
+  if (shape === 'ellipse') return [w * 0.15, h * 0.1];
+  if (shape === 'hexagon') return [Math.min(16, w / 5) + 2, 0];
+  return [8, 0];
+}
+
+// ---- auto size (ADR-030) -----------------------------------------------------
+/* With Auto size on (per browser, on by default) a node gets the size that shows its whole topic, type, label
+   and status without changing a font, and is always landscape: width / height > 1.2. The width of the node is
+   a minimum; when the text would need a portrait box, the box gets wider instead. */
+const RATIO = 1.2;
+function autoOn() { try { return localStorage.getItem('sgauto') !== '0'; } catch (e) { return S.autoOff !== true; } }
+function setAutoOn(on) { try { localStorage.setItem('sgauto', on ? '1' : '0'); } catch (e) { S.autoOff = !on; } }
+/* The label the server will give an element of type stKey (ADR-023/026), to measure before it exists. */
+const guessLabel = (stKey, eid) => { const p = stOf(stKey).labelPrefix; return p ? p + '-' + (eid || '00000000').replace(/-/g, '').slice(0, 8) : ''; };
+/* The fitted {w, h} of element el (stereotype, topic, label, status) drawn at x, y, at least minW wide. */
+function fitSize(el, x, y, minW) {
+  const st = stOf(el.stereotype), g = gridNow(), step = g.snap ? g.size : 10;
+  const up = (v, start) => Math.min(2000, g.snap ? Math.ceil((start + v) / g.size) * g.size - start : Math.ceil(v));
+  const sta = statusOf(el.status || allowedStatuses(el.stereotype)[0]);
+  const head = (st.icon ? 18 : 0) + measure('«' + st.label + '»', 10, true) + (el.label ? 12 + measure(el.label, 10, true) : 0);
+  const pill = measure((sta.symbol ? sta.symbol + ' ' : '') + sta.label, 10, true) + 14;
+  const word = Math.max(0, ...String(el.topic || '').split(/\s+/).map((t) => measure(t, 12)));
+  let w = Math.max(60, minW || 0);
+  for (let i = 0; i < 400; i++) {
+    w = up(w, x);
+    const ix = insets(st.shape, w, 0)[0], inner = w - 2 * ix, right = Math.max(ix, badgeRoom(badgesOf(el)));
+    if (w - ix - right < head || inner < Math.max(pill, word)) { w += step; continue; }
+    const lines = Math.max(1, wrap(el.topic || '', inner, 1000).length), base = 50 + 15 * lines;
+    const h = up(Math.max(40, st.shape === 'ellipse' ? base / 0.8 : base), y);
+    if (w / h > RATIO || w >= 2000) return { w, h };
+    w += step;
+  }
+  return { w, h: up(40, y) };
+}
+/* diagram.layout operations that fit element eid (as `el` will be) on every diagram it is on, except where
+   someone else's lock would refuse the whole change. */
+function fitOps(eid, el, only) {
+  const ops = [];
+  Object.entries(S.model.diagrams).forEach(([did, d]) => {
+    const n = d.nodes[eid];
+    if (!n || (only && did !== only) || lockedOut(d.folder)) return;
+    const f = fitSize(el, n.x, n.y, n.w);
+    if (f.w !== n.w || f.h !== n.h) ops.push({ op: 'diagram.layout', args: { diagram: did, element: eid, w: f.w, h: f.h } });
+  });
+  return ops;
+}
+/* Fit to text: the selected nodes of the open diagram, whatever the switch says. */
+function fitToText(ids, quiet) {
+  const ops = [].concat(...ids.map((id) => fitOps(id, S.model.elements[id], S.active)));
+  if (ops.length) post(ops); else if (!quiet) toast('Already fitted');
+}
 function clip(n, toward) {
   const [cx, cy] = centerOf(n), dx = toward[0] - cx, dy = toward[1] - cy;
   if (!dx && !dy) return [cx, cy];
@@ -536,22 +698,24 @@ function midpoint(pts) {
 }
 
 // ---- diagrams: drawing ----------------------------------------------------
+const hasNotes = (el) => !!(el.notes && el.notes.trim());
+const notesTip = (el) => 'Notes: ' + (el.notes.trim().length > 300 ? el.notes.trim().slice(0, 300) + '…' : el.notes.trim());
 function drawNode(eid, n) {
   const el = S.model.elements[eid];
   if (!el) return null;
   const st = stOf(el.stereotype), sta = statusOf(el.status), w = n.w, hh = n.h;
-  const sel = S.sel && S.sel.kind === 'element' && S.sel.id === eid, lock = lockOf(el.folder);
+  const chosen = renderDiagram.chosen || [], sel = chosen.includes(eid), lock = lockOf(el.folder);
   const g = sv('g', { transform: 'translate(' + n.x + ',' + n.y + ')', 'data-kind': 'node', 'data-id': eid, style: 'cursor:move' });
   const paint = { fill: st.fill, stroke: st.border, 'stroke-width': 1.5 };
-  let ix = 8, iy = 0;
-  if (st.shape === 'ellipse') { put(g, sv('ellipse', Object.assign({ cx: w / 2, cy: hh / 2, rx: w / 2, ry: hh / 2 }, paint))); ix = w * 0.15; iy = hh * 0.1; }
-  else if (st.shape === 'hexagon') { const c = Math.min(16, w / 5); ix = c + 2;
+  const [ix, iy] = insets(st.shape, w, hh);
+  if (st.shape === 'ellipse') put(g, sv('ellipse', Object.assign({ cx: w / 2, cy: hh / 2, rx: w / 2, ry: hh / 2 }, paint)));
+  else if (st.shape === 'hexagon') { const c = Math.min(16, w / 5);
     put(g, sv('polygon', Object.assign({ points: c + ',0 ' + (w - c) + ',0 ' + w + ',' + hh / 2 + ' ' + (w - c) + ',' + hh + ' ' + c + ',' + hh + ' 0,' + hh / 2 }, paint))); }
   else put(g, sv('rect', Object.assign({ width: w, height: hh, rx: st.shape === 'rounded' ? 12 : 0 }, paint)));
   put(g, sv('title', {}, elName(el) + ' — ' + sta.label + (lock ? ' — locked by ' + lock.owner + (lock.reason ? ': ' + lock.reason : '') : '')));
   if (st.icon) put(g, sv('text', { x: ix, y: iy + 16, 'font-size': 13, fill: st.border }, st.icon));
   put(g, sv('text', { x: ix + (st.icon ? 18 : 0), y: iy + 15, 'font-size': 10, 'font-weight': 600, fill: st.border }, '«' + st.label + '»'));
-  if (el.label) put(g, sv('text', { x: w - ix, y: iy + 15, 'font-size': 10, 'font-weight': 700, 'text-anchor': 'end', fill: '#111827' }, el.label));
+  if (el.label) put(g, sv('text', { x: w - Math.max(ix, badgeRoom(badgesOf(el))), y: iy + 15, 'font-size': 10, 'font-weight': 700, 'text-anchor': 'end', fill: '#111827' }, el.label));
   wrap(el.topic, w - 2 * ix, Math.max(1, Math.floor((hh - 2 * iy - 46) / 15))).forEach((t, i) =>
     put(g, sv('text', { x: w / 2, y: iy + 37 + i * 15, 'font-size': 12, 'text-anchor': 'middle', fill: '#111827' }, t)));
   const stText = (sta.symbol ? sta.symbol + ' ' : '') + sta.label, pw = measure(stText, 10, true) + 14;
@@ -559,8 +723,13 @@ function drawNode(eid, n) {
     sv('text', { x: w / 2, y: hh - iy - 8.5, 'font-size': 10, 'font-weight': 600, 'text-anchor': 'middle', fill: '#ffffff' }, stText));
   if (lock) put(g, sv('rect', { x: -3, y: -3, width: w + 6, height: hh + 6, fill: 'none', stroke: '#b91c1c', 'stroke-width': 1, 'stroke-dasharray': '5 3' }),
     sv('circle', { cx: w - 4, cy: 2, r: 9, fill: '#ffffff', stroke: '#b91c1c' }), sv('text', { x: w - 4, y: 6, 'font-size': 11, 'text-anchor': 'middle' }, '🔒'));
-  if (sel) put(g, 
-    sv('rect', { 'data-ui': 1, x: -5, y: -5, width: w + 10, height: hh + 10, fill: 'none', stroke: '#1d4ed8', 'stroke-width': 1.5 }),
+  if (hasNotes(el)) { const nx = lock ? w - 26 : w - 4;     // next to the lock when there is one
+    put(g, sv('g', { 'data-badge': 'notes' }, sv('title', {}, notesTip(el)),
+      sv('circle', { cx: nx, cy: 2, r: 9, fill: '#eff6ff', stroke: '#1d4ed8' }),
+      sv('text', { x: nx, y: 6, 'font-size': 11, 'text-anchor': 'middle' }, '📜'))); }
+  if (sel) put(g, sv('rect', { 'data-ui': 1, x: -5, y: -5, width: w + 10, height: hh + 10, fill: 'none', stroke: '#1d4ed8', 'stroke-width': 1.5,
+    'stroke-dasharray': chosen.length > 1 && chosen[chosen.length - 1] !== eid ? '5 3' : null }));
+  if (sel && chosen.length === 1) put(g,
     sv('rect', { 'data-ui': 1, 'data-kind': 'resize', 'data-id': eid, x: w - 1, y: hh - 1, width: 10, height: 10, fill: '#1d4ed8', style: 'cursor:nwse-resize' }),
     sv('circle', { 'data-ui': 1, 'data-kind': 'connect', 'data-id': eid, cx: w + 12, cy: hh / 2, r: 7, fill: '#1d4ed8', style: 'cursor:crosshair' },
       sv('title', {}, 'Drag to another element to create a link')));
@@ -587,14 +756,80 @@ function renderDiagram() {
   const svg = clear($('canvas')), d = S.active && S.model.diagrams[S.active];
   $('empty').textContent = !d ? 'Double-click a diagram in the tree to open it, or right-click a folder → New diagram.'
     : Object.keys(d.nodes).length ? '' : 'Empty diagram. Drag elements here from the tree, or right-click here to create one.';
-  if (!d) return;
+  if (!d) return renderMini();
   const v = view(S.active);
+  renderDiagram.chosen = selNodes();
+  const gr = gridNow();
+  svg.classList.toggle('snapping', gr.snap);           // the snap grid replaces the plain background dots
+  if (gr.snap && gr.size * v.k >= 4) { const s = gr.size * v.k;   // not shown when the dots would be too dense
+    put(svg, sv('defs', {}, sv('pattern', { id: 'grid', patternUnits: 'userSpaceOnUse', width: s, height: s, x: v.x, y: v.y },
+      sv('circle', { cx: 0.75, cy: 0.75, r: 0.75, fill: '#9ca3af' }))),
+      sv('rect', { width: '100%', height: '100%', fill: 'url(#grid)', 'pointer-events': 'none' })); }
   const vp = sv('g', { id: 'vp', transform: 'translate(' + v.x + ',' + v.y + ') scale(' + v.k + ')', 'font-family': FONT });
   visibleLinks(d).forEach((lid) => put(vp, drawLink(d, lid)));
   Object.keys(d.nodes).forEach((eid) => { const g = drawNode(eid, d.nodes[eid]); if (g) put(vp, g); });
   if (S.drag && S.drag.type === 'connect') { const c = centerOf(d.nodes[S.drag.from]);
     put(vp, sv('line', { x1: c[0], y1: c[1], x2: S.drag.to[0], y2: S.drag.to[1], stroke: '#1d4ed8', 'stroke-width': 2, 'stroke-dasharray': '4 3', 'pointer-events': 'none' })); }
+  if (S.drag && S.drag.type === 'region' && S.drag.to) { const r = regionRect(S.drag);
+    put(vp, sv('rect', { x: r[0], y: r[1], width: r[2] - r[0], height: r[3] - r[1], fill: 'rgba(29,78,216,.08)', stroke: '#1d4ed8', 'stroke-dasharray': '4 3', 'pointer-events': 'none' })); }
   put(svg, vp);
+  renderMini();
+}
+
+// ---- diagrams: overview (ADR-028) ---------------------------------------------
+const MINI = { w: 200, h: 140, pad: 6 };
+function miniOn() { try { return localStorage.getItem('sgmini') !== '0'; } catch (e) { return S.miniOff !== true; } }
+function setMiniOn(on) { try { localStorage.setItem('sgmini', on ? '1' : '0'); } catch (e) { S.miniOff = !on; } renderMini(); }
+/* The part of the diagram in view, in diagram coordinates: [x, y, w, h]. */
+function viewRect() {
+  const r = $('canvas').getBoundingClientRect(), v = view(S.active);
+  return [-v.x / v.k, -v.y / v.k, r.width / v.k, r.height / v.k];
+}
+/* Scale and offset from diagram coordinates to the overview: the whole diagram and the view fit in. */
+function miniMap(d) {
+  const vr = viewRect();
+  let x1 = vr[0], y1 = vr[1], x2 = vr[0] + vr[2], y2 = vr[1] + vr[3];
+  if (Object.keys(d.nodes).length) { const b = bounds(d); x1 = Math.min(x1, b.x); y1 = Math.min(y1, b.y); x2 = Math.max(x2, b.x + b.w); y2 = Math.max(y2, b.y + b.h); }
+  const W = MINI.w - 2 * MINI.pad, Hh = MINI.h - 2 * MINI.pad, s = Math.min(W / ((x2 - x1) || 1), Hh / ((y2 - y1) || 1));
+  return { s, ox: MINI.pad + (W - (x2 - x1) * s) / 2 - x1 * s, oy: MINI.pad + (Hh - (y2 - y1) * s) / 2 - y1 * s };
+}
+function renderMini() {
+  const wrap = $('miniWrap'), d = S.active && S.model && S.model.diagrams[S.active];
+  wrap.hidden = !d || !miniOn();
+  if (wrap.hidden) return;
+  const svg = clear($('mini')), mp = (S.miniDrag && S.miniDrag.map) || miniMap(d), vr = viewRect();
+  const X = (x) => x * mp.s + mp.ox, Y = (y) => y * mp.s + mp.oy;
+  visibleLinks(d).forEach((lid) => { const l = S.model.links[lid], a = centerOf(d.nodes[l.source]), b = centerOf(d.nodes[l.target]);
+    put(svg, sv('line', { x1: X(a[0]), y1: Y(a[1]), x2: X(b[0]), y2: Y(b[1]), stroke: '#9ca3af', 'stroke-width': 1 })); });
+  Object.keys(d.nodes).forEach((eid) => { const n = d.nodes[eid], el = S.model.elements[eid];
+    if (!el) return;
+    const st = stOf(el.stereotype);
+    put(svg, sv('rect', { 'data-mini-node': eid, x: X(n.x), y: Y(n.y), width: Math.max(2, n.w * mp.s), height: Math.max(2, n.h * mp.s),
+      fill: st.fill, stroke: st.border, 'stroke-width': 0.75 })); });
+  put(svg, sv('rect', { id: 'miniView', x: X(vr[0]), y: Y(vr[1]), width: vr[2] * mp.s, height: vr[3] * mp.s,
+    fill: 'rgba(29,78,216,.10)', stroke: '#1d4ed8', 'stroke-width': 1.5, style: 'cursor:move' }));
+}
+/* A click centres the view on that point; pressing on the box keeps the grip; then dragging moves the view.
+   The scale is kept while dragging, so the box follows the pointer. */
+function bindMini() {
+  const svg = $('mini');
+  const at = (e, mp) => { const r = svg.getBoundingClientRect(); return [(e.clientX - r.left - mp.ox) / mp.s, (e.clientY - r.top - mp.oy) / mp.s]; };
+  const go = (pt) => { const v = view(S.active), g = S.miniDrag; v.x = -(pt[0] - g.off[0]) * v.k; v.y = -(pt[1] - g.off[1]) * v.k; renderDiagram(); };
+  svg.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || !S.active) return;
+    e.preventDefault(); hideMenu();
+    const mp = miniMap(S.model.diagrams[S.active]), pt = at(e, mp), vr = viewRect();
+    const inside = pt[0] >= vr[0] && pt[0] <= vr[0] + vr[2] && pt[1] >= vr[1] && pt[1] <= vr[1] + vr[3];
+    S.miniDrag = { map: mp, off: inside ? [pt[0] - vr[0], pt[1] - vr[1]] : [vr[2] / 2, vr[3] / 2] };
+    svg.setPointerCapture(e.pointerId);
+    go(pt);
+  });
+  svg.addEventListener('pointermove', (e) => { if (S.miniDrag && S.active) go(at(e, S.miniDrag.map)); });
+  const end = () => { if (S.miniDrag) { S.miniDrag = null; renderMini(); } };
+  svg.addEventListener('pointerup', end);
+  svg.addEventListener('pointercancel', end);
+  $('miniWrap').addEventListener('contextmenu', (e) => e.preventDefault());
+  $('miniWrap').addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 }
 
 // ---- diagrams: interaction ------------------------------------------------
@@ -612,12 +847,28 @@ function hit(e) {
   const t = under && $('canvas').contains(under) ? under.closest('[data-kind]') : null;
   return t ? { kind: t.getAttribute('data-kind'), id: t.getAttribute('data-id'), i: Number(t.getAttribute('data-i')) } : {};
 }
+function regionRect(g) {
+  return [Math.min(g.start[0], g.to[0]), Math.min(g.start[1], g.to[1]), Math.max(g.start[0], g.to[0]), Math.max(g.start[1], g.to[1])];
+}
+/* Nodes touching or inside the rectangle, top to bottom then left to right (the last one is the reference). */
+function nodesIn(r) {
+  const nodes = S.model.diagrams[S.active].nodes;
+  return Object.keys(nodes).filter((id) => { const n = nodes[id]; return n.x <= r[2] && n.x + n.w >= r[0] && n.y <= r[3] && n.y + n.h >= r[1]; })
+    .sort((p, q) => (nodes[p].y - nodes[q].y) || (nodes[p].x - nodes[q].x));
+}
+/* Smallest zoom of Fit and the mouse wheel: 2%, so large diagrams fit; text is unreadable down there,
+   which is fine for finding your way (use the overview or zoom in). */
+const MIN_ZOOM = 0.02;
 function fit() {
   const d = S.model.diagrams[S.active], ns = Object.values(d.nodes), r = $('canvas').getBoundingClientRect(), v = view(S.active);
   if (!ns.length) { v.x = 40; v.y = 40; v.k = 1; return renderDiagram(); }
-  const b = bounds(d);
-  v.k = Math.max(0.2, Math.min(1.5, (r.width - 60) / (b.w || 1), (r.height - 60) / (b.h || 1)));
-  v.x = (r.width - b.w * v.k) / 2 - b.x * v.k; v.y = (r.height - b.h * v.k) / 2 - b.y * v.k;
+  const b = bounds(d), zoom = (W, H) => Math.max(MIN_ZOOM, Math.min(1.5, (W - 60) / (b.w || 1), (H - 60) / (b.h || 1)));
+  // with the overview shown, fit beside it or above it, whichever gives the larger picture
+  let W = r.width, H = r.height;
+  if (miniOn()) { const side = MINI.w + 20, below = MINI.h + 20;
+    if (zoom(W - side, H) >= zoom(W, H - below)) W -= side; else H -= below; }
+  v.k = zoom(W, H);
+  v.x = (W - b.w * v.k) / 2 - b.x * v.k; v.y = (H - b.h * v.k) / 2 - b.y * v.k;
   renderDiagram();
 }
 function bounds(d) {
@@ -629,7 +880,11 @@ function bounds(d) {
 }
 function placeAtCenter(eid) {
   const r = $('canvas').getBoundingClientRect(), v = view(S.active);
-  op('diagram.place', { diagram: S.active, element: eid, x: Math.round((r.width / 2 - v.x) / v.k - 95), y: Math.round((r.height / 2 - v.y) / v.k - 48) });
+  placeAt(eid, (r.width / 2 - v.x) / v.k - 95, (r.height / 2 - v.y) / v.k - 48);
+}
+function placeAt(eid, x, y) {
+  x = snap(x); y = snap(y);
+  op('diagram.place', Object.assign({ diagram: S.active, element: eid, x, y }, autoOn() ? fitSize(S.model.elements[eid], x, y, 190) : {}));
 }
 function bindCanvas() {
   const svg = $('canvas');
@@ -643,10 +898,20 @@ function bindCanvas() {
     bindCanvas.last = { t: now, x: e.clientX, y: e.clientY };
     if (last && now - last.t < 400 && Math.abs(e.clientX - last.x) + Math.abs(e.clientY - last.y) < 6) { bindCanvas.last = null; return onDouble(e); }
     svg.setPointerCapture(e.pointerId);
-    if (t.kind === 'connect') S.drag = { type: 'connect', from: t.id, to: pt };
+    if (e.shiftKey) S.drag = { type: 'region', start: pt, to: null, node: t.kind === 'node' ? t.id : null, sx: e.clientX, sy: e.clientY };
+    else if (t.kind === 'node' && (e.ctrlKey || e.metaKey)) toggleNode(t.id);
+    else if (t.kind === 'connect') S.drag = { type: 'connect', from: t.id, to: pt };
     else if (t.kind === 'resize') S.drag = { type: 'resize', id: t.id, start: pt, orig: Object.assign({}, d.nodes[t.id]) };
     else if (t.kind === 'bend') S.drag = { type: 'bend', id: t.id, i: t.i };
-    else if (t.kind === 'node') { S.drag = { type: 'move', id: t.id, start: pt, orig: Object.assign({}, d.nodes[t.id]) }; select('element', t.id); }
+    else if (t.kind === 'node') {
+      // a selected node drags the whole selection; links whose both ends move take their bend points along
+      const cur = selNodes(), ids = cur.includes(t.id) ? cur : [t.id], set = new Set(ids), orig = {}, bends = {};
+      ids.forEach((id) => { orig[id] = Object.assign({}, d.nodes[id]); });
+      Object.keys(d.links).forEach((lid) => { const l = S.model.links[lid], o = d.links[lid];
+        if (l && o.points && o.points.length && set.has(l.source) && set.has(l.target)) bends[lid] = o.points.map((p) => p.slice()); });
+      S.drag = { type: 'move', id: t.id, ids, start: pt, orig, bends };
+      if (!cur.includes(t.id)) select('element', t.id);
+    }
     else if (t.kind === 'link') select('link', t.id);
     else S.drag = { type: 'pan', sx: e.clientX, sy: e.clientY, orig: Object.assign({}, view(S.active)) };
   });
@@ -657,11 +922,22 @@ function bindCanvas() {
     if (g.type === 'pan') { const dx = e.clientX - g.sx, dy = e.clientY - g.sy; if (Math.abs(dx) + Math.abs(dy) > 3) g.moved = true; v.x = g.orig.x + dx; v.y = g.orig.y + dy; }
     else if (g.type === 'connect') g.to = pt;
     else if (g.type === 'bend') { d.links[g.id].points[g.i] = [Math.round(pt[0]), Math.round(pt[1])]; g.moved = true; }
+    else if (g.type === 'region') g.to = pt;
     else {
       const dx = pt[0] - g.start[0], dy = pt[1] - g.start[1], n = d.nodes[g.id];
       if (Math.abs(dx) + Math.abs(dy) > 2) g.moved = true;
-      if (g.type === 'move') { n.x = Math.round(g.orig.x + dx); n.y = Math.round(g.orig.y + dy); }
-      else { n.w = Math.max(60, Math.round(g.orig.w + dx)); n.h = Math.max(40, Math.round(g.orig.h + dy)); }
+      if (g.type === 'move') {
+        const o = g.orig[g.id], mx = snap(o.x + dx) - o.x, my = snap(o.y + dy) - o.y;
+        g.ids.forEach((id) => { d.nodes[id].x = g.orig[id].x + mx; d.nodes[id].y = g.orig[id].y + my; });
+        Object.keys(g.bends).forEach((lid) => { d.links[lid].points = g.bends[lid].map((p) => [p[0] + mx, p[1] + my]); });
+      }
+      else {
+        // the side ends on the grid line, but never below the minimum size
+        const gs = gridNow(), side = (lo, start, end) => { const s = snap(end) - start;
+          return s >= lo ? s : gs.snap ? Math.ceil((start + lo) / gs.size) * gs.size - start : lo; };
+        n.w = side(60, g.orig.x, g.orig.x + g.orig.w + dx); n.h = side(40, g.orig.y, g.orig.y + g.orig.h + dy);
+        if (autoOn()) Object.assign(n, fitSize(S.model.elements[g.id], n.x, n.y, n.w));
+      }
     }
     renderDiagram();
   });
@@ -671,6 +947,12 @@ function bindCanvas() {
     if (!g || !S.active) return;
     const d = S.model.diagrams[S.active];
     if (g.type === 'pan') { if (!g.moved) select(null); return; }
+    if (g.type === 'region') {
+      // Shift+click (no drag) on a node: add or remove it, like Ctrl+click
+      if (Math.abs(e.clientX - g.sx) + Math.abs(e.clientY - g.sy) < 4) { if (g.node) toggleNode(g.node); else renderDiagram(); return; }
+      return selectNodes(nodesIn(regionRect(g)));
+    }
+    if (g.type === 'move' && !g.moved) { if (g.ids.length > 1) select('element', g.id); return; }
     if (g.type === 'connect') {
       const target = nodeAt(toDiagram(e));
       renderDiagram();
@@ -680,7 +962,9 @@ function bindCanvas() {
     if (!g.moved) return;
     if (g.type === 'bend') return op('diagram.link', { diagram: S.active, link: g.id, points: d.links[g.id].points });
     const n = d.nodes[g.id];
-    op('diagram.layout', g.type === 'move' ? { diagram: S.active, element: g.id, x: n.x, y: n.y } : { diagram: S.active, element: g.id, w: n.w, h: n.h });
+    if (g.type === 'move') return post(g.ids.map((id) => ({ op: 'diagram.layout', args: { diagram: S.active, element: id, x: d.nodes[id].x, y: d.nodes[id].y } }))
+      .concat(Object.keys(g.bends).map((lid) => ({ op: 'diagram.link', args: { diagram: S.active, link: lid, points: d.links[lid].points } }))));
+    op('diagram.layout', { diagram: S.active, element: g.id, w: n.w, h: n.h });
   };
   svg.addEventListener('pointerup', finish);
   svg.addEventListener('pointercancel', () => { S.drag = null; load(); });
@@ -701,7 +985,7 @@ function bindCanvas() {
     if (!S.active) return;
     e.preventDefault();
     const v = view(S.active), r = svg.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top;
-    const k = Math.max(0.2, Math.min(3, v.k * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
+    const k = Math.max(MIN_ZOOM, Math.min(3, v.k * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
     v.x = mx - (mx - v.x) * k / v.k; v.y = my - (my - v.y) * k / v.k; v.k = k;
     renderDiagram();
   }, { passive: false });
@@ -710,8 +994,12 @@ function bindCanvas() {
     if (!S.active) return;
     const t = hit(e), d = S.model.diagrams[S.active], pt = toDiagram(e).map(Math.round);
     if (t.kind === 'node' || t.kind === 'resize' || t.kind === 'connect') {
+      const cur = selNodes();
+      if (cur.length > 1 && cur.includes(t.id)) return menu(e, [
+        alignMenu(), ['Fit to text', () => fitToText(cur)], null,
+        ['Remove ' + cur.length + ' elements from this diagram', () => post(cur.map((id) => ({ op: 'diagram.remove', args: { diagram: S.active, element: id } })))]]);
       select('element', t.id);
-      menu(e, [['Find in all diagrams', () => findInDiagrams(t.id)], ['Trace', () => showPanel({ kind: 'trace', id: t.id })], ['History', () => showPanel({ kind: 'history', id: t.id })], null,
+      menu(e, [['Fit to text', () => fitToText([t.id])], ['Find in explorer', () => findInExplorer('element', t.id)], ['Find in all diagrams', () => findInDiagrams(t.id)], ['Trace', () => showPanel({ kind: 'trace', id: t.id })], ['History', () => showPanel({ kind: 'history', id: t.id })], null,
         ['Remove from this diagram', () => op('diagram.remove', { diagram: S.active, element: t.id })], ['Delete from model…', () => deleteElement(t.id)]]);
     } else if (t.kind === 'link' || t.kind === 'bend') {
       select('link', t.id);
@@ -730,15 +1018,30 @@ function bindCanvas() {
     let d; try { d = JSON.parse(e.dataTransfer.getData('text/plain')); } catch (x) { return; }
     const pt = toDiagram(e).map(Math.round);
     if (d.kind !== 'element') return;
-    if (S.model.diagrams[S.active].nodes[d.id]) return toast('Already on this diagram');
-    op('diagram.place', { diagram: S.active, element: d.id, x: pt[0] - 95, y: pt[1] - 48 });
+    const nodes = S.model.diagrams[S.active].nodes, ids = (d.ids || [d.id]).filter((x) => S.model.elements[x] && !nodes[x]);
+    if (!ids.length) return toast((d.ids || []).length > 1 ? 'All of them are already on this diagram' : 'Already on this diagram');
+    // several: in rows of four from the drop point, as one change
+    const ops = [], g = gridNow();
+    let x0 = pt[0] - 95, x = x0, y = pt[1] - 48, rowH = 0;
+    ids.forEach((id, i) => {
+      if (i && i % 4 === 0) { x = x0; y += rowH + 40; rowH = 0; }
+      const px = snap(x), py = snap(y), size = autoOn() ? fitSize(S.model.elements[id], px, py, 190) : { w: 190, h: 96 };
+      ops.push({ op: 'diagram.place', args: Object.assign({ diagram: S.active, element: id, x: px, y: py }, size) });
+      x = px + size.w + (g.snap ? g.size * 2 : 40); rowH = Math.max(rowH, size.h);
+    });
+    post(ops).then((r) => { if (r && (d.ids || []).length > ids.length) toast((d.ids.length - ids.length) + ' already on this diagram'); });
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { hideMenu(); if (!$('overlay').hidden) closeModal(); return; }
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) || !$('overlay').hidden) return;
     if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z') { e.preventDefault(); return undo(); }
-    if (e.key === 'Delete' && S.active && S.sel && S.sel.kind === 'element' && S.model.diagrams[S.active].nodes[S.sel.id])
-      op('diagram.remove', { diagram: S.active, element: S.sel.id });
+    const num = { Digit1: 'start', Digit2: 'center', Digit3: 'end' }[e.code];
+    if (num && e.shiftKey && (e.altKey !== (e.ctrlKey || e.metaKey))) { e.preventDefault(); return align(e.altKey ? 'y' : 'x', num); }
+    if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'a' && S.active) {
+      e.preventDefault(); return selectNodes(Object.keys(S.model.diagrams[S.active].nodes));
+    }
+    if (e.key === 'Delete' && selNodes().length)
+      post(selNodes().map((id) => ({ op: 'diagram.remove', args: { diagram: S.active, element: id } })));
   });
   document.addEventListener('pointerdown', (e) => { if (!$('menu').contains(e.target)) hideMenu(); });
 }
@@ -759,11 +1062,21 @@ function exportDiagram(kind) {
   const save = (blob, ext) => { const a = h('a', { href: URL.createObjectURL(blob), download: name + '.' + ext }); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
   const blob = new Blob([text], { type: 'image/svg+xml' });
   if (kind === 'svg') return save(blob, 'svg');
-  const img = new Image(), url = URL.createObjectURL(blob);
-  img.onload = () => { const c = h('canvas', { width: Math.ceil(b.w) * 2, height: Math.ceil(b.h) * 2 }); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-    URL.revokeObjectURL(url); c.toBlob((png) => save(png, 'png'), 'image/png'); };
-  img.onerror = () => toast('PNG export failed; use SVG', true);
-  img.src = url;
+  // PNG at twice the size, less for a very large diagram (browsers refuse canvases over about 16000 pixels
+  // a side or 64 million pixels in all); for the clipboard the promise goes straight into the ClipboardItem, which keeps
+  // the click's permission to write while the image is drawn
+  const png = new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(blob);
+    const k = Math.min(2, 16000 / Math.max(b.w, b.h), Math.sqrt(64e6 / (b.w * b.h)));
+    img.onload = () => { const c = h('canvas', { width: Math.max(1, Math.round(b.w * k)), height: Math.max(1, Math.round(b.h * k)) }); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); c.toBlob((p) => (p ? resolve(p) : reject(new Error('no image'))), 'image/png'); };
+    img.onerror = () => reject(new Error('no image'));
+    img.src = url;
+  });
+  if (kind === 'png') return png.then((p) => save(p, 'png'), () => toast('PNG export failed; use SVG', true));
+  if (!navigator.clipboard || typeof ClipboardItem === 'undefined') return toast('This browser cannot copy images; use PNG file', true);
+  navigator.clipboard.write([new ClipboardItem({ 'image/png': png })])
+    .then(() => toast('Diagram copied to the clipboard as an image'), (e) => toast('Copy failed: ' + e.message + '. Use PNG file.', true));
 }
 
 // ---- bottom panel: search, trace, history, check ---------------------------
@@ -831,8 +1144,12 @@ async function adopt() {
 function menu(e, items) {
   e.preventDefault();
   const m = clear($('menu'));
-  items.forEach((it) => put(m, it ? h('div', { onclick: () => { hideMenu(); it[1](); } }, it[0]) : h('hr')));
+  const entry = (it) => !it ? h('hr') : Array.isArray(it[1])
+    ? h('div', { class: 'sub' }, h('span', {}, it[0]), h('span', { class: 'arr' }, '▸'), h('div', { class: 'submenu' }, it[1].map(entry)))
+    : h('div', { onclick: (e) => { e.stopPropagation(); hideMenu(); it[1](); } }, it[0]);
+  items.forEach((it) => put(m, entry(it)));
   m.hidden = false;
+  m.classList.toggle('flip', Math.min(e.clientX, innerWidth - 200) + 560 > innerWidth);   // submenus open to the left
   m.style.left = Math.min(e.clientX, innerWidth - 200) + 'px';
   m.style.top = Math.min(e.clientY, innerHeight - m.offsetHeight - 8) + 'px';
 }
@@ -974,6 +1291,23 @@ function configDialog(kind, key) {
 }
 
 // ---- resizable panes ------------------------------------------------------
+/* The snap grid (ADR-027): view state kept per browser, the same default for everyone. */
+const GRID_DEFAULT = { size: 20, snap: true };
+function grid() {
+  let g = null;
+  try { g = JSON.parse(localStorage.getItem('sggrid')); } catch (e) { /* no storage: the default */ }
+  g = Object.assign({}, GRID_DEFAULT, g || {});
+  if (!Number.isInteger(g.size) || g.size < 2 || g.size > 200) g.size = GRID_DEFAULT.size;
+  return g;
+}
+function setGrid(change) {
+  const g = Object.assign(gridNow(), change);
+  try { localStorage.setItem('sggrid', JSON.stringify(g)); } catch (e) { S.gridOnce = g; }
+  renderDiagram();
+}
+/* A coordinate on the grid when snapping is on. */
+const gridNow = () => S.gridOnce || grid();
+function snap(v) { const g = gridNow(); return g.snap ? Math.round(v / g.size) * g.size : Math.round(v); }
 /* The sizes of the side panes and the bottom panel are kept per browser (localStorage), not in the model. */
 const PANES = { splitL: ['tree', 'width', 1], splitR: ['props', 'width', -1], splitB: ['panel', 'height', -1] };
 function paneSizes() { try { return JSON.parse(localStorage.getItem('sgpanes')) || {}; } catch (e) { return {}; } }
@@ -1027,7 +1361,7 @@ function boot() {
     S.token = sessionStorage.getItem('sgtoken');
   } catch (e) { S.token = m && m[1]; }
   if (!S.token) { put($('banner'), h('div', { class: 'err' }, 'Open the tool with the link printed by "serve" (it carries a one-time access token).')); return; }
-  bindCanvas(); bindSplitters();
+  bindCanvas(); bindMini(); bindSplitters();
   load().then(() => { if (S.model) { Object.keys(S.model.folders).forEach((f) => { if (S.model.folders[f].parent == null) S.expanded.add(f); }); renderTree(); } });
   setInterval(poll, 3000);
 }

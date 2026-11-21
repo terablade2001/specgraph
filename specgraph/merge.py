@@ -60,6 +60,12 @@ def merge_texts(base_text, ours_text, theirs_text, key_path):
     except M.ModelError:
         base = None
     ours, theirs = M.parse(ours_text), M.parse(theirs_text)
+    for side, model in (("our", ours), ("their", theirs)):  # ADR-031: never carry in and re-sign a hand edit
+        problems = S.check_integrity(model)
+        if problems:
+            raise M.ModelError("%s version was changed outside the tool, so it is not merged: %s. Run "
+                               "'git merge --abort' and have that branch repaired first (its author runs "
+                               "'adopt' there, or restores the file from git)." % (side, problems[0]))
     merged, conflicts = merge3(base, ours, theirs)
     actor = S.whoami(merged, key_path)
     if merged.get("formatVersion", 1) >= 2:  # one side may still be format 1

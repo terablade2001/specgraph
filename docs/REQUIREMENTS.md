@@ -31,6 +31,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | ELM-04 | The status of an element is one of the configured statuses. |
 | ELM-05 | An element exists once in the model and may appear on several diagrams. |
 | ELM-06 | Removing an element from a diagram keeps it; deleting shows where it is used and removes its links. |
+| ELM-07 | Changing the stereotype of an element gives it a new generated label of the new type, unless a label is given in the same change (ADR-026). |
 
 ## FLD — folders
 
@@ -51,7 +52,14 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | DGM-05 | Elements show their stereotype and status visually. |
 | DGM-06 | A link's look follows its link type. |
 | DGM-07 | Links between elements on a diagram appear from the model. |
-| DGM-08 | A diagram can be exported as an image (SVG and PNG). |
+| DGM-08 | A diagram can be exported as an image (SVG and PNG file) or copied to the clipboard as an image, from the *Export* menu of the diagram tools. |
+| DGM-09 | Several elements of a diagram can be selected: Ctrl+A selects all, Ctrl+click or Shift+click adds or removes one, Shift+drag selects every element touching the rectangle (ADR-027). |
+| DGM-10 | Dragging one element of a selection moves them all as one change; links follow while dragging, and the bend points of links between selected elements move along. |
+| DGM-11 | The selected elements can be aligned with the last selected one, from the Align submenu or the keyboard: horizontally by left edge, centre or right edge (Ctrl+Shift+1/2/3), vertically by top edge, centre or bottom edge (Alt+Shift+1/2/3) (ADR-028). |
+| DGM-12 | Elements can snap to a grid when they are created, moved or resized; the grid size and the switch are in the diagram tools, start at the same default for everyone (20, on) and are kept by the browser. |
+| DGM-13 | An overview of the whole diagram shows which part is in view; a click there moves the view to that point and dragging its box moves the view. It can be hidden (ADR-028). |
+| DGM-14 | *Fit* and the mouse wheel zoom out down to 2%, so a large diagram fits in the window. |
+| DGM-15 | With *Auto size* on (the default), an element on a diagram is sized to show its whole text without changing a font, and is always wider than tall (width / height above 1.2): when it is created, when its topic, label or type changes, and when its width is dragged. *Fit to text* does the same on demand (ADR-030). |
 
 ## LNK — links
 
@@ -129,6 +137,8 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | CHK-01 | A pre-commit hook blocks hand edits and invalid models. |
 | CHK-02 | One command installs the hooks and the merge driver. |
 | CHK-03 | A history audit reports integrity, lock and identity violations. |
+| CHK-04 | The audit run by hand checks the whole history, or only the commits from one given commit to another, both included (ADR-025). |
+| CHK-05 | The pre-push hook checks only the commits that the remote does not have yet. |
 
 ## HST, USE, DOC
 
@@ -141,6 +151,11 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | USE-06 | The tool runs only when exactly one key is loaded in ssh-agent. |
 | USE-07 | A folder can be collapsed or expanded together with all its sub-folders. |
 | USE-08 | The widths of the explorer and the properties pane, and the height of the bottom panel, are changed by dragging the line next to them. |
+| USE-09 | In the explorer, a double-click opens a diagram and opens or closes a folder; Ctrl+double-click opens a folder with all its sub-folders, Alt+double-click closes them all. |
+| USE-10 | "Find in explorer" opens the folders above the selected item, selects it there and scrolls it into view. |
+| USE-11 | An element with notes is marked on the diagram and in the tree; pointing at the mark shows the start of the notes. |
+| USE-12 | The editor has its own icon in the browser tab. |
+| USE-13 | In the explorer, Ctrl+click and Shift+click add or remove elements from the one selection the explorer and the open diagram share; dragging one selected element moves all selected ones (into a folder, before or after an element, onto the diagram). |
 | DOC-05 | A demo model, built through the tool's own operations. |
 
 ## IDs with no recorded meaning

@@ -19,7 +19,8 @@ from .store import StoreError
 WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 STATIC = {"/": ("index.html", "text/html; charset=utf-8"),
           "/app.js": ("app.js", "text/javascript; charset=utf-8"),
-          "/style.css": ("style.css", "text/css; charset=utf-8")}
+          "/style.css": ("style.css", "text/css; charset=utf-8"),
+          "/favicon.svg": ("favicon.svg", "image/svg+xml")}
 MAX_BODY = 5 * 1024 * 1024
 CSP = ("default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
        "img-src 'self' data: blob:; connect-src 'self'; base-uri 'none'; form-action 'none'; "

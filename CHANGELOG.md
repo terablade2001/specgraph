@@ -3,6 +3,105 @@
 Changes of the tool that a user or an agent can notice, newest first. The version is `VERSION` in
 `specgraph/__init__.py` (`python sg.py --version`). Design reasons are in `docs/ADRS.md`.
 
+## 0.3.1 — 2026-11-21
+
+Design: ADR-031 (approved by the owner 2026-11-21). Fixes two findings of the security review of 0.3.0.
+
+### Changed
+
+- **A merge refuses a side that was edited outside the tool.** The merge driver and `sg.py resolve` check the stamp
+  of our and their version first. If one of them was changed by hand, nothing is merged, git reports the model as
+  conflicted with our version in place, and the message says which side. Run `git merge --abort` and have that
+  branch repaired (its author runs `sg.py adopt` there, or restores the file from git). Before, such an edit was
+  merged in silently and signed by the person merging.
+
+### Fixed
+
+- The editor uses a type, status or link colour only when it is `#rrggbb`. A colour edited by hand into the file
+  could put arbitrary CSS into the page's styles (the content security policy still blocked outside loads).
+
+### Documentation
+
+- `docs/SECURITY-REVIEW.md` and `AI-Disclaimer.md` cover 0.3.1.
+
+## 0.3.0 — 2026-11-21
+
+Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, ADR-029, ADR-030.
+
+### Changed
+
+- **No "Decision date" field in new models.** ADR and TEMPORAL-ADR start with *Owner* only; the last change of
+  every element is recorded anyway. An existing model keeps the field until you delete it under
+  *Configure* → *Stereotypes*. The stored example model is rebuilt without it.
+- **A type change gives a new label.** Changing an element's stereotype (ADR to REQ) replaces its label by
+  the generated label of the new type (`ADR-3d6e7863` becomes `REQ-3d6e7863`), also when the label was
+  typed by hand (`ADR-001`). A label passed in the same `element.update` wins. References to the old
+  label no longer find the element; its id prefix still does.
+- **The pre-push hook checks only the commits being pushed** (those the remote does not have yet), so an
+  old finding no longer blocks every push and `--no-verify` is not needed for it. Run
+  `python sg.py install-hooks` once to update hooks installed by an older version.
+
+### Added
+
+- **`sg.py audit <from> [<to>]`** checks only the commits from `<from>` to `<to>`, both included (`<to>`
+  defaults to `HEAD`). `sg.py audit` without commits still checks the whole history.
+- **Find in explorer.** Right-click an element on a diagram, or use the button in the properties of an
+  element, diagram or folder: the folders above it open, it is selected and the explorer scrolls to it.
+- **Double-click in the explorer on a folder** opens or closes it. Ctrl+double-click opens it with all
+  sub-folders; Alt+double-click closes it with all sub-folders.
+
+- **Several elements on a diagram.** Ctrl+click or Shift+click adds or removes an element; Shift+drag selects every
+  element touching the rectangle. Dragging one moves them all as one change (one undo step); links follow
+  while dragging. *Delete* removes all of them from the diagram.
+- **Alignment.** With two or more selected, right-click one for *Align* ▸ *Horizontal* ▸ *Left / Center /
+  Right* (Ctrl+Shift+1/2/3) or *Align* ▸ *Vertical* ▸ *Top / Center / Bottom* (Alt+Shift+1/2/3). They line
+  up with the last selected element. The same six buttons are in the properties pane.
+- **Auto size**, on by default. Elements are sized to show their whole text without changing fonts and are
+  always wider than tall (width / height above 1.2): when placed, when their topic, label or type changes, and
+  while their width is dragged. Right-click → *Fit to text* fits one element or a selection at any time;
+  switching *Auto size* on fits the selected elements.
+- **Selection in the explorer.** Ctrl+click and Shift+click work in the tree too; the tree and the open diagram
+  share one selection. Dragging a selected row moves or places all selected elements, as one change.
+- **Ctrl+A** selects every element of the open diagram. In the tree the selected elements are grey-green, the last
+  selected (the reference for alignment) blue, so the ones not selected stand out.
+- **Notes mark.** An element with notes shows a 📜 badge on the diagram (next to the lock, if any) and in the
+  tree; point at it for the start of the notes.
+- **Tab icon.** The editor has its own icon in the browser tab.
+- **Export menu.** *Export SVG* and *Export PNG* are now in an *Export ▾* menu of the diagram tools, which
+  also has *Copy image to clipboard* (a PNG).
+- **Overview of the diagram** at the bottom right of the canvas, with a box for the part in view: click to
+  look there, drag the box to move the view. *Overview* in the diagram tools hides it.
+- **Snap to grid**, on by default. *Grid* (size in diagram pixels, default 20) and *Snap* in the diagram
+  tools. With snap on, elements land on the grid when they are created, moved or resized; the grid is
+  shown as dots in place of the plain background dots.
+  The browser remembers the settings; they are not part of the model.
+
+### Fixed
+
+- The lock and notes badges no longer cover the end of an element's label.
+- *Fit* no longer puts elements under the overview.
+- *Fit* and the mouse wheel stopped at 20%, so a large diagram did not fit. They now go down to 2%.
+- PNG export of a very large diagram failed (the image was beyond the browser's limits). It is now scaled down.
+- Double-clicking a diagram in the explorer opens it again. The first click re-drew the tree, so the
+  browser never reported the double-click.
+
+### Compatibility
+
+- The format version stays 2; nothing in the file changed shape. Version 0.2 reads a file written by 0.3.
+- Hooks installed by 0.2 keep checking the whole history on every push until `python sg.py install-hooks`
+  is run again.
+- Grid, snap, auto size and overview settings are kept by the browser, not in the model.
+
+### Documentation
+
+- The README screenshots show version 0.3.0. The stored example model (`specmodel.example.json`) is rebuilt.
+
+### Known gaps
+
+- A merge does not check the stamps of the two sides: a model edited by hand on another branch is merged
+  without a warning and signed by the person merging. Fixed in 0.3.1.
+- Elements laid out before 0.3.0 keep their sizes; select them and use *Fit to text* to apply auto size.
+
 ## 0.2.0 — 2026-11-16
 
 Design: ADR-024 (approved by the owner).

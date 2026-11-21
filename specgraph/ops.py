@@ -222,7 +222,8 @@ def element_create(m, a, ctx):
 
 
 @op("element.update", "{id, topic?, notes?, status?, label?, stereotype?, fields?} "
-                      "fields is merged; a null value removes that field.")
+                      "fields is merged; a null value removes that field. A new stereotype gives a new "
+                      "generated label unless label is passed too.")
 def element_update(m, a, ctx):
     eid = a.get("id")
     el = _get(m["elements"], eid, "element")
@@ -240,6 +241,9 @@ def element_update(m, a, ctx):
                               m["config"]["linkTypes"][l["type"]]["label"])
         if "status" not in a and el["status"] not in V.allowed_statuses(m["config"], el["stereotype"], True):
             raise OpError("current status is not allowed for %s; pass a status too" % el["stereotype"])
+        if "label" not in a:                      # ADR-026: a generated label of the new type
+            el["label"] = ""
+            el["label"] = _auto_label(m, el["stereotype"], eid)
     if "topic" in a:
         el["topic"] = _text(a, "topic", required=True, max_len=300)
     if "notes" in a:

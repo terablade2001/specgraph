@@ -99,7 +99,7 @@ normally: they were legitimate when made.
 history. Deleting an element is refused if that would alter a locked diagram or a link owned by a
 locked element.
 
-## ADR-006 — Local checks: git hooks plus an after-the-fact audit  · stakes: medium
+## ADR-006 — Local checks: git hooks plus an after-the-fact audit  · stakes: medium · amended by ADR-025
 **Context.** REQ-CHK-01..03.
 **Decision.** `install-hooks` writes `pre-commit` (`check --staged`) and `pre-push` (`audit`), and
 never overwrites a foreign hook without `--force`. `audit` replays the same checks for every commit
@@ -223,7 +223,7 @@ contain `-` (`validate.KEY`), which the names need. `association` is a solid, ar
 that is not traceable. No link type limits which stereotypes it may connect, and no stereotype limits its statuses
 (owner decision: no built-in restrictions; a user adds limits in the configuration, `sources` and `targets` on a
 link type, `statuses` on a stereotype). Fields: priority and owner on REQ, B-REQ, U-REQ; owner on ISSUE, CONSTRAINT, FEAT and the
-tests; decision date and owner on both ADR kinds; severity and likelihood on RISK.
+tests; owner on both ADR kinds (a decision date was removed by ADR-029); severity and likelihood on RISK.
 **Consequences.** Only models created after this change get the new defaults; an existing
 `specmodel.json` keeps its own configuration and is changed through `config.put`. A tool older than
 this change rejects a model that uses a hyphenated key. Everything here is editable in the tool.
@@ -266,7 +266,7 @@ others once they have pulled it, so lock, then commit and push. There is no expi
 is a deliberate act. Replaces REQ-LCK-04 as written (linking to locked content) and the "owner or
 administrator" part of REQ-LCK-02.
 
-## ADR-023 — Generated labels are the type prefix plus the first 8 id characters  · stakes: medium
+## ADR-023 — Generated labels are the type prefix plus the first 8 id characters  · stakes: medium · amended by ADR-026
 **Context.** Owner decision (2026-11-15): sequential labels (`REQ-014`, highest number plus one) clash when two
 branches create elements in parallel, and a number is reused after a delete, so an old reference in a document can
 point at something else. A short form of the id works like a short git hash. Four characters were rejected as too
@@ -307,3 +307,116 @@ version stays 2 and version 0.1 still reads the file (it ignores the order and s
 `settings.branch`). The first reorder in a folder numbers all items of that kind there, which touches several
 lines of the file. An order chosen on the other branch can be lost in a merge; drag again. Items of different
 kinds cannot be mixed in the tree.
+
+## ADR-025 — The pre-push hook checks only the commits being pushed  · stakes: medium · **approved by the owner 2026-11-21**
+**Context.** Owner request (2026-11-21), version 0.3.0. The pre-push hook of ADR-006 audits the whole history on
+every push. One old finding then blocks every later push, and the user is pushed towards `--no-verify`, which
+skips the check for the new commits too.
+**Decision.**
+1. The pre-push hook reads the refs git hands it on stdin and audits only the commits that the remote does not have
+   yet: for each pushed ref, `<local sha> --not <remote sha> --remotes=<remote>`. A deleted ref is skipped. A new
+   branch is checked from where it leaves what the remote already has. Findings in these commits block the push,
+   as before.
+2. `sg.py audit` run by hand still checks the whole history of `HEAD` and reports every finding. A new form
+   `sg.py audit <from> <to>` checks only the commits from `<from>` to `<to>`, both included. `--rev` and `--since`
+   stay for scripts.
+3. Hooks installed by an older version keep auditing the whole history until `sg.py install-hooks` is run again;
+   it replaces its own hooks without `--force`.
+**Consequences.** A push no longer re-checks old commits, so an old finding is no longer reported on every push:
+it is seen only when someone runs `sg.py audit`. Pushing a branch that is not on the remote yet checks all its
+commits that are not on any branch of that remote.
+
+## ADR-026 — Changing an element's type gives it a new generated label  · stakes: medium · **approved by the owner 2026-11-21**
+**Context.** Owner request (2026-11-21). After a type change (ADR to REQ) the label still shows the old prefix
+(`ADR-3d6e7863`), which reads as the wrong type. ADR-023 said existing labels are never changed.
+**Decision.** When `element.update` changes the stereotype and the call does not pass a `label`, the label is
+replaced by a new generated one for the new type (`ops._auto_label`, ADR-023), for example `REQ-3d6e7863`. This
+applies to every old label, also a hand-typed one such as `ADR-001`. A new type with an empty prefix gives no
+label. A `label` passed in the same call wins. ADR-023 is amended: labels are not changed, except on a type change.
+**Consequences.** The label always matches the type after a type change. A reference to the old label in a
+document, commit message or report no longer finds the element; the id prefix still does. Hand-typed labels are
+lost on a type change; type the label again if it is still wanted.
+
+## ADR-027 — Editor: multi-selection, alignment and a snap grid  · stakes: low · **approved by the owner 2026-11-21**
+Ctrl+click adds or removes a node of a diagram from the selection; Shift+drag on the empty canvas selects every node
+touching the rectangle. A selection moves as one: its nodes and the bend points of links between them move
+together, links to other nodes follow while dragging, and the result is one `diagram.layout` batch (one undo
+step). Alignment lines the selected nodes up with the last selected node (the set of alignments is in ADR-028). The grid size and the snap switch are view state kept in the browser (like the pane
+sizes, ADR-024); nothing is stored in the model. Everyone starts with the same default: a 20-pixel grid, snap on. Snapping puts the top-left corner of a node on the grid when it is created or moved (in a group move: the dragged
+node; the others keep their distance to it) and the lower-right corner when it is resized. Alignment is not snapped:
+the edges or centres must line up exactly. While snapping is on, the grid is shown as dots in place of the plain background dots; it is not exported.
+
+## ADR-028 — Editor: an overview of the diagram and six alignments in a submenu  · stakes: low
+Owner request (2026-11-21). **Overview:** a small map of the whole open diagram at the bottom right of the canvas,
+with a box for the part in view. A click there centres the view on that point; dragging the box moves the view. It
+scales to fit the diagram and the view together, keeps that scale while dragging, draws nodes in their type colours
+and links as straight lines, and is not exported. An *Overview* switch in the diagram tools hides it; the browser
+keeps that choice (view state, like the grid). It covers a corner of the canvas: pan or hide it to reach what is
+under it. **Alignment** replaces the two centre alignments of ADR-027 with six, in a submenu Align ▸ Horizontal
+(left, center, right: Ctrl+Shift+1/2/3, same x of an edge or the centre) and Align ▸ Vertical (top, center, bottom:
+Alt+Shift+1/2/3, same y). This swaps the meaning of the earlier names: *vertical center* (Alt+Shift+2) now lines
+centres up in one row, *horizontal center* (Ctrl+Shift+2) in one column. The menu helper gains submenus
+(`[label, [items]]`), opened on hover and to the left near the right edge of the window.
+**Export and zoom** (owner request, same day): *Export SVG* and *Export PNG* move into an *Export* menu, which also
+copies the diagram to the clipboard as a PNG image (Clipboard API; the editor's 127.0.0.1 address counts as a secure
+origin). A PNG is drawn at twice the size, less when that would pass the browsers' canvas limits (16000 pixels a side,
+64 million pixels in all), so a very large diagram is scaled down instead of failing. *Fit* and the wheel zoom out to
+2% instead of 20%: text is unreadable there, but the whole diagram fits; nothing else depends on the zoom. The snap
+dots are not drawn when they would be closer than 4 screen pixels.
+
+## ADR-029 — No decision date field; notes mark, Shift+click and a tab icon  · stakes: low
+Owner decisions (2026-11-21). **Decision date:** the default ADR and TEMPORAL-ADR types no longer have a typed
+`decisionDate` field. Every element already records its last change (`modified`, ADR-016), and a date that matters
+for a decision goes into its notes. Only new models are affected; an existing model keeps the field and its values
+until someone deletes the field under Configure → Stereotypes. The example model is rebuilt without it.
+**Notes mark:** an element whose notes are not blank shows a scroll badge (📜 in a blue circle) at the top right of its box (left of
+the lock badge when both are shown) and a 📜 in the tree; the tooltip shows the first 300 characters of the notes. The badge
+is part of the drawing, so it is also exported. **Shift+click** on a node adds or removes it like Ctrl+click; a Shift
+press that moves more than 3 pixels is a rectangle selection, as before. **Tab icon:** `web/favicon.svg`, a page with a
+small graph on it (the owner's pick of four designs), served as one more file of the fixed static list (`server.STATIC`); `/favicon.ico` still answers
+204 for browsers that ask for it.
+
+## ADR-030 — Auto size: whole text visible, always landscape  · stakes: low
+Owner request (2026-11-21). **Rule** (`app.js`, `fitSize`): fonts never change. The width of a node is a minimum
+(190 for a new one); it grows when the top line («type» and label), the status pill or the longest word of the
+topic would not fit. The topic is wrapped at that width and the height is just enough for all its lines, the top line
+and the pill (an ellipse needs more, its text area is smaller). The box is always landscape: width / height above
+1.2, never equal; when the text would need a portrait box the width grows instead, in grid steps when snapping
+(10 pixels otherwise), and both sides end on the grid. **When:** with *Auto size* on (diagram tools, kept by the
+browser like *Snap*, on by default) a node is fitted when it is placed, when the element's topic, label or type
+changes (on every diagram it is on, in the same change as the edit, so one undo step; diagrams in a folder locked by
+someone else are left alone, since their change would refuse the whole edit), and while its width is dragged (the
+height follows; dragging the height alone does nothing). *Fit to text* in the context menu fits one node or a
+selection whatever the switch says. With the switch off, sizes are manual and any shape is allowed. **Limit:**
+text is measured in the browser, so a change made with `sg.py apply` or by an agent is not fitted; *Fit to text*
+fixes that later. For a type change the editor measures the label the server will generate (ADR-026).
+**Additions (same day):** the label ends left of the lock and notes badges, and the fitted width leaves them that room.
+Switching *Auto size* on fits the selected nodes at once. Ctrl+A selects every node of the open diagram; the tree
+shows the selected elements grey-green and the last selected (the alignment reference) blue, each with a bar at the left.
+**One selection for explorer and diagram:** Ctrl+click and Shift+click on an element row add or remove it, as on the
+diagram (Shift does not select a range). The explorer shows every selected element; the diagram works on those that are
+on it, and the last of those is its alignment reference. Dragging a selected row takes all selected elements: into a
+folder, before or after an element (as a block, in tree order), or onto the diagram (those not yet on it, in rows of
+four from the drop point, fitted when Auto size is on). Each drop is one change. *Fit* keeps
+the corner of the overview free: it fits the diagram beside or above the overview, whichever gives the larger picture.
+
+## ADR-031 — A merge refuses a side that was edited outside the tool  · stakes: medium · **approved by the owner 2026-11-21**
+**Context.** Security review of 0.3.0 (`docs/SECURITY-REVIEW.md`, point 1). The merge driver and `resolve` merged two
+versions without looking at their stamps and signed the result under the person merging. A model edited by hand on
+another branch was carried in without a warning; the merged file and the merge commit then looked intact, and only a
+full `sg.py audit` still showed the hand edit at its own commit. Since ADR-025 the pre-push hook no longer re-checks
+commits the remote already has, so such an edit could go unnoticed for a long time.
+**Options.** (a) leave it and tell people to run `audit`; (b) warn and merge anyway; (c) refuse the merge when either
+side fails the integrity check; (d) run the full commit check (rules against the merge base) on each side.
+**Decision.** (c). Before merging, the driver and `resolve` check our and their version the way the editor checks
+the working file (`stamp.check_integrity`): the content must match its stamp, and the stamp must be signed by a key
+of the named user in that version's own user list. If either fails, nothing is written, the driver exits with an
+error, and git reports the model file as conflicted with our version left in place. The message names the side and
+tells the user to `git merge --abort` and have that branch repaired (its author runs `sg.py adopt` there, which
+re-checks the rules against that branch's last commit, or restores the file from git). The merge base is not
+checked: it is already part of both histories. (d) was rejected: the driver sees three file versions, not the
+commits between them, so it cannot tell whose change is whose.
+**Consequences.** The common case (a hand edit that kept the old stamp) can no longer be merged in silently. A
+forger who adds their own key to their side and signs with it still passes this check, as with the working file;
+the commit hook and `audit` catch that, because they verify against the previous commit's user list (ADR-003).
+Merges of versions written by the tool are unchanged.

@@ -83,13 +83,40 @@ def check_staged(store):
     return findings, notes
 
 
-def audit_history(store, rev="HEAD", since=None):
-    """Walk every commit that touched the model. Returns a list of
+ZERO = "0" * 40
+
+
+def range_revs(first, last="HEAD"):
+    """rev-list arguments for the commits from `first` to `last`, both included (ADR-025)."""
+    return [last, "--not", first + "^@"]
+
+
+def push_revs(store, remote, lines):
+    """rev-list arguments for the commits a push sends that `remote` does not have yet (ADR-025).
+    `lines` are what git gives the pre-push hook: <local ref> <local sha> <remote ref> <remote sha>.
+    None when the push sends no commits (only deletions)."""
+    tips, known = [], []
+    for line in lines:
+        parts = line.split()
+        if len(parts) != 4 or set(parts[1]) == {"0"}:
+            continue                                   # a deleted ref sends nothing
+        tips.append(parts[1])
+        old = parts[3]
+        if set(old) != {"0"} and gitio.git(store.root, "cat-file", "-e", old + "^{commit}", check=False)[0] == 0:
+            known.append(old)
+    if not tips:
+        return None
+    return tips + ["--not"] + known + (["--remotes=%s" % remote] if remote else [])
+
+
+def audit_history(store, rev="HEAD", since=None, revs=None):
+    """Walk the commits that touched the model: all of `rev`, those after `since`, or those
+    selected by the rev-list arguments `revs`. Returns a list of
     {commit, author, date, subject, findings, notes}."""
     rel = gitio.rel_path(store.root, store.path)
-    rng = "%s..%s" % (since, rev) if since else rev
+    rng = revs or (["%s..%s" % (since, rev)] if since else [rev])
     _, out = gitio.git(store.root, "rev-list", "--topo-order", "--reverse", "--full-history",
-                       "--parents", rng, "--", rel)
+                       "--parents", *rng, "--", rel)
     report = []
     for line in out.splitlines():
         commit, *parents = line.split()

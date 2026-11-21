@@ -35,7 +35,7 @@ def install(store, force=False):
     done = []
     bodies = {
         "pre-commit": '%s --file "%s" check --staged || exit 1\n' % (cmd, rel),
-        "pre-push": '%s --file "%s" audit --quiet || {\n  echo "%s: push blocked, see findings above" >&2\n  exit 1\n}\n' % (cmd, rel, TOOL_NAME),
+        "pre-push": '%s --file "%s" audit --quiet --push "$1" || {\n  echo "%s: push blocked, see findings above" >&2\n  exit 1\n}\n' % (cmd, rel, TOOL_NAME),
     }
     for name, body in bodies.items():
         path = os.path.join(hooks_dir, name)

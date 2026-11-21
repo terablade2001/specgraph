@@ -11,7 +11,7 @@ through a command.
 - No third-party code is bundled. Test-only extras: `pytest`, and optionally `playwright`.
 - MIT licensed.
 
-**Status: version 0.2.0, an early release.** It works for the author's own use, and the file format
+**Status: version 0.3.0, an early release.** It works for the author's own use, and the file format
 and commands may still change. It has been run on Windows (Git Bash) with Python 3.13 only; Linux,
 macOS and older Python versions are expected to work but have not been checked. The signing and
 integrity checks have not been reviewed by anyone independent: read ADR-003 in `docs/ADRS.md` for
@@ -188,7 +188,11 @@ survives restarts of the terminal. This path is not covered by the tests.
 Your browser opens the editor (it only listens on your own machine).
 
 - **Left:** folder tree. Right-click a folder for *New REQ / ADR / …*, *New diagram*, *Lock*.
-  Drag items between folders. Double-click a diagram to open it.
+  Drag items between folders. Double-click a diagram to open it, or a folder to open or close it
+  (Ctrl+double-click: with all sub-folders, Alt+double-click: close them all).
+  - **Find in explorer:** in the right-click menu of an element on a diagram, and as a button in the
+    properties of an element, diagram or folder. It opens the folders above the item, selects it and
+    scrolls the explorer to it.
   - **Order:** drag an item onto the upper or lower edge of another item of the same kind (folder, diagram,
     element) to put it before or after it; a line shows where it lands. The middle of a folder moves it into
     that folder. The order is saved in the model. New items go to the end of their group.
@@ -199,6 +203,30 @@ Your browser opens the editor (it only listens on your own machine).
 - **Middle:** diagrams. Drag elements in from the tree, or right-click the background to create one there.
   Drag to move, corner handle to resize, blue dot to draw a link to another element.
   Double-click a link to add a bend (user-defined routing). *Delete* key removes from the diagram only.
+  - **Several elements:** Ctrl+click and Shift+click work in the tree too, and the tree and the diagram share
+    the selection. Drag one selected row to move all of them into a folder, between elements, or onto the
+    diagram. In the tree the last selected element is blue and the other selected ones grey-green. Ctrl+A selects all. Ctrl+click or Shift+click elements to add or remove them, or hold Shift and drag a rectangle
+    (every element it touches is selected). Drag one of them to move them all; links follow. *Delete*
+    removes all of them from the diagram.
+  - **Align:** right-click one of the selected elements, then *Align* ▸ *Horizontal* ▸ *Left / Center / Right*
+    (Ctrl+Shift+1/2/3) or *Align* ▸ *Vertical* ▸ *Top / Center / Bottom* (Alt+Shift+1/2/3). The properties
+    pane has the same six buttons. The last selected element stays where it is (solid outline; the others are
+    dashed); after a Shift+drag that is the lowest one. If Alt+Shift switches your keyboard language in
+    Windows, use the menu.
+  - **Export ▾** in the diagram tools: *SVG file*, *PNG file*, or *Copy image to clipboard* (paste it into a
+    document or chat). *Fit* shows the whole diagram, zooming out as far as 2%; so does the mouse wheel.
+  - **Auto size** (diagram tools, on by default): elements get the size that shows their whole text, and are
+    always wider than tall (width / height above 1.2). It applies when an element is placed, when its topic,
+    label or type changes (on every diagram), and while you drag its width. Right-click → *Fit to text* fits
+    one element or a selection at any time, for example after a change made by an agent. Switching it on
+    fits the selected elements at once. Switch it off for manual sizes of any shape.
+  - **Overview:** the small map at the bottom right shows the whole diagram and a box for the part in view.
+    Click anywhere in it to look there, or drag the box. *Overview* in the diagram tools hides it.
+  - **Snap to grid:** on by default. *Snap* in the diagram tools switches it, *Grid* sets the size in diagram
+    pixels (default 20). New, moved and resized elements land on the grid, which is shown as darker dots
+    in place of the plain background. When several move, the
+    one you drag lands on the grid and the others keep their distance. Alignment is not snapped. The
+    browser remembers both settings; they are not part of the model.
 - **Undo**: the *Undo* button or Ctrl+Z takes back your last changes in this editor session
   (20 steps; `serve --undo N` or `SPECGRAPH_UNDO=N` to change, 0 = off). The list is emptied when
   the editor stops or the file is changed by something else (a command, `git pull`).
@@ -206,9 +234,13 @@ Your browser opens the editor (it only listens on your own machine).
   `specmodel.deleted.jsonl` with their last commit; commit that file with the model.
 - Every element shows who last changed it and when; the ⧉ button next to an id copies it.
 - The tool version is shown next to the name in the top bar (`python sg.py --version`).
-- **Right:** properties of what is selected. Edits apply when you leave the field.
+- **Right:** properties of what is selected. Edits apply when you leave the field. Changing the
+  *Stereotype* gives the element a new label of that type (`ADR-…` becomes `REQ-…`); type the label again
+  afterwards if you want another one.
 - **Search** (top): id or the start of an id, label, or any text. Each result lists its diagrams;
   **double-click a diagram** to open it with the element centred and selected.
+- **Notes mark:** a 📜 badge on an element (on the diagram and in the tree) means it has notes; point at
+  it to read the start of them.
 - **Locks:** *Lock* on a folder says "I am working here". While it is set, nobody else changes the
   folder, its sub-folders or anything in them, and nobody else links to its elements; you still can.
   Others can view it and place its elements on their diagrams. It is meant to be temporary: when you
@@ -230,6 +262,8 @@ element shows it in words ("status Proposed → Validated, by bob, 2026-11-13").
   the file stays valid, and the editor shows both values under **Check** — pick one, then
   `git add specmodel.json && git commit`.
 - If a merge was done without the driver and the file has conflict markers: `python sg.py resolve`.
+- A merge refuses a side whose model was edited outside the tool (ADR-031). Run `git merge --abort` and have
+  that branch repaired first: its author runs `python sg.py adopt` there, or restores the file from git.
 - Never edit `specmodel.json` by hand. If it happens, the tool goes read-only and offers
   *Adopt* (take responsibility for the change under your name) or restore it with `git checkout -- specmodel.json`.
 
@@ -239,8 +273,13 @@ element shows it in words ("status Proposed → Validated, by bob, 2026-11-13").
 |---|---|
 | every change in the tool | validation of the change, lock rules, identity, signed stamp |
 | `git commit` (hook) | `sg.py check --staged`: valid model, intact stamp, known signer, locks respected |
-| `git push` (hook) | `sg.py audit --quiet` over the branch history |
-| any time | `sg.py audit` reports every commit that broke a rule, even if hooks were skipped |
+| `git push` (hook) | `sg.py audit --push`: only the commits being pushed that the remote does not have yet |
+| any time | `sg.py audit` reports every commit of the history that broke a rule, even if hooks were skipped |
+| any time | `sg.py audit <from> <to>` checks only the commits from `<from>` to `<to>`, both included (`<to>` defaults to `HEAD`) |
+
+An old finding that is already on the remote no longer blocks a push; `sg.py audit` still reports it.
+Hooks installed by version 0.2 or older check the whole history on every push: run `python sg.py install-hooks`
+once to update them.
 
 ## For AI agents
 
@@ -294,10 +333,12 @@ Without them the signing tests are skipped.
 ## Safety notes
 
 - The editor server binds to `127.0.0.1`, requires a random per-run token on every request,
-  rejects foreign `Host` headers and serves three fixed files. It never executes model content.
+  rejects foreign `Host` headers and serves four fixed files. It never executes model content.
 - The tool never reads a private key or a passphrase: signing is done by `ssh-keygen` through `ssh-agent`.
 - What the integrity mechanism does and does not prove: `docs/ADRS.md`, ADR-003.
-- A security review of version 0.1.0, with its limits, is in `docs/SECURITY-REVIEW.md`.
+- A security review of version 0.3.1, with its findings and limits, is in `docs/SECURITY-REVIEW.md`.
+- Hooks run on each machine and can be skipped, and the pre-push hook checks only new commits, so run
+  `python sg.py audit` (whole history) now and then, for example in CI.
 - Found a security problem? Report it through the repository's *Security* tab on GitHub
   ("Report a vulnerability") if it is enabled, otherwise open an issue without the details
   and ask for a private contact.
