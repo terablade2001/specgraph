@@ -46,7 +46,7 @@
 | SRC-01, SRC-02, SRC-05 | core `test_src01_02_05_*`; ui |
 | SRC-03, SRC-04 | ui |
 | INT-01 | integ `test_int01_*` |
-| INT-02 | integ `test_int02_*` (two tests) |
+| INT-02 | integ `test_int02_*` (two tests), `test_adr031_*` (a merge refuses a hand-edited side, driver and `resolve`) |
 | INT-03 | integ `test_int03_sto08_*` |
 | INT-04 | core `test_int04_*` |
 | INT-05 | docs/ADRS.md ADR-003 (a document, not testable) |
@@ -76,6 +76,7 @@
 | ADR-018 deleted elements log | changes `test_adr018_*` (3 tests) |
 | ADR-019 confirmation before delete | changes `test_adr019_*` (server); core `test_cli_delete_requires_confirmation`. Pop-ups for folder, configuration entry and user, and the copy-id button, have no automated test |
 | Tool version | changes `test_tool_has_a_version` |
+| Security review 0.3.0, point 3: colours | ui `test_sec_colours_*` (hand-edited colours and markup in the model: no outside colour in any style or drawing, no script, no outside request) |
 
 Honest notes: the tests were written alongside the code rather than strictly before it. Signing
 tests need the real `ssh-keygen` and `ssh-agent`; they start a private agent and skip without them.

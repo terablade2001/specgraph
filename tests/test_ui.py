@@ -920,3 +920,33 @@ def test_use13_ctrl_and_shift_click_in_the_explorer(sample, page_for):
     pg.wait_for_timeout(500)
     assert O.tree_order(sample.load(), "elements", arch)[:3] == [r3, r4, first]
     assert errors == [] and not V.errors(sample.load())
+
+
+def test_sec_colours_from_a_hand_edited_model_never_reach_a_style(sample, page_for):
+    """Security review of 0.3.0, point 3 (fixed in 0.3.1): only #rrggbb colours are used; model text stays text."""
+    import json
+    from specgraph import model as M
+    m = json.load(open(sample.path, encoding="utf-8"))
+    leak = "url(https://example.invalid/leak.png)"
+    for st in m["config"]["stereotypes"].values():
+        st["fill"], st["border"] = "red;background-image:" + leak, "#000;background:" + leak
+    for s in m["config"]["statuses"].values():
+        s["color"] = leak
+    for lt in m["config"]["linkTypes"].values():
+        lt["color"] = leak
+    el = next(iter(m["elements"].values()))
+    el["topic"] = '<img src=x onerror="window.pwned=1"><script>window.pwned=2</script>'
+    M.save(sample.path, m)  # a hand edit: the editor opens it read-only
+    pg, errors = page_for(sample)
+    asked = []
+    pg.on("request", lambda r: asked.append(r.url))
+    d = next(iter(m["diagrams"]))
+    pg.evaluate("openDiagram('%s')" % d)
+    pg.wait_for_timeout(300)
+    styles = pg.evaluate("[...document.querySelectorAll('[style]')].map(e => e.getAttribute('style')).join(' ')")
+    paints = pg.evaluate("[...document.querySelectorAll('#canvas [fill], #canvas [stroke]')]"
+                         ".map(e => (e.getAttribute('fill') || '') + (e.getAttribute('stroke') || '')).join(' ')")
+    assert "example.invalid" not in styles + paints and "red;" not in styles
+    assert pg.evaluate("window.pwned === undefined && !document.querySelector('#tree img, #props img, #canvas img')")
+    assert all(u.startswith("http://127.0.0.1") for u in asked), asked
+    assert errors == []

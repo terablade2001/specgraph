@@ -3,6 +3,27 @@
 Changes of the tool that a user or an agent can notice, newest first. The version is `VERSION` in
 `specgraph/__init__.py` (`python sg.py --version`). Design reasons are in `docs/ADRS.md`.
 
+## 0.3.1 — 2026-11-21
+
+Design: ADR-031 (approved by the owner 2026-11-21). Fixes two findings of the security review of 0.3.0.
+
+### Changed
+
+- **A merge refuses a side that was edited outside the tool.** The merge driver and `sg.py resolve` check the stamp
+  of our and their version first. If one of them was changed by hand, nothing is merged, git reports the model as
+  conflicted with our version in place, and the message says which side. Run `git merge --abort` and have that
+  branch repaired (its author runs `sg.py adopt` there, or restores the file from git). Before, such an edit was
+  merged in silently and signed by the person merging.
+
+### Fixed
+
+- The editor uses a type, status or link colour only when it is `#rrggbb`. A colour edited by hand into the file
+  could put arbitrary CSS into the page's styles (the content security policy still blocked outside loads).
+
+### Documentation
+
+- `docs/SECURITY-REVIEW.md` and `AI-Disclaimer.md` cover 0.3.1.
+
 ## 0.3.0 — 2026-11-21
 
 Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, ADR-029, ADR-030.
@@ -77,8 +98,8 @@ Design: ADR-025, ADR-026, ADR-027 (approved by the owner 2026-11-21); ADR-028, A
 
 ### Known gaps
 
-- `docs/SECURITY-REVIEW.md` reviews version 0.1.0; its file hashes no longer match. 0.3.0 adds one static file
-  (`favicon.svg`) to the server's fixed list and lets the pre-push hook read the refs git passes on stdin.
+- A merge does not check the stamps of the two sides: a model edited by hand on another branch is merged
+  without a warning and signed by the person merging. Fixed in 0.3.1.
 - Elements laid out before 0.3.0 keep their sizes; select them and use *Fit to text* to apply auto size.
 
 ## 0.2.0 — 2026-11-16

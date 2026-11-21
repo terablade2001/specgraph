@@ -218,6 +218,30 @@ def test_merge_without_driver_can_be_rebuilt(ada, base, repo, tmp_path, keys, mo
     assert m["elements"][base["r1"]]["status"] == m["elements"][base["r2"]]["status"] == "approved"
 
 
+def test_adr031_merge_refuses_a_side_edited_outside_the_tool(ada, base, repo, tmp_path, keys, only_key):
+    """ADR-031 / REQ-INT-02: a hand edit on another branch is not merged in and re-signed by the person merging."""
+    bob, other = _two_clones(repo, tmp_path, keys)
+    hooks.install(bob)
+    m = M.load(ada.path)
+    m["users"]["bob"]["role"] = "admin"  # made by hand, old stamp kept
+    M.save(ada.path, m)
+    commit(repo, "hand edit")
+    do(bob, "element.update", id=base["r2"], topic="Bob's wording")
+    commit(other, "bob")
+    only_key(keys["bob"])
+    p = subprocess.run(["git", "pull", "-q", "--no-rebase", "--no-edit", "origin", "docs/specifications"],
+                       cwd=str(other), capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert p.returncode != 0 and "their version" in p.stderr and "outside the tool" in p.stderr
+    mine = bob.load()  # our version stays, untouched and intact
+    assert mine["users"]["bob"]["role"] != "admin" and mine["elements"][base["r2"]]["topic"] == "Bob's wording"
+    assert S.check_integrity(mine) == []
+    with pytest.raises(M.ModelError, match="our version"):
+        MG.merge_texts(None, M.canonical(m), M.canonical(mine), keys["bob"])
+    with pytest.raises(M.ModelError, match="their version"):
+        MG.merge_texts(None, M.canonical(mine), M.canonical(m), keys["bob"])
+    git(other, "merge", "--abort")
+
+
 def test_merge3_delete_vs_edit_is_a_conflict():
     b = {"elements": {"e": {"topic": "t", "status": "s"}}}
     ours = {"elements": {}}

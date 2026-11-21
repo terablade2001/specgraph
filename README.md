@@ -262,6 +262,8 @@ element shows it in words ("status Proposed → Validated, by bob, 2026-11-13").
   the file stays valid, and the editor shows both values under **Check** — pick one, then
   `git add specmodel.json && git commit`.
 - If a merge was done without the driver and the file has conflict markers: `python sg.py resolve`.
+- A merge refuses a side whose model was edited outside the tool (ADR-031). Run `git merge --abort` and have
+  that branch repaired first: its author runs `python sg.py adopt` there, or restores the file from git.
 - Never edit `specmodel.json` by hand. If it happens, the tool goes read-only and offers
   *Adopt* (take responsibility for the change under your name) or restore it with `git checkout -- specmodel.json`.
 
@@ -331,10 +333,12 @@ Without them the signing tests are skipped.
 ## Safety notes
 
 - The editor server binds to `127.0.0.1`, requires a random per-run token on every request,
-  rejects foreign `Host` headers and serves three fixed files. It never executes model content.
+  rejects foreign `Host` headers and serves four fixed files. It never executes model content.
 - The tool never reads a private key or a passphrase: signing is done by `ssh-keygen` through `ssh-agent`.
 - What the integrity mechanism does and does not prove: `docs/ADRS.md`, ADR-003.
-- A security review of version 0.1.0, with its limits, is in `docs/SECURITY-REVIEW.md`.
+- A security review of version 0.3.1, with its findings and limits, is in `docs/SECURITY-REVIEW.md`.
+- Hooks run on each machine and can be skipped, and the pre-push hook checks only new commits, so run
+  `python sg.py audit` (whole history) now and then, for example in CI.
 - Found a security problem? Report it through the repository's *Security* tab on GitHub
   ("Report a vulnerability") if it is enabled, otherwise open an issue without the details
   and ask for a private contact.

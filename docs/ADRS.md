@@ -399,3 +399,24 @@ on it, and the last of those is its alignment reference. Dragging a selected row
 folder, before or after an element (as a block, in tree order), or onto the diagram (those not yet on it, in rows of
 four from the drop point, fitted when Auto size is on). Each drop is one change. *Fit* keeps
 the corner of the overview free: it fits the diagram beside or above the overview, whichever gives the larger picture.
+
+## ADR-031 — A merge refuses a side that was edited outside the tool  · stakes: medium · **approved by the owner 2026-11-21**
+**Context.** Security review of 0.3.0 (`docs/SECURITY-REVIEW.md`, point 1). The merge driver and `resolve` merged two
+versions without looking at their stamps and signed the result under the person merging. A model edited by hand on
+another branch was carried in without a warning; the merged file and the merge commit then looked intact, and only a
+full `sg.py audit` still showed the hand edit at its own commit. Since ADR-025 the pre-push hook no longer re-checks
+commits the remote already has, so such an edit could go unnoticed for a long time.
+**Options.** (a) leave it and tell people to run `audit`; (b) warn and merge anyway; (c) refuse the merge when either
+side fails the integrity check; (d) run the full commit check (rules against the merge base) on each side.
+**Decision.** (c). Before merging, the driver and `resolve` check our and their version the way the editor checks
+the working file (`stamp.check_integrity`): the content must match its stamp, and the stamp must be signed by a key
+of the named user in that version's own user list. If either fails, nothing is written, the driver exits with an
+error, and git reports the model file as conflicted with our version left in place. The message names the side and
+tells the user to `git merge --abort` and have that branch repaired (its author runs `sg.py adopt` there, which
+re-checks the rules against that branch's last commit, or restores the file from git). The merge base is not
+checked: it is already part of both histories. (d) was rejected: the driver sees three file versions, not the
+commits between them, so it cannot tell whose change is whose.
+**Consequences.** The common case (a hand edit that kept the old stamp) can no longer be merged in silently. A
+forger who adds their own key to their side and signs with it still passes this check, as with the working file;
+the commit hook and `audit` catch that, because they verify against the previous commit's user list (ADR-003).
+Merges of versions written by the tool are unchanged.

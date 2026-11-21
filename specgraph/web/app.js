@@ -108,9 +108,13 @@ function toast(msg, err) {
 
 // ---- model helpers --------------------------------------------------------
 const cfg = () => S.model.config;
-const stOf = (key) => cfg().stereotypes[key] || { label: key, fill: '#eeeeee', border: '#666666', icon: '?', shape: 'rect', fields: {} };
-const statusOf = (key) => cfg().statuses[key] || { label: key, color: '#666666', symbol: '?' };
-const ltOf = (key) => cfg().linkTypes[key] || { label: key, color: '#666666', lineStyle: 'solid', sourceArrow: 'none', targetArrow: 'open', showLabel: true, routing: 'straight' };
+/* Colours go into styles and drawings: only #rrggbb is used, whatever a hand-edited file holds (security review 0.3.0) */
+const hex = (c, dflt) => (/^#[0-9a-fA-F]{6}$/.test(c) ? c : dflt);
+const stOf = (key) => { const st = cfg().stereotypes[key] || { label: key, icon: '?', shape: 'rect', fields: {} };
+  return Object.assign({}, st, { fill: hex(st.fill, '#eeeeee'), border: hex(st.border, '#666666') }); };
+const statusOf = (key) => { const s = cfg().statuses[key] || { label: key, symbol: '?' }; return Object.assign({}, s, { color: hex(s.color, '#666666') }); };
+const ltOf = (key) => { const lt = cfg().linkTypes[key] || { label: key, lineStyle: 'solid', sourceArrow: 'none', targetArrow: 'open', showLabel: true, routing: 'straight' };
+  return Object.assign({}, lt, { color: hex(lt.color, '#666666') }); };
 const elName = (el) => (el.label ? el.label + ' ' : '') + el.topic;
 const byName = (f) => (a, b) => f(a[1]).localeCompare(f(b[1]));
 function allowedStatuses(stKey, current) {
