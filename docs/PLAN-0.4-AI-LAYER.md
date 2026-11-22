@@ -308,6 +308,11 @@ Labels can only show value on questions the index cannot answer. Before Phase 7:
 - Only labels that carry a retired, merged, split or redefined key become stale (`changed > v`); the next `todo`
   asks for them again. A new label stales nothing; `ai todo --label-new` lists elements to reconsider (ADR-034 §3).
 - **Accept:** vocabulary within its size target; evals do not get worse.
+- **Done 2026-11-22:** the operations, the admin-only check and the limited staleness were built in Phases 7–8; this
+  phase exercised them on s1k-v2 (`evals/results/LABELS-S1K.md`): an Opus revision (95K tokens) retired a 6-concept
+  branch; exactly the 179 elements carrying it went stale, the other 852 stayed current; Sonnet relabelled them in
+  one packet (127K); planted concepts still all found. Vocabulary 84 active (the 100–200 target is for large models;
+  the prompt allows fewer). "Evals do not get worse" is measured in Phase 12. No code change was needed.
 
 ### Phase 10 — Hooks, merge driver, clean-up
 

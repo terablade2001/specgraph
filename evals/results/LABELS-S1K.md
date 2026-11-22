@@ -42,3 +42,21 @@ templates) and wrote some into the definitions ("coins and contactless at a kios
 is how labels are meant to help — one agent reads the whole model once — but at 10K, or on real models, the samples
 cover less, so the vocabulary depends more on the labelling agent's own judgement. Phase 12 measures whether agents
 answering questions actually use the labels.
+
+## Phase 9 — a vocabulary revision and the relabelling it causes
+
+An Opus agent reviewed the labelled model as an administrator would (`ai todo --vocab` with `used` counts, then SQL on
+`ai_labels`) with the instruction to change only what is clearly better, since every change costs relabelling.
+
+| Step | Agent | Tokens | Time |
+|---|---|---|---|
+| Revision: retire the "Kinds of case" branch (6 concepts) | Opus | 95K | 1.7 min |
+| Relabel the stale elements (`ai todo`: 179 elements, one packet) | Sonnet | 127K | 1.4 min |
+
+- Its reason: the five case-kind concepts restated each service folder's own noun and sat on only ~20% of the
+  elements they described (mostly tests and ADRs), so a search by them would miss most; `--folder` and full-text
+  search already find those elements.
+- `ai status` after applying: exactly the **179** elements carrying a retired concept stale (as the agent predicted),
+  the other 852 current. After relabelling: 1 031 current, 0 stale; vocabulary 84 active, 6 retired, version 2.
+- Planted concepts unchanged: authentication 24/24, payments 18/18, personal data 14/14, hidden 19/19; 2 extras.
+- Incremental cost: ~127K for 179 elements, of which ~55K is the fixed cost of one agent run.
