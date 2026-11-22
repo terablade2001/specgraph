@@ -247,47 +247,47 @@ New module `specgraph/index.py` (only `sqlite3`, `hashlib`, `json`). One transac
   Residual concept misses: 11 planted elements over 6 concept questions, of which 3 are genuine meaning misses;
   Q11 (near-duplicates) is spoiled by the generator's " (2)" topics. `VERSION` was already 0.4.0 (Phase 3).
 
-> **Phases 7–12 are an outline, not decisions** (owner, 2026-11-22). They keep the direction of the
-> draft's Layer 2; details (file layout, hashing, signing, merge, scope, roles) are decided after the
-> Phase 6 gate, with what Phases 1–6 taught us. Questions about them are parked in §5.
+> **Layer 2 after the gate** (owner, 2026-11-22): go on to labels. Q3–Q7 and the new Q9–Q11 are answered (§5);
+> the design is ADR-034 (the AI file, write path, packets, index) and ADR-035 (merging), **approved by the owner
+> 2026-11-22**, with requirements AIL-01..08. Phases 8–12 below are kept short on purpose: the ADRs hold the detail.
 
-### Phase 7 — AI labels: ADRs, file format, index integration
+### Phase 6b — Fair evaluation for labels (no tool code)
 
-- ADR-034 "AI labels in a second, signed file" and ADR-035 "Merging the AI file" (high stakes).
-- `specmodel.ai.json` next to the model, canonical serialization, signed with the same stamp
-  mechanism (`stamp.make_stamp`/`check_integrity` against the model's `users`):
-  - `vocabVersion` (whole number, raised by every vocabulary change), `promptVersion`.
-  - `vocabulary`: `{<label key>: {label, definition, parent?, retired?}}`; target 100–200 entries.
-  - `labels`: `{"<elementHash>": {"v": vocabVersion, "labels": [keys], "by", "model"}}`.
-    `elementHash` = sha256 of canonical `{stereotype, topic, notes, fields}` of the element (not
-    status, folder, label, `modified`, `order`: they do not change what it is about) — question Q5.
-  - `rules`: `{<id>: {element, label, kind: never|always, by, at}}` from people's requests.
-  - `findings`, `dismissed` (Phase 11).
-- `specmodel.ai.log.jsonl`: append only, `merge=union`, reasons/confidence/run summaries; never read
-  by the tool to decide anything.
-- `.gitattributes`: `linguist-generated` for both, merge driver for the JSON file (Phase 10).
-- Index: `ai_vocabulary`, `ai_labels(element, label, stale)`; stale = no entry for the current hash
-  or an older `vocabVersion`. `sql` output marks stale labels.
-- Without the AI file everything works as in 0.4.0 (tests run both ways).
+Labels can only show value on questions the index cannot answer. Before Phase 7:
 
-### Phase 8 — Labelling by an agent (`validate-ai-labels`)
+- `sample/build_synthetic.py`: no " (2)" suffixes (vary repeated topics instead, so Q11 only has the planted
+  pairs); the "fee table" note made clearly about payments or moved out of the concept facts; more planted
+  elements whose concept is never named (like "downloads all data held about them"), per concept.
+- New seeded builds stored as `evals/results/models/s1k-v2`, `s10k-v2` with their question files; the existing
+  models and results stay as they are.
+- Re-run the `index` variant on the concept and duplicate questions only (Q05a–c, Q11, and any new ones): the
+  numbers labels must beat. Report in `evals/results/INDEX-V2.md`.
+- **Accept:** the owner reviews the new baseline.
 
-- `sg.py ai todo [--all] [--limit N]`: a JSON work packet — prompt text (versioned, shipped with the
-  tool), vocabulary, rules, and the elements to label: those without a current entry, plus their
-  1-hop neighbours over traceable links (cap, question Q6) with summaries only.
-- `sg.py ai apply '<ops>'`: the one write path for the AI file, mirroring `apply`: operations such as
-  `ai.label.set {element, hash, labels, reason?, confidence?}`; refused when the hash is not the
-  element's current one, a label is not in the vocabulary, or a rule forbids it. Signed stamp; log line.
-- Same content → no change (idempotent); stale entries are only ever replaced, never guessed.
-- Never blocks a model change: a model change only makes labels stale. `sg.py ai status` reports counts.
-- Agent guide section: how to run a labelling pass.
+### Phase 7 — AI file, write path, index integration
+
+- After the owner approves ADR-034/035: `specgraph/ai.py` (file, hash, staleness, operations, the change check on two
+  AI file states), `sg.py ai apply`, `sg.py ai status`, stamp and log (ADR-034 §1–5, §8).
+- Index: `ai_vocabulary`, `ai_labels(element, label, stale)`, freshness key with the AI file (ADR-034 §7).
+- Tests (AIL-01, -02, -03, -05, -06, -08) first; everything also tested without an AI file.
+
+### Phase 8 — Labelling by an agent
+
+- `sg.py ai todo [--limit N]` (default 1000 elements, neighbours 1 hop, at most 10, light: label, type, topic,
+  current labels) and `ai todo --vocab` (counts and capped samples for vocabulary work) — ADR-034 §6.
+- Versioned prompt text shipped with the tool; `docs/AGENTS.md`: how to run a labelling pass, which model for which
+  task: the user's choice; recommended cheaper for routine labelling, stronger for vocabulary and reviews. Assumed
+  for the evaluations: Sonnet for labelling, Opus as the stronger model; changed if the cost is too high (owner).
+- Cost, measured: first pass on s1k (1–2 agent runs, about 0.1–0.2M tokens). s10k only if s1k shows a gain
+  (about 10 runs, 1–1.5M tokens).
 
 ### Phase 9 — Vocabulary work (`update-ai-labels`) → release 0.4.1
 
 - Operations `ai.vocab.add/update/merge/split/retire` and `ai.rule.set/delete`: **admin only**,
   enforced by `rules`-style checks on the difference of two AI file states (so tool, hook and audit
   share it). Each raises `vocabVersion`.
-- Labels of an older `vocabVersion` become stale; the next `todo` asks for them again.
+- Only labels that carry a retired, merged, split or redefined key become stale (`changed > v`); the next `todo`
+  asks for them again. A new label stales nothing; `ai todo --label-new` lists elements to reconsider (ADR-034 §3).
 - **Accept:** vocabulary within its size target; evals do not get worse.
 
 ### Phase 10 — Hooks, merge driver, clean-up
@@ -334,16 +334,25 @@ New module `specgraph/index.py` (only `sqlite3`, `hashlib`, `json`). One transac
 - **Q1.** ~~Default types: short generic descriptions or empty?~~ **Answered: ship short generic
   descriptions.**
 - **Q2.** ~~Glossary in the configuration?~~ **Answered: no glossary feature; a project may model one with its own type and describe it** (§2.10).
-*Parked until after Phase 6 (Layer 2), not to be decided now: Q3–Q7.*
+*Q3–Q7 were parked until the Phase 6 gate; answered by the owner 2026-11-22 with Q9–Q11.*
 
-- **Q3.** Replace "`update-ai-labels` on main only" and "merge takes main's vocabulary" with
-  "admin only" and "higher `vocabVersion` wins", keeping ADR-024's "no branch rule"?
-- **Q4.** Sign `specmodel.ai.json` with the same stamp as the model, so the admin-only parts can be
+- **Q3.** **Answered: admin only, no branch rule;** vocabulary/rules merge three-way per key, higher `vocabVersion`
+  wins, same version on both sides is a conflict for an administrator (ADR-035). (Original:) Replace
+  "`update-ai-labels` on main only" and "merge takes main's vocabulary" with "admin only" and "higher
+  `vocabVersion` wins", keeping ADR-024's "no branch rule"?
+- **Q4.** **Answered: yes** (ADR-034 §2). (Original:) Sign `specmodel.ai.json` with the same stamp as the model, so the admin-only parts can be
   enforced by the hooks and the audit (otherwise anyone can edit it unnoticed)?
-- **Q5.** `elementHash` over stereotype, topic, notes and fields only (a status change or a move to
+- **Q5.** **Answered: yes** (ADR-034 §3). (Original:) `elementHash` over stereotype, topic, notes and fields only (a status change or a move to
   another folder keeps the labels)?
-- **Q6.** Neighbour scope for labelling: 1 hop over traceable links, at most 10 neighbours, summaries only?
-- **Q7.** "AI changes in separate commits": documented advice, or refused by the pre-commit hook?
+- **Q6.** **Answered: yes, and light** — label, type, topic and current labels only, to keep packets small
+  (ADR-034 §6). (Original:) Neighbour scope for labelling: 1 hop over traceable links, at most 10 neighbours, summaries only?
+- **Q7.** **Answered: documented advice;** the audit still shows who signed. (Original:) "AI changes in separate
+  commits": documented advice, or refused by the pre-commit hook?
+- **Q9.** **Answered: yes** — fix the eval generator and set a new baseline before Phase 7 (Phase 6b).
+- **Q10.** **Answered:** the first vocabulary comes from `ai todo --vocab` (counts and samples), proposed by an
+  agent, applied by an administrator (ADR-034 §6).
+- **Q11.** **Answered:** label s1k fully first; s10k only if s1k shows a gain; packets of about 1 000 elements with
+  light neighbours (cost per run is mostly the fixed ~55K of an agent).
 - **Q8.** **Answered:** evals are run by Claude Code **Sonnet** subagents, all by AI. Each run's
   commands are checked: a run that used anything outside its variant's tools is invalid and repeated.
   If Sonnet answers well, that is enough. (Original question:) Evals are run by Claude Code subagents in this environment, with their token usage as the

@@ -170,6 +170,19 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | AGT-05 | The index describes its own tables and columns, and carries the model's configuration with its descriptions. |
 | AGT-06 | The index works without full-text search when the Python build lacks it, and says which search it has. |
 
+## AIL — AI labels (0.4.x, ADR-034, ADR-035)
+
+| ID | Requirement |
+|---|---|
+| AIL-01 | A project can keep a controlled vocabulary of concepts and per-element labels in a second file next to the model, signed like the model; without that file the tool works as before. |
+| AIL-02 | Labels are keyed by the element's content (type, topic, notes, fields); an element whose content changed, or whose labels were retired or redefined, shows its labels as stale until relabelled. |
+| AIL-03 | Labels, vocabulary and rules change only through one checked write path: a label must be in the active vocabulary and allowed by the rules; vocabulary and rules change only by an administrator. |
+| AIL-04 | The tool gives an agent work packets (elements to label with light neighbours; material for vocabulary work) and never calls a language model itself. |
+| AIL-05 | The index carries the vocabulary and the labels with their staleness; labels are never used for validation, coverage, locks or any decision. |
+| AIL-06 | The commit check and the audit verify the AI file's stamp and that only administrators changed vocabulary and rules. |
+| AIL-07 | Parallel labelling on two branches merges without a person; only both sides changing the same vocabulary key at the same version is a conflict. |
+| AIL-08 | Every AI operation is recorded in an append-only log that the tool never reads to decide anything. |
+
 ## IDs with no recorded meaning
 
 `USE-03`, `USE-04` and `DOC-01`..`DOC-04` are mentioned in `docs/REQUIREMENTS-COVERAGE.md` and

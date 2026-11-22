@@ -490,3 +490,116 @@ Coverage rules already have `description` (max 500 characters).
 together (CHANGELOG and README say so). The upgrade adds one line per stereotype, status and link type, once. The
 merge of a version-2 and a version-3 side upgrades the result. Descriptions are part of the model: signed, merged per
 entry like the rest of the configuration, and changeable by any user (REQ-CFG-01).
+
+---
+
+# Added 2026-11-22 — Layer 2 of 0.4.x (AI labels), approved by the owner
+
+Gate decision and reasons: `docs/PLAN-0.4-AI-LAYER.md` (Phase 6, §5 Q3–Q11). Measurements: `evals/results/INDEX.md`.
+
+## ADR-034 — AI labels: a controlled vocabulary and per-element labels in a second, signed file  · stakes: high (new file, new write path) · **approved by the owner 2026-11-22**
+**Context.** With the index (ADR-032) agents answer structural questions at any size. What remains is retrieval by
+meaning: an agent finds what it has words for. At 1 000 and 10 000 elements, 3 of 11 missed concept elements were
+true meaning misses ("a resident downloads all data held about them" is never called personal data), and finding
+requirements that say the same thing in other words (Q11) is not a query at all. The owner decided (2026-11-22) to
+build AI labels: a controlled vocabulary of concepts that an agent assigns to elements once, so later agents filter
+exactly (`WHERE label = 'personal-data'`) instead of re-reading text. Principles kept from the draft plan: the model
+stays the human-owned source of truth; labels find, specs answer; labels are AI-owned metadata (people ask an agent,
+they do not edit labels by hand); specgraph never calls a language model and stays standard-library only.
+**Options.** (a) labels inside `specmodel.json` (every relabelling would be a model change, signed, locked, merged
+and shown as a spec change); (b) an unsigned side file (anyone could change the admin-only vocabulary unnoticed);
+(c) a second file next to the model, written only by the tool and signed like the model; (d) embeddings (heavy
+dependencies, weak for exact filtering; rejected in the draft plan).
+**Decision.** (c).
+1. **Files.** `<model base>.ai.json` next to the model (`specmodel.ai.json`) and `<model base>.ai.log.jsonl`. Both
+   tracked in git; both `linguist-generated` (`install-hooks` adds the attributes). Canonical serialization as the
+   model (sorted keys, LF). The tool creates the AI file on the first AI operation; without it everything works as
+   in 0.4.0.
+2. **Content of the AI file.** `format: "specgraph-ai"`, `formatVersion: 1`, `vocabVersion` (whole number, raised by
+   every vocabulary change), `promptVersion` (of the prompt text the tool ships), and:
+   - `vocabulary`: `{<label key>: {label, definition, parent?, retired?, changed}}`. Keys follow the configuration
+     key rule; `definition` one line, at most 300 characters; `parent` an existing key (two levels at most);
+     `changed` = the `vocabVersion` at which the entry was added or its meaning last changed. Target 100–200
+     entries; retired entries stay so old labels can be read.
+   - `labels`: `{<elementHash>: {v: <vocabVersion>, labels: [keys], by: <user>, model: <text>}}`. `model` is the
+     name of the language model the agent reports; it is recorded, not checked.
+   - `rules`: `{<id>: {element, label, kind: "never" | "always", reason, by, at}}`: people's corrections ("never
+     label REQ-12 security"), applied by every later labelling.
+   - `stamp`: the same mechanism as the model (`stamp.make_stamp` / `check_integrity`), verified against the user
+     list of the model file. The signer must be a registered user of the model.
+   Findings and dismissed findings (Phase 11) are added by an amendment of this ADR when that phase is designed.
+3. **Element hash** (owner, Q5). `elementHash` = sha256 of the canonical JSON of `{stereotype, topic, notes,
+   fields}`. Status, folder, label, links, `modified` and `order` are left out: they do not change what an element is
+   about, so a status change or a move keeps its labels. Elements with the same content share an entry (labels are a
+   cache keyed by content). A label entry is **current** for an element when its hash matches and every label in it
+   is active and unchanged since the entry was made (`changed <= v`); otherwise the element's labels are **stale**.
+   So a vocabulary change makes stale only the elements carrying a label it retired, merged, split or redefined.
+   Adding a label makes nothing stale; to apply a new label to elements already labelled, an administrator asks for
+   a pass over them (`ai todo --label-new` lists the elements an agent should reconsider, by full-text match on the
+   new label's words, or `--all`).
+4. **One write path:** `sg.py ai apply '<ops>'`, mirroring `apply`: load both files, check integrity, apply the
+   operations, check who may change what on the difference of the two AI file states (one function, shared by the
+   tool, the commit hook and the audit), sign, save, append to the log. Operations:
+   - `ai.label.set {element, hash, labels, reason?, confidence?}` — any registered user (agents run as a user).
+     Refused when `hash` is not the element's current hash, a label is not an active vocabulary key, or a rule
+     forbids it; an `always` rule adds its label. Same labels again → no change (idempotent).
+   - `ai.vocab.add/update/retire/merge/split` and `ai.rule.set/delete` — **administrators only** (owner, Q3). Each
+     vocabulary change raises `vocabVersion` and sets `changed` on the entries it touches; a merge or split
+     rewrites nothing in `labels`, it only makes the entries carrying the old keys stale.
+   - `ai.gc` — administrators: drop label entries whose hash no current element has.
+   AI operations do not touch spec content, so folder locks (ADR-022) do not apply to them.
+5. **The log** `specmodel.ai.log.jsonl`: one line per operation (who, when, which, reason, confidence, model, a run
+   summary). Append-only, `merge=union`, not signed, never read by the tool to decide anything (like ADR-018).
+6. **Work packets for agents** (the tool prepares, the agent thinks, the tool checks):
+   - `sg.py ai todo [--limit N]`: JSON with the prompt text, the active vocabulary, the rules, and the elements whose
+     labels are stale or missing (label, type, topic, notes, fields, hash), each with up to 10 neighbours over
+     traceable links, 1 hop, given **light**: label, type, topic and their current labels only (owner, Q6, adjusted
+     for cost). Default `--limit 1000` elements (about 25K tokens of synthetic text), because the fixed cost of an
+     agent run (about 55K tokens in Claude Code) dominates small packets.
+   - `sg.py ai todo --vocab`: for building or revising the vocabulary when no agent can read every element (owner,
+     Q10): counts per type and folder, the existing vocabulary with label counts, and samples of topics per folder
+     and type, capped. The agent proposes `ai.vocab.*` operations; only an administrator can apply them.
+   - `sg.py ai status`: counts of current, stale and unlabelled elements, vocabulary size and version.
+   `docs/AGENTS.md` describes a labelling pass. Which models to use is the user's choice (owner, 2026-11-22): the
+   guide recommends a cheaper model for routine labelling and a stronger one for vocabulary work and reviews, and
+   names the assumption made for this project's evaluations (Sonnet for labelling, Opus as the stronger model),
+   to be changed if the cost is too high. The tool records the model name; it does not choose it.
+7. **Index** (ADR-032 amended): the freshness key adds the sha256 of the AI file; new tables `ai_vocabulary(key,
+   label, definition, parent, retired)` and `ai_labels(element, label, stale)`, one row per element and label,
+   `stale = 1` when the entry is not current; `columns_doc` describes them. The log is not indexed. Labels are never
+   used by validation, coverage, locks or any decision of the tool.
+8. **Checks.** `sg.py check --staged`, the pre-commit hook and `audit` also check a staged or committed AI file: the
+   stamp matches, the signer is a registered user of the model, and vocabulary and rules changed only by an
+   administrator. Putting AI changes in their own commits is documented advice, not enforced (owner, Q7).
+**Consequences.** One more tracked file, about 100 bytes per labelled element (about 1 MB at 10 000 elements) and a
+log that grows with every pass; `ai.gc` and `linguist-generated` keep it manageable. Cost is borne by whoever runs
+the agent: a first pass reads every element once (about 240K tokens of text at 10 000 synthetic elements; real notes
+are usually longer), plus about 55K per agent run; afterwards only changed elements and their neighbours are
+relabelled. A person without an AI agent loses nothing: their edits only make labels stale. Older tools ignore the
+AI file. Labels can be wrong; they are a retrieval aid, and the agent guide tells agents to combine them with
+full-text search and links.
+
+## ADR-035 — Merging the AI file  · stakes: high · **approved by the owner 2026-11-22**
+**Context.** The AI file (ADR-034) lives in git and is changed on every branch where someone labels; vocabulary and
+rules change rarely and only by administrators. A plain text merge would conflict on every parallel labelling pass.
+There is no branch rule (ADR-024), so "main's vocabulary wins" from the draft plan is not available (owner, Q3).
+**Options.** (a) text merge; (b) always keep one side; (c) a merge driver that treats labels as a cache and the
+vocabulary as configuration.
+**Decision.** (c), `merge=specgraph-ai` in `.gitattributes` (`install-hooks` adds it), with `sg.py ai resolve` for a
+merge that ran without the driver.
+1. Each side must pass the integrity check of ADR-031 (stamp matches, signed by a registered user of that side's
+   model); otherwise nothing is written and the file is left conflicted with a message naming the side.
+2. `labels`: union per element hash. Same hash on both sides with different entries: the entry with the higher `v`
+   wins; equal `v` → the entry is dropped (the element becomes stale and is labelled again later). Never a conflict.
+3. `vocabulary` and `rules`: three-way per key against the base. A key changed on one side takes that side. A key
+   changed on both sides differently takes the side with the higher `vocabVersion`; with equal versions it is a
+   **conflict**: the driver keeps ours for that key, lists the conflict and exits non-zero, and an administrator
+   settles it with `ai.vocab.update` before committing.
+4. `vocabVersion` of the result: the higher of the two when only one side changed the vocabulary; one more than the
+   higher when both did. Each vocabulary entry keeps the `changed` of the side it came from, so only labels that
+   touch a changed entry become stale.
+5. The merged file is signed by the person merging, as the model's merge driver does. The log merges with
+   `merge=union`.
+**Consequences.** Parallel labelling never needs a person. Administrators changing the same vocabulary key on two
+branches with the same version is the only conflict. After a merge with vocabulary changes on both sides, the next
+`ai todo` relabels the affected elements. The merge driver for the model (ADR-031) is unchanged.
