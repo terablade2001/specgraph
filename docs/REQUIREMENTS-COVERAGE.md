@@ -53,7 +53,7 @@
 | AIL-01 | ai `test_ail01_*` (no AI file: as before; file next to the model, signed, canonical; the model untouched) |
 | AIL-02 | ai `test_ail02_*` (hash fields; status change keeps labels, content change makes them stale; vocabulary changes stale only what they touch; merge and split) |
 | AIL-03 | ai `test_ail03_*` (label checks, rules, idempotent, admin-only vocabulary/rules/gc, one version per batch, gc, hand-edited file refused, `sg.py ai`) |
-| AIL-04 | not built yet (work packets, Phase 8) |
+| AIL-04 | ai `test_ail04_*` (todo: missing/stale only, light links, context once, limit and remaining, neighbours capped at 10, `--label-new`, `--vocab` packet, label and hash prefix, empty labels, files in and out through `sg.py ai`) |
 | AIL-05 | ai `test_ail05_*` (index tables with staleness, rebuilt when only the AI file changes; validation ignores labels) |
 | AIL-06 | ai `test_ail06_*` (commit check and audit: vocabulary changed by a non-admin, hand-edited file; labels by any user pass; `.gitattributes`) |
 | AIL-07 | not built yet (merge driver, Phase 10) |

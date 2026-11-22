@@ -192,7 +192,11 @@ def cmd_sql(store, a):
 
 def cmd_ai_apply(store, a):
     from . import ai as AI
-    text = a.ops if a.ops else sys.stdin.read()
+    if a.ops_file:
+        with open(a.ops_file, "r", encoding="utf-8") as fh:
+            text = fh.read()
+    else:
+        text = a.ops if a.ops else sys.stdin.read()
     try:
         ops = json.loads(text)
     except ValueError as exc:
@@ -201,6 +205,28 @@ def cmd_ai_apply(store, a):
         ops = [ops]
     new, results = AI.AIStore(store).apply(ops, a.model)
     _out({"ok": True, "results": results, "stamp": (new.get("stamp") or {}).get("id")})
+
+
+def cmd_ai_todo(store, a):
+    from . import ai as AI
+    try:
+        if a.vocab:
+            p = AI.AIStore(store).vocab_packet(samples=a.samples, terms=a.terms)
+        else:
+            p = AI.AIStore(store).todo(limit=a.limit, all_=a.all, label_new=a.label_new)
+    except AI.AIError as exc:
+        raise StoreError(str(exc))
+    text = AI.dump_packet(p)
+    if not a.out:
+        sys.stdout.write(text)
+        return 0
+    with open(a.out, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+    n = len(p.get("elements", p.get("samples", [])))
+    print("%d %s written to %s (%d lines)%s" % (
+        n, "sample(s)" if a.vocab else "element(s)", a.out, text.count("\n"),
+        "" if a.vocab else "; %d more remain" % p["remaining"]))
+    return 0
 
 
 def cmd_ai_status(store, a):
@@ -367,6 +393,17 @@ def build_parser():
     ap.set_defaults(fn=cmd_ai_apply)
     ap.add_argument("ops", nargs="?", help="JSON; read from stdin when omitted")
     ap.add_argument("--model", help="name of the language model that produced the labels (recorded)")
+    ap.add_argument("--ops-file", help="read the operations from this file")
+    tp = aisub.add_parser("todo", help="a work packet for an agent: elements to label, or (--vocab) material for "
+                          "the vocabulary")
+    tp.set_defaults(fn=cmd_ai_todo)
+    tp.add_argument("--limit", type=int, default=1000, help="elements per packet (default 1000; 0 = all)")
+    tp.add_argument("--all", action="store_true", help="all elements, not only those with missing or stale labels")
+    tp.add_argument("--label-new", metavar="KEY", help="elements whose words match a new concept, to reconsider")
+    tp.add_argument("--vocab", action="store_true", help="material for building or revising the vocabulary")
+    tp.add_argument("--samples", type=int, default=400, help="--vocab: topics sampled across the model")
+    tp.add_argument("--terms", type=int, default=200, help="--vocab: most frequent words")
+    tp.add_argument("--out", help="write the packet to this file (one element per line) instead of stdout")
     aisub.add_parser("status", help="counts of labelled, stale and unlabelled elements").set_defaults(fn=cmd_ai_status)
     aisub.add_parser("ops", help="list the AI operations").set_defaults(fn=cmd_ai_ops)
     sp = add("check", cmd_check, "all checks on the working or staged file (used by hooks)")

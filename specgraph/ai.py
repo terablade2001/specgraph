@@ -246,14 +246,25 @@ def gc(ai, model, a, ctx):
     return len(gone)
 
 
-@op("ai.label.set", "{element, hash, labels, reason?, confidence?, model?} labels of one element; hash must be "
-    "its current content hash; any registered user.")
+def _element(model, ref):
+    """An element id, or the unique label of one (packets name elements by label to save tokens)."""
+    if isinstance(ref, str) and ref in model["elements"]:
+        return ref
+    hits = [i for i, e in model["elements"].items() if isinstance(ref, str) and ref and e.get("label") == ref]
+    if len(hits) != 1:
+        raise AIError("element %r does not exist" % ref)
+    return hits[0]
+
+
+@op("ai.label.set", "{element, hash, labels, reason?, confidence?, model?} labels of one element (id or label); "
+    "hash: its current content hash or the first 12+ characters; labels may be empty (nothing fits); any user.")
 def label_set(ai, model, a, ctx):
-    eid = a.get("element")
-    if eid not in model["elements"]:
-        raise AIError("element %r does not exist" % eid)
+    eid = _element(model, a.get("element"))
     h = element_hash(model["elements"][eid])
-    if a.get("hash") != h:
+    given = a.get("hash")
+    if not isinstance(given, str) or len(given) < 12:
+        raise AIError("hash must be the element's content hash or its first 12 or more characters")
+    if not h.startswith(given):
         raise AIError("hash is not the element's current content hash (it changed since the packet was made)")
     labels = a.get("labels")
     if not isinstance(labels, list) or not all(isinstance(x, str) for x in labels):
@@ -271,6 +282,172 @@ def label_set(ai, model, a, ctx):
     llm = a.get("model") if a.get("model") is not None else ctx.get("model")
     ai["labels"][h] = {"v": ai.get("vocabVersion", 0), "labels": labels, "by": ctx["actor"],
                        "model": str(llm or "")[:100], "elements": elements}
+
+
+# -- work packets for agents (ADR-034 §6) --------------------------------------------------------------
+
+PROMPT = """You label elements of a specification model with concepts from a controlled vocabulary.
+
+For each element in `elements`, choose the keys from `vocabulary` whose definition fits what the element itself is
+about: its type, topic, notes and fields. Read the meaning, not only the words: "the parcel leaves the warehouse
+the same day" is about delivery although it never says so. Use `links` (and `context` for neighbours outside the packet) only to understand
+the element; being linked to an element about X does not make this element about X. Choose 0 to 3 keys; an empty
+list is right when nothing fits. Never use a key that is not in `vocabulary`. `rules` are people's corrections: never
+give a key a `never` rule forbids (the tool adds `always` keys itself). `was` shows labels that went stale; keep them
+only if they still fit.
+
+Write one operation per element of the packet, all in one JSON list, to a file:
+  {"op": "ai.label.set", "args": {"element": "<label>", "hash": "<h>", "labels": ["<key>", ...]}}
+then run:  python sg.py --file <model> ai apply --ops-file <that file> --model <your model name>
+Add "reason" (a few words) only where the choice is not obvious. If `remaining` is above 0, ask for the next packet."""
+
+VOCAB_PROMPT = """You propose a controlled vocabulary of concepts for a specification model, so that agents can later
+find elements by what they are about (for example accessibility, delivery, performance, audit trail), however
+each element words it.
+
+Concepts are cross-cutting subjects, not the model's structure: types, statuses, folders and link types already exist
+(see `types`). Aim for 100 to 200 concepts on a large model, fewer on a small one; two levels at most (a `parent`).
+Each concept: a short `label`, and a one-line `definition` (at most 300 characters) precise enough to decide for any
+element whether it fits, including wordings that do not use the concept's name. Use `counts`, `types` (with the
+project's own descriptions), `terms` (frequent words) and `samples` (topics spread over the model) to see what the
+model is about; keep concepts that already exist in `vocabulary` (`used` = elements labelled with it) unless they are
+wrong.
+
+Write the operations as one JSON list to a file, for an administrator to apply:
+  {"op": "ai.vocab.add", "args": {"label": "...", "definition": "...", "parent": "$N"}}   ("$N" = the key created by
+  operation N of the same list), ai.vocab.update / ai.vocab.merge / ai.vocab.split for existing concepts.
+The administrator runs:  python sg.py --file <model> ai apply --ops-file <that file> --model <model name>"""
+
+STOP = set("""a about above after again all also an and any are as at be because been before being below between
+both but by can could did do does doing down during each every few for from further had has have having he her here
+how i if in into is it its itself just me more most my no nor not now of off on once only or other our out over own
+same she should so some such than that the their them then there these they this those through to too under until
+up very was we were what when where which while who whom why will with would you your one two per new each only
+must shall may""".split())
+
+
+def _words(text):
+    return [w for w in re.findall(r"[a-z][a-z0-9-]{3,}", text.lower()) if w not in STOP]
+
+
+def _links(model, eid, types):
+    """Traceable links of an element, 'type>LABEL' (outgoing) and '<type LABEL' (incoming), sorted."""
+    out = []
+    for lid, l in model["links"].items():
+        if not V.traceable(types.get(l.get("type"), {})):
+            continue
+        if l.get("source") == eid and l.get("target") in model["elements"]:
+            out.append(("%s>%s" % (l["type"], model["elements"][l["target"]].get("label") or l["target"]),
+                        l["target"]))
+        elif l.get("target") == eid and l.get("source") in model["elements"]:
+            out.append(("<%s %s" % (l["type"], model["elements"][l["source"]].get("label") or l["source"]),
+                        l["source"]))
+    return sorted(out)
+
+
+def todo(ai, model, limit=1000, all_=False, label_new=None, max_links=10):
+    """A labelling packet: the elements whose labels are missing or stale (or all, or the candidates for a new
+    label), each with light neighbours. `limit` 0 = no cap."""
+    ai = ai or empty()
+    got = element_labels(ai, model)
+    els = model["elements"]
+    if label_new is not None:
+        e = ai["vocabulary"].get(label_new)
+        if e is None:
+            raise AIError("label %r is not in the vocabulary" % label_new)
+        words = set(_words(e["label"] + " " + e["definition"]))
+        pick = [i for i, x in els.items() if words & set(_words(x.get("topic", "") + " " + x.get("notes", "")))]
+    else:
+        pick = [i for i in els if all_ or i not in got or got[i][1]]
+    paths = {}
+
+    def path(fid):
+        if fid not in paths:
+            from .query import folder_path
+            paths[fid] = folder_path(model, fid)
+        return paths[fid]
+    pick.sort(key=lambda i: (path(els[i].get("folder")), els[i].get("label", ""), i))
+    remaining = max(0, len(pick) - limit) if limit else 0
+    pick = pick[:limit] if limit else pick
+    inside, types, out, context = set(pick), model["config"]["linkTypes"], [], {}
+    for i in pick:
+        x = els[i]
+        e = {"label": x.get("label") or i, "h": element_hash(x)[:12], "type": x.get("stereotype"),
+             "topic": x.get("topic", "")}
+        if x.get("notes"):
+            e["notes"] = x["notes"]
+        if x.get("fields"):
+            e["fields"] = x["fields"]
+        links = _links(model, i, types)
+        e["links"] = [t for t, _ in links[:max_links]]
+        if len(links) > max_links:
+            e["moreLinks"] = len(links) - max_links
+        for _, other in links[:max_links]:
+            if other not in inside:
+                o = els[other]
+                context[o.get("label") or other] = {"type": o.get("stereotype"), "topic": o.get("topic", ""),
+                                                    "labels": got.get(other, ([], False))[0]}
+        if i in got:
+            e["was" if got[i][1] else "labels"] = got[i][0]
+        out.append(e)
+    rules = [{"element": els[r["element"]].get("label") or r["element"], "label": r["label"], "kind": r["kind"],
+              "reason": r["reason"]} for r in ai["rules"].values() if r["element"] in inside]
+    vocab = [dict({"key": k, "label": v["label"], "definition": v["definition"]},
+                  **({"parent": v["parent"]} if v.get("parent") else {}))
+             for k, v in sorted(ai["vocabulary"].items()) if not v.get("retired")]
+    return {"promptVersion": PROMPT_VERSION, "prompt": PROMPT, "vocabVersion": ai.get("vocabVersion", 0),
+            "vocabulary": vocab, "rules": rules, "context": context, "remaining": remaining, "elements": out}
+
+
+def vocab_packet(ai, model, samples=400, terms=200):
+    """Material for building or revising the vocabulary when no agent can read every element (ADR-034 §6)."""
+    from .query import folder_path
+    ai = ai or empty()
+    els = model["elements"]
+    by_type, by_folder, top = {}, {}, {}
+    for i, x in els.items():
+        by_type[x.get("stereotype")] = by_type.get(x.get("stereotype"), 0) + 1
+        p = folder_path(model, x.get("folder")).split("/")[0]
+        top[i] = p
+        by_folder[p] = by_folder.get(p, 0) + 1
+    used = {}
+    for labels, _ in element_labels(ai, model).values():
+        for k in labels:
+            used[k] = used.get(k, 0) + 1
+    freq = {}
+    for x in els.values():
+        for w in set(_words(x.get("topic", "") + " " + x.get("notes", ""))):
+            freq[w] = freq.get(w, 0) + 1
+    groups = {}                                           # round robin over (top folder, type) for spread
+    for i in sorted(els, key=lambda i: (els[i].get("label", ""), i)):
+        groups.setdefault((top[i], els[i].get("stereotype")), []).append(i)
+    order, picked, k = sorted(groups), [], 0
+    while len(picked) < samples and any(len(groups[g]) > k for g in order):
+        for g in order:
+            if k < len(groups[g]) and len(picked) < samples:
+                i = groups[g][k]
+                picked.append({"type": els[i].get("stereotype"), "folder": top[i], "topic": els[i].get("topic", "")})
+        k += 1
+    st = model["config"]["stereotypes"]
+    return {"promptVersion": PROMPT_VERSION, "prompt": VOCAB_PROMPT, "vocabVersion": ai.get("vocabVersion", 0),
+            "counts": {"elements": len(els), "byType": by_type, "byFolder": by_folder},
+            "types": [{"key": k, "label": st[k].get("label"), "description": st[k].get("description", "")}
+                      for k in sorted(by_type) if k in st],
+            "vocabulary": [dict({"key": k, "label": v["label"], "definition": v["definition"],
+                                 "used": used.get(k, 0)}, **({"parent": v["parent"]} if v.get("parent") else {}),
+                                **({"retired": True} if v.get("retired") else {}))
+                           for k, v in sorted(ai["vocabulary"].items())],
+            "terms": sorted(([w, n] for w, n in freq.items() if n > 1), key=lambda t: (-t[1], t[0]))[:terms],
+            "samples": picked}
+
+
+def dump_packet(p):
+    """JSON text with one element (or sample) per line, so a reader can page through it."""
+    head = {k: v for k, v in p.items() if k not in ("elements", "samples")}
+    tail = "elements" if "elements" in p else "samples"
+    lines = ['%s: %s' % (json.dumps(k), json.dumps(v, ensure_ascii=False)) for k, v in head.items()]
+    items = [json.dumps(e, ensure_ascii=False, separators=(",", ":")) for e in p[tail]]
+    return "{\n" + ",\n".join(lines) + ',\n"%s": [\n' % tail + ",\n".join(items) + "\n]}\n"
 
 
 # -- who may change what (shared by the tool, the commit check and the audit) --------------------------
@@ -407,6 +584,12 @@ class AIStore:
     def element_labels(self):
         ai = self.load()
         return element_labels(ai, self.store.load()) if ai else {}
+
+    def todo(self, **kw):
+        return todo(self.load(), self.store.load(), **kw)
+
+    def vocab_packet(self, **kw):
+        return vocab_packet(self.load(), self.store.load(), **kw)
 
     def status(self):
         model = self.store.load()

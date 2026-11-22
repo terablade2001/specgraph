@@ -105,11 +105,32 @@ WHERE e.stereotype = 'REQ' AND p.value = 'Must';
 
 A project may keep a vocabulary of concepts and per-element labels in `specmodel.ai.json`. In the index:
 `ai_vocabulary` (read it like the configuration) and `ai_labels(element, label, stale)`.
-`SELECT e.label, e.topic FROM ai_labels a JOIN elements e ON e.id = a.element WHERE a.label = 'payments'` finds
+`SELECT e.label, e.topic FROM ai_labels a JOIN elements e ON e.id = a.element WHERE a.label = 'accessibility'` finds
 elements by concept even when their words differ. Labels find, specs answer: `stale = 1` means possibly outdated,
 an element may be unlabelled, and labels can be wrong, so combine them with full-text search and links.
 `python sg.py ai status` shows how much is labelled; `python sg.py ai ops` lists the operations of
 `python sg.py ai apply` (vocabulary and rules: administrators only).
+
+### Running a labelling pass
+
+The tool prepares the work and checks the result; the agent does the reading. Which language models to use is the
+user's choice: a cheaper one is enough for routine labelling, a stronger one is better for the vocabulary and for
+reviews (this project's evaluations assume Sonnet for labelling and Opus for the vocabulary).
+
+1. **Vocabulary** (once, and when the model has grown; an administrator applies it):
+   `python sg.py ai todo --vocab --out vocab.json` gives counts, the types with their descriptions, frequent words,
+   topics sampled across the model and the existing vocabulary. Its `prompt` says what to propose. Write the
+   `ai.vocab.*` operations to a file; an administrator runs `python sg.py ai apply --ops-file <file> --model <name>`.
+2. **Labels** (anyone, any time; repeat while `remaining` is above 0):
+   `python sg.py ai todo --out packet.json` (default 1 000 elements; `--limit N` for smaller packets). One element
+   per line, so it can be read in pages. Follow its `prompt`: one `ai.label.set` per element, an empty list when
+   nothing fits, then `python sg.py ai apply --ops-file <file> --model <name>`. A refused operation names the
+   element; fix it and apply again (the others in the batch were not written).
+3. After a vocabulary change, `ai todo` asks only for the elements whose labels went stale; for a new concept,
+   `ai todo --label-new <key>` lists elements whose words match it, to reconsider.
+
+Labels never block anything: a model change only makes them stale. Commit `specmodel.ai.json` and
+`specmodel.ai.log.jsonl`, preferably in their own commit.
 
 ## Change — always through `apply`, never by editing the file
 

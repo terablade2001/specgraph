@@ -309,3 +309,113 @@ def test_ail08_every_operation_is_logged_append_only(ada, world):
     assert last["op"] == "ai.label.set" and last["by"] == "ada" and last["element"] == world["r1"]
     assert last["reason"] == "it is about signing in" and last["confidence"] == 0.9 and last["model"] == "sonnet"
     assert last["stamp"] == A.AIStore(ada).load()["stamp"]["id"]
+
+
+# -- AIL-04: work packets for agents; the tool never calls a language model ---------------------------
+
+def _linked(ada, world):
+    """r1 refined by a feature outside the packet's interest; r2 verified by a test."""
+    feat = do(ada, "element.create", stereotype="FEAT", topic="Self-service portal", folder=world["folder"])
+    test = do(ada, "element.create", stereotype="TEST-E2E", topic="Pay at the kiosk with coins",
+              folder=world["folder"])
+    do(ada, "link.create", type="refines", source=world["r1"], target=feat)
+    do(ada, "link.create", type="relates_to", source=world["r3"], target=feat)    # not traceable
+    return feat, test
+
+
+def test_ail04_todo_lists_what_needs_labels_with_light_neighbours(ada, world):
+    feat, test = _linked(ada, world)
+    label(ada, world["r3"], world["rep"])
+    p = A.AIStore(ada).todo(limit=10)
+    m = ada.load()["elements"]
+    lab = {e: m[e]["label"] for e in m}
+    got = {e["label"]: e for e in p["elements"]}
+    assert lab[world["r3"]] not in got                               # current labels: not asked again
+    assert {lab[world["r1"]], lab[world["r2"]], lab[feat], lab[test]} == set(got)
+    e1 = got[lab[world["r1"]]]
+    assert e1["h"] == A.element_hash(m[world["r1"]])[:12] and e1["type"] == "REQ"
+    assert e1["topic"] == m[world["r1"]]["topic"] and "notes" not in e1          # empty notes left out
+    assert e1["links"] == ["refines>" + lab[feat]]
+    assert got[lab[feat]]["links"] == ["<refines " + lab[world["r1"]]]           # relates_to is not traceable
+    assert [v["key"] for v in p["vocabulary"]] == sorted([world["auth"], world["pay"], world["rep"]])
+    assert p["promptVersion"] == A.PROMPT_VERSION and "ai.label.set" in p["prompt"]
+    assert p["remaining"] == 0 and p["vocabVersion"] == 1
+
+
+def test_ail04_todo_limit_stale_all_and_context(ada, world):
+    feat, test = _linked(ada, world)
+    p = A.AIStore(ada).todo(limit=1)
+    assert len(p["elements"]) == 1 and p["remaining"] == 4
+    label(ada, world["r1"], world["auth"])
+    for e in (world["r2"], world["r3"], feat, test):
+        label(ada, e)                                                # labelled with nothing: current
+    ai_do(ada, op("ai.vocab.retire", key=world["auth"]))            # only r1 becomes stale
+    m = ada.load()["elements"]
+    p = A.AIStore(ada).todo(limit=1)
+    assert p["elements"][0]["label"] == m[world["r1"]]["label"] and p["elements"][0]["was"] == [world["auth"]]
+    assert m[feat]["label"] in p["context"]                         # a neighbour outside the packet, once
+    assert p["context"][m[feat]["label"]] == {"type": "FEAT", "topic": "Self-service portal", "labels": []}
+    assert len(A.AIStore(ada).todo(all_=True, limit=0)["elements"]) == 5
+
+
+def test_ail04_todo_caps_neighbours_at_ten(ada, world):
+    tests = ada.apply([{"op": "element.create", "args": {"stereotype": "TEST-E2E", "topic": "t%d" % i,
+                                                         "folder": world["folder"]}} for i in range(12)])[1]
+    ada.apply([{"op": "link.create", "args": {"type": "refines", "source": t, "target": world["r2"]}}
+               for t in tests])
+    m = ada.load()["elements"]
+    e = [x for x in A.AIStore(ada).todo(limit=0)["elements"] if x["label"] == m[world["r2"]]["label"]][0]
+    assert len(e["links"]) == 10 and e["moreLinks"] == 2
+
+
+def test_ail04_todo_label_new_lists_candidates(ada, world):
+    label(ada, world["r1"], world["auth"])
+    label(ada, world["r2"], world["pay"])
+    label(ada, world["r3"], world["rep"])
+    k = ai_do(ada, op("ai.vocab.add", label="Cash handling", definition="Coins and notes paid at a kiosk."))[0]
+    p = A.AIStore(ada).todo(label_new=k)
+    m = ada.load()["elements"]
+    assert [e["label"] for e in p["elements"]] == [m[world["r2"]]["label"]]   # words: coins, kiosk, cash
+    assert p["elements"][0]["labels"] == [world["pay"]]
+
+
+def test_ail04_label_set_takes_a_label_and_a_hash_prefix(ada, world):
+    m = ada.load()["elements"]
+    ai_do(ada, op("ai.label.set", element=m[world["r2"]]["label"], hash=A.element_hash(m[world["r2"]])[:12],
+                  labels=[world["pay"]]))
+    assert _labels(ada)[world["r2"]] == ([world["pay"]], False)
+    with pytest.raises(StoreError, match="12"):
+        ai_do(ada, op("ai.label.set", element=world["r2"], hash=A.element_hash(m[world["r2"]])[:8], labels=[]))
+    ai_do(ada, op("ai.label.set", element=world["r3"], hash=A.element_hash(m[world["r3"]]), labels=[]))
+    assert _labels(ada)[world["r3"]] == ([], False)                   # "nothing fits" counts as labelled
+
+
+def test_ail04_vocabulary_packet(ada, world):
+    _linked(ada, world)
+    label(ada, world["r1"], world["auth"])
+    p = A.AIStore(ada).vocab_packet(samples=3, terms=5)
+    assert "ai.vocab.add" in p["prompt"]
+    assert p["counts"]["elements"] == 5 and p["counts"]["byType"]["REQ"] == 3
+    assert {v["key"]: v["used"] for v in p["vocabulary"]}[world["auth"]] == 1
+    assert len(p["samples"]) == 3 and all(set(s) == {"type", "folder", "topic"} for s in p["samples"])
+    assert len(p["terms"]) <= 5 and all(isinstance(t, list) and len(t) == 2 for t in p["terms"])
+    assert any(t["key"] == "REQ" and t["description"] for t in p["types"])
+
+
+def test_ail04_todo_and_apply_through_files(ada, world, only_key, keys, tmp_path):
+    sg = [sys.executable, os.path.join(os.path.dirname(HERE), "sg.py"), "--file", ada.path]
+    out = tmp_path / "packet.json"
+    p = subprocess.run(sg + ["ai", "todo", "--limit", "2", "--out", str(out)], capture_output=True, text=True,
+                       encoding="utf-8")
+    assert p.returncode == 0, p.stderr
+    packet = json.loads(out.read_text(encoding="utf-8"))
+    assert len(packet["elements"]) == 2 and "2 element(s)" in p.stdout
+    lines = out.read_text(encoding="utf-8").splitlines()
+    assert sum(1 for x in lines if x.startswith('{"label"')) == 2              # one element per line
+    ops = [op("ai.label.set", element=e["label"], hash=e["h"], labels=[]) for e in packet["elements"]]
+    (tmp_path / "ops.json").write_text(json.dumps(ops), encoding="utf-8")
+    only_key(keys["bob"])
+    p = subprocess.run(sg + ["ai", "apply", "--ops-file", str(tmp_path / "ops.json"), "--model", "test"],
+                       capture_output=True, text=True, encoding="utf-8")
+    assert p.returncode == 0, p.stderr
+    assert A.AIStore(ada).status()["labelled"] == 2

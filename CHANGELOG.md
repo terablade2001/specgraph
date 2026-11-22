@@ -26,7 +26,14 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
   user; vocabulary and rules: administrators), `sg.py ai status` and `sg.py ai ops` report. The index gets
   `ai_vocabulary` and `ai_labels` (with a stale flag) and is rebuilt when the AI file changes. The commit check and
   `audit` check the AI file's stamp and that only administrators changed vocabulary and rules. `install-hooks` marks
-  both files in `.gitattributes`. The tool never calls a language model; work packets for agents come next.
+  both files in `.gitattributes`. The tool never calls a language model.
+- **Work packets for labelling agents:** `sg.py ai todo` (elements with missing or stale labels, one per line, with
+  their traceable links and a short context of outside neighbours; `--limit`, `--all`, `--label-new KEY`, `--out`)
+  and `sg.py ai todo --vocab` (counts, type descriptions, frequent words and sampled topics for building the
+  vocabulary). Each packet carries its prompt. `ai apply --ops-file` reads operations from a file;
+  `ai.label.set` takes an element's label and the first 12 characters of its hash, and an empty label list
+  ("nothing fits"). `docs/AGENTS.md` describes a labelling pass.
+- (evaluations) A first labelling pass on the 1 000-element model: cost and quality in `evals/results/LABELS-S1K.md`.
 
 - **`sg.py index`**: builds a read-only SQLite index of the model in `.specgraph/<model file name>.db` next to the
   model (ADR-032). It is derived and disposable: the tool writes `.specgraph/.gitignore`, so it is never committed,

@@ -291,6 +291,14 @@ Labels can only show value on questions the index cannot answer. Before Phase 7:
   for the evaluations: Sonnet for labelling, Opus as the stronger model; changed if the cost is too high (owner).
 - Cost, measured: first pass on s1k (1–2 agent runs, about 0.1–0.2M tokens). s10k only if s1k shows a gain
   (about 10 runs, 1–1.5M tokens).
+- **Done 2026-11-22:** `ai todo` (one element per line; elements named by label with a 12-character hash prefix and
+  links as `type>LABEL` / `<type LABEL`, outside neighbours once in `context`, `was` for stale labels, `--limit`,
+  `--all`, `--label-new`, `--out`), `ai todo --vocab` (counts, type descriptions, frequent words, round-robin
+  samples), prompts shipped in `ai.py` (`PROMPT_VERSION` 1; their examples avoid the eval concepts), `ai apply
+  --ops-file`, empty label lists allowed, labelling guide in `docs/AGENTS.md`; 7 tests (AIL-04). Measured on s1k-v2
+  (`evals/results/LABELS-S1K.md`): Opus vocabulary 90 concepts, 123K tokens; Sonnet labels in two packets of ~520,
+  348K tokens (about 340 per element, above the estimate); all 56 planted concept elements labelled in the right
+  branch, hidden ones included, 2 defensible extras. AI file 284 KB.
 
 ### Phase 9 — Vocabulary work (`update-ai-labels`) → release 0.4.1
 

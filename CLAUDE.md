@@ -151,6 +151,7 @@ sg.py history <id>      sg.py validate
 sg.py sql "SELECT ..."   # read-only SQL on the index .specgraph/<model file>.db (ADR-032); sql --schema
 sg.py index             # rebuild that index now (sql rebuilds it by itself when stale)
 sg.py ai status | ops   # AI labels (ADR-034); changed only with sg.py ai apply
+sg.py ai todo [--vocab] --out packet.json   # work packet for a labelling agent (docs/AGENTS.md)
 ```
 
 ## Changing the model
