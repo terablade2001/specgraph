@@ -293,7 +293,7 @@ def test_ail06_install_hooks_marks_the_ai_files(repo, ada, only_key):
     only_key(ada.key())
     hooks.install(ada)
     attrs = (repo / ".gitattributes").read_text()
-    assert "specmodel.ai.json text eol=lf linguist-generated" in attrs
+    assert "specmodel.ai.json text eol=lf merge=specgraph-ai linguist-generated" in attrs
     assert "specmodel.ai.log.jsonl text eol=lf merge=union linguist-generated" in attrs
 
 
@@ -419,3 +419,119 @@ def test_ail04_todo_and_apply_through_files(ada, world, only_key, keys, tmp_path
                        capture_output=True, text=True, encoding="utf-8")
     assert p.returncode == 0, p.stderr
     assert A.AIStore(ada).status()["labelled"] == 2
+
+
+# -- AIL-07: merging the AI file (ADR-035) -------------------------------------------------------------
+
+def _ai(vv=1, vocab=None, labels=None, rules=None):
+    a = A.empty()
+    a.update(vocabVersion=vv, vocabulary=vocab or {}, labels=labels or {}, rules=rules or {})
+    return a
+
+
+def _v(label, changed, **kw):
+    return dict({"label": label, "definition": label + " things.", "changed": changed}, **kw)
+
+
+def _l(v, labels, elements, by="ada"):
+    return {"v": v, "labels": labels, "by": by, "model": "", "elements": elements}
+
+
+def test_ail07_labels_merge_as_a_cache():
+    voc = {"a": _v("A", 1), "b": _v("B", 1)}
+    base = _ai(1, voc, {"h0": _l(1, ["a"], ["e0"])})
+    ours = _ai(1, voc, {"h0": _l(1, ["a"], ["e0"]), "h1": _l(1, ["a"], ["e1"]), "h3": _l(1, ["a"], ["e3"])})
+    theirs = _ai(1, voc, {"h0": _l(1, ["a"], ["e0"]), "h2": _l(1, ["b"], ["e2"]), "h3": _l(1, ["b"], ["e3"], "bob")})
+    merged, conflicts = A.merge3(base, ours, theirs)
+    assert conflicts == []
+    assert set(merged["labels"]) == {"h0", "h1", "h2"}             # union; h3 labelled differently, same v: dropped
+    ours["labels"]["h3"]["v"] = 2
+    ours["vocabVersion"] = theirs["vocabVersion"] = 2
+    merged, _ = A.merge3(base, ours, theirs)
+    assert merged["labels"]["h3"]["labels"] == ["a"]               # the newer vocabulary version wins
+    same_a, same_b = _ai(1, voc, {"h4": _l(1, ["a"], ["e4"])}), _ai(1, voc, {"h4": _l(1, ["a"], ["e5"])})
+    merged, _ = A.merge3(None, same_a, same_b)
+    assert merged["labels"]["h4"]["elements"] == ["e4", "e5"]      # same labels: element lists joined
+
+
+def test_ail07_vocabulary_and_rules_merge_per_key():
+    base = _ai(1, {"a": _v("A", 1), "b": _v("B", 1)})
+    ours = _ai(2, {"a": _v("A", 2, retired=True), "b": _v("B", 1)})
+    theirs = _ai(2, {"a": _v("A", 1), "b": _v("B", 1), "c": _v("C", 2)},
+                 rules={"r1": {"element": "e1", "label": "b", "kind": "never", "reason": "x", "by": "ada", "at": "t"}})
+    merged, conflicts = A.merge3(base, ours, theirs)
+    assert conflicts == []
+    assert merged["vocabulary"]["a"]["retired"] is True and "c" in merged["vocabulary"] and "r1" in merged["rules"]
+    assert merged["vocabVersion"] == 3                             # both sides changed the vocabulary
+    only = _ai(2, {"a": _v("A", 1), "b": _v("B", 2, definition="Bee.")})
+    assert A.merge3(base, only, base)[0]["vocabVersion"] == 2      # one side only: its version
+
+
+def test_ail07_same_key_changed_on_both_sides():
+    base = _ai(1, {"a": _v("A", 1)})
+    newer = _ai(3, {"a": _v("A", 3, definition="New A.")})
+    older = _ai(2, {"a": _v("A", 2, definition="Other A.")})
+    merged, conflicts = A.merge3(base, older, newer)
+    assert conflicts == [] and merged["vocabulary"]["a"]["definition"] == "New A."
+    tie = _ai(3, {"a": _v("A", 3, definition="Tie A.")})
+    merged, conflicts = A.merge3(base, tie, newer)
+    assert [c["path"] for c in conflicts] == [["vocabulary", "a"]]
+    assert merged["vocabulary"]["a"]["definition"] == "Tie A."     # ours kept until an administrator decides
+
+
+def _clones(repo, tmp_path, keys):
+    from specgraph.store import Store
+    commit(repo, "base")
+    other = tmp_path / "bobclone"
+    git(tmp_path, "clone", "-q", str(repo), str(other))
+    git(other, "config", "user.name", "Bob")
+    git(other, "config", "user.email", "bob@example.org")
+    return Store(cwd=str(other), key=keys["bob"]), other
+
+
+def test_ail07_parallel_labelling_merges_without_a_person(repo, ada, world, keys, tmp_path, only_key):
+    from specgraph import hooks
+    hooks.install(ada)
+    bob, other = _clones(repo, tmp_path, keys)
+    hooks.install(bob)
+    label(ada, world["r1"], world["auth"])
+    ai_do(ada, op("ai.vocab.add", label="Privacy", definition="Personal data."))
+    commit(repo, "ada labels")
+    only_key(keys["bob"])                                   # the merge is signed by the person merging
+    label(bob, world["r2"], world["pay"])
+    label(bob, world["r3"], world["rep"])
+    commit(other, "bob labels")
+    p = subprocess.run(["git", "pull", "-q", "--no-rebase", "--no-edit", "origin", "docs/specifications"],
+                       cwd=str(other), capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert p.returncode == 0, p.stdout + p.stderr
+    got = _labels(bob)
+    assert got[world["r1"]][0] == [world["auth"]] and got[world["r2"]][0] == [world["pay"]]
+    assert got[world["r3"]][0] == [world["rep"]] and not any(s for _, s in got.values())
+    ai = A.AIStore(bob).load()
+    assert "privacy" in ai["vocabulary"] and ai["stamp"]["user"] == "bob" and ai["stamp"]["op"] == "merge"
+    assert S.check_integrity(ai, bob.load()["users"]) == []
+    assert all(not e["findings"] for e in audit.audit_history(bob)), audit.audit_history(bob)
+    log = [json.loads(x) for x in open(A.log_path(bob.path), encoding="utf-8").read().splitlines()]   # union
+    assert {r["by"] for r in log if r["op"] == "ai.label.set"} == {"ada", "bob"}
+
+
+def test_ail07_merge_refuses_a_hand_edited_side_and_resolve_rebuilds(repo, ada, world, keys, tmp_path, only_key):
+    bob, other = _clones(repo, tmp_path, keys)             # no merge driver installed: git leaves markers
+    label(ada, world["r1"], world["auth"])
+    commit(repo, "ada")
+    label(bob, world["r2"], world["pay"])
+    commit(other, "bob")
+    subprocess.run(["git", "pull", "-q", "--no-rebase", "--no-edit", "origin", "docs/specifications"],
+                   cwd=str(other), capture_output=True)
+    with pytest.raises(M.ModelError):
+        A.AIStore(bob).load()
+    only_key(keys["bob"])
+    from specgraph.cli import main
+    assert main(["--file", bob.path, "ai", "resolve"]) == 0
+    got = _labels(bob)
+    assert got[world["r1"]][0] == [world["auth"]] and got[world["r2"]][0] == [world["pay"]]
+    ours = A.AIStore(bob).load()
+    edited = json.loads(json.dumps(ours))
+    edited["vocabulary"][world["pay"]]["definition"] = "by hand"
+    with pytest.raises(M.ModelError, match="outside the tool"):
+        A.merge_texts(None, M.canonical(ours), M.canonical(edited), bob.load()["users"], keys["bob"])

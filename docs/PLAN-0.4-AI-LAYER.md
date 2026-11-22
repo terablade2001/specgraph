@@ -324,6 +324,13 @@ Labels can only show value on questions the index cannot answer. Before Phase 7:
   wins (question Q3); log = union.
 - `sg.py ai gc` (admin): drop label entries whose hash no element has any more.
 - **Accept:** multi-branch tests merge with no manual conflict.
+- **Done 2026-11-22:** the commit and audit checks and `ai.gc` were built in Phase 7. New: `ai.merge3` /
+  `merge_texts` (ADR-035), `sg.py ai merge-driver` (configured by `install-hooks`, `merge=specgraph-ai` in
+  `.gitattributes`), `sg.py ai resolve` (also joins the log), trusted users while merging = the model's users at HEAD,
+  MERGE_HEAD and in the working file. Same labels with different element lists are joined. The Phase 7 rule "only an
+  administrator may remove label entries" was dropped from the shared change check, because a merge legitimately
+  drops undecidable entries; `ai.gc` stays administrator-only in the write path. 5 tests (AIL-07), including two
+  clones labelling in parallel.
 
 ### Phase 11 — `specs-vs-ai-labels` → release 0.4.2
 

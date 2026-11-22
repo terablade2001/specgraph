@@ -161,3 +161,8 @@ An optional second file next to the model, written only by `sg.py ai apply`. Wit
 - `specmodel.ai.log.jsonl`: one line per operation (who, when, which, reason, confidence, model), append-only,
   `merge=union`, never read by the tool to decide anything.
 - Labels are a retrieval aid. Validation, coverage, locks and every other decision ignore them.
+- Merging (ADR-035, `merge=specgraph-ai` set by `install-hooks`): `labels` union per hash (same hash, different
+  entries: the higher `v` wins, equal `v` drops the entry); `vocabulary` and `rules` three-way per key (both sides
+  changed a key: the higher `vocabVersion` wins, equal is a conflict kept as ours and reported); `vocabVersion` = the
+  higher, plus one when both sides changed the vocabulary differently. `sg.py ai resolve` after a merge without the
+  driver.

@@ -461,8 +461,6 @@ def check_change(old, new, actor, users):
     base = old or empty()
     if not admin and any(base.get(k) != new.get(k) for k in ADMIN_KEYS):
         out.append("only an administrator may change the AI vocabulary or rules (changed by %s)" % actor)
-    if not admin and set(base.get("labels", {})) - set(new.get("labels", {})):
-        out.append("only an administrator may remove label entries (ai.gc) (changed by %s)" % actor)
     return out
 
 
@@ -489,6 +487,124 @@ def check_version(new_text, parent_texts, users):
         per = [check_change(o, new, actor, users) for o in olds]
         findings += ["ai: " + v for v in sorted(set.intersection(*[set(p) for p in per]))]
     return findings
+
+
+# -- merging (ADR-035) ------------------------------------------------------------------------------------
+
+def _label_entry(base, ours, theirs):
+    """Merged entry of one content hash, or None to drop it (it becomes stale and is labelled again)."""
+    if ours is None or theirs is None:
+        other = theirs if ours is None else ours
+        return None if other == base else other          # removed on one side (gc) and unchanged on the other
+    if ours == theirs:
+        return ours
+    if ours["labels"] == theirs["labels"] and ours["v"] == theirs["v"]:
+        return dict(ours, elements=sorted(set(ours.get("elements", [])) | set(theirs.get("elements", []))))
+    if ours == base:
+        return theirs
+    if theirs == base:
+        return ours
+    if ours["v"] != theirs["v"]:
+        return ours if ours["v"] > theirs["v"] else theirs
+    return None
+
+
+def merge3(base, ours, theirs):
+    """(merged AI file without stamp, conflicts). Labels merge as a cache, vocabulary and rules per key
+    (ADR-035 §2-4). A conflict keeps our value and is reported for an administrator."""
+    base = base or empty()
+    out = {"format": FORMAT, "formatVersion": FORMAT_VERSION,
+           "promptVersion": max(ours.get("promptVersion", 1), theirs.get("promptVersion", 1))}
+    conflicts, labels = [], {}
+    bl, ol, tl = base.get("labels", {}), ours.get("labels", {}), theirs.get("labels", {})
+    for h in sorted(set(ol) | set(tl)):
+        e = _label_entry(bl.get(h), ol.get(h), tl.get(h))
+        if e is not None:
+            labels[h] = e
+    out["labels"] = labels
+    ov, tv = ours.get("vocabVersion", 0), theirs.get("vocabVersion", 0)
+    for coll in ("vocabulary", "rules"):
+        b, o, t = base.get(coll, {}), ours.get(coll, {}), theirs.get(coll, {})
+        merged = {}
+        for k in sorted(set(b) | set(o) | set(t)):
+            x, y, z = o.get(k), t.get(k), b.get(k)
+            if x == y:
+                v = x
+            elif x == z:
+                v = y
+            elif y == z:
+                v = x
+            elif ov != tv:
+                v = x if ov > tv else y
+            else:
+                conflicts.append({"path": [coll, k], "ours": x, "theirs": y})
+                v = x
+            if v is not None:
+                merged[k] = v
+        out[coll] = merged
+    both = ours.get("vocabulary") != base.get("vocabulary") and theirs.get("vocabulary") != base.get("vocabulary") \
+        and ours.get("vocabulary") != theirs.get("vocabulary")
+    out["vocabVersion"] = max(ov, tv) + (1 if both else 0)
+    return out, conflicts
+
+
+def merge_texts(base_text, ours_text, theirs_text, users, key):
+    """Merge three versions of the AI file and sign the result as the person merging (ADR-035 §1, §5)."""
+    try:
+        base = parse(base_text) if base_text and base_text.strip() else None
+    except M.ModelError:
+        base = None
+    ours, theirs = parse(ours_text), parse(theirs_text)
+    for side, ai in (("our", ours), ("their", theirs)):     # ADR-031: never carry in and re-sign a hand edit
+        problems = S.check_integrity(ai, users)
+        if problems:
+            raise M.ModelError("%s version of the AI file was changed outside the tool, so it is not merged: %s. "
+                               "Run 'git merge --abort' and have that branch repaired first." % (side, problems[0]))
+    merged, conflicts = merge3(base, ours, theirs)
+    actor = S.whoami({"users": users}, key)
+    S.make_stamp(merged, actor, key, "merge", [(ours.get("stamp") or {}).get("id"),
+                                               (theirs.get("stamp") or {}).get("id")])
+    return merged, conflicts
+
+
+def merge_users(store):
+    """Users trusted while merging: those of the model at HEAD, at MERGE_HEAD and in the working file."""
+    from . import gitio
+    users = {}
+    rel = gitio.rel_path(store.root, store.path) if store.root else None
+    texts = [gitio.show(store.root, "%s:%s" % (r, rel)) for r in ("HEAD", "MERGE_HEAD")] if rel else []
+    try:
+        with open(store.path, "r", encoding="utf-8") as fh:
+            texts.append(fh.read())
+    except OSError:
+        pass
+    for t in texts:
+        try:
+            for name, u in (M.parse(t).get("users", {}) if t else {}).items():
+                keys = users.setdefault(name, {"role": u.get("role"), "keys": []})["keys"]
+                keys += [k for k in u.get("keys", []) if k not in keys]
+        except M.ModelError:
+            continue
+    return users
+
+
+def resolve_from_index(store):
+    """For a merge done without the driver: rebuild the AI file from git's stages; the log as a union."""
+    from . import gitio
+    rel = gitio.rel_path(store.root, ai_path(store.path))
+    stages = [gitio.show(store.root, ":%d:%s" % (n, rel)) for n in (1, 2, 3)]
+    if stages[1] is None or stages[2] is None:
+        raise M.ModelError("git has no unmerged versions of %s" % rel)
+    merged, conflicts = merge_texts(stages[0], stages[1], stages[2], merge_users(store), store.key())
+    M.save(ai_path(store.path), merged)
+    lrel = gitio.rel_path(store.root, log_path(store.path))
+    ours, theirs = (gitio.show(store.root, ":%d:%s" % (n, lrel)) for n in (2, 3))
+    if ours is not None and theirs is not None:
+        lines = ours.splitlines()
+        lines += [x for x in theirs.splitlines() if x not in set(lines)]
+        with open(log_path(store.path), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write("".join(x + "\n" for x in lines))
+    return conflicts
 
 
 # -- the write path ---------------------------------------------------------------------------------------

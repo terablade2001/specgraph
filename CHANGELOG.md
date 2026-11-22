@@ -33,6 +33,11 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
   vocabulary). Each packet carries its prompt. `ai apply --ops-file` reads operations from a file;
   `ai.label.set` takes an element's label and the first 12 characters of its hash, and an empty label list
   ("nothing fits"). `docs/AGENTS.md` describes a labelling pass.
+- **Merging the AI file (ADR-035):** `install-hooks` configures a merge driver (`merge=specgraph-ai`). Labels merge
+  as a cache (union per content hash; the newer vocabulary version wins; an undecidable entry is dropped and labelled
+  again later), vocabulary and rules per key; only the same concept changed on both sides at the same vocabulary
+  version is a conflict for an administrator. A side changed outside the tool is refused. The merged file is signed by
+  the person merging. `sg.py ai resolve` rebuilds the AI file (and joins the log) after a merge without the driver.
 - (evaluations) A first labelling pass on the 1 000-element model: cost and quality in `evals/results/LABELS-S1K.md`.
 
 - **`sg.py index`**: builds a read-only SQLite index of the model in `.specgraph/<model file name>.db` next to the

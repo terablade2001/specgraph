@@ -56,11 +56,15 @@ def install(store, force=False):
         done.append("installed %s hook" % name)
     gitio.git(store.root, "config", "merge.%s.name" % TOOL_NAME, "%s model merge" % TOOL_NAME)
     gitio.git(store.root, "config", "merge.%s.driver" % TOOL_NAME, "%s merge-driver %%O %%A %%B" % cmd)
-    done.append("configured merge driver")
+    gitio.git(store.root, "config", "merge.%s-ai.name" % TOOL_NAME, "%s AI labels merge" % TOOL_NAME)
+    gitio.git(store.root, "config", "merge.%s-ai.driver" % TOOL_NAME,
+              '%s --file "%s" ai merge-driver %%O %%A %%B' % (cmd, rel))
+    done.append("configured merge drivers")
     attr = os.path.join(store.root, ".gitattributes")
     lines = [("%s text eol=lf merge=%s" % (rel, TOOL_NAME), "added merge rule to .gitattributes (commit this file)"),
              ("%s text eol=lf merge=union" % M.deleted_path(rel), "added the deleted-elements log to .gitattributes"),
-             ("%s text eol=lf linguist-generated" % _ai_rel(rel), "added the AI labels file to .gitattributes"),
+             ("%s text eol=lf merge=%s-ai linguist-generated" % (_ai_rel(rel), TOOL_NAME),
+              "added the AI labels file to .gitattributes"),
              ("%s text eol=lf merge=union linguist-generated" % _ai_rel(rel, log=True),
               "added the AI log to .gitattributes")]
     for line, note in lines:

@@ -229,6 +229,41 @@ def cmd_ai_todo(store, a):
     return 0
 
 
+def cmd_ai_merge_driver(store, a):
+    from . import ai as AI
+    try:
+        texts = []
+        for p in (a.base, a.ours, a.theirs):
+            with open(p, "r", encoding="utf-8") as fh:
+                texts.append(fh.read())
+        merged, conflicts = AI.merge_texts(texts[0], texts[1], texts[2], AI.merge_users(store), store.key())
+    except (M.ModelError, S.IdentityError, OSError) as exc:
+        print("%s: cannot merge the AI file: %s" % (TOOL_NAME, exc), file=sys.stderr)
+        return 2
+    M.save(a.ours, merged)
+    return _ai_conflicts(conflicts)
+
+
+def _ai_conflicts(conflicts):
+    for c in conflicts:
+        print("%s: AI CONFLICT at %s: both sides changed it with the same vocabulary version; ours is kept"
+              % (TOOL_NAME, "/".join(c["path"])), file=sys.stderr)
+    if conflicts:
+        print("%s: an administrator settles it with 'ai apply' (ai.vocab.update / ai.rule.set), then git add"
+              % TOOL_NAME, file=sys.stderr)
+        return 1
+    return 0
+
+
+def cmd_ai_resolve(store, a):
+    from . import ai as AI
+    if not store.root:
+        raise StoreError("not inside a git repository")
+    conflicts = AI.resolve_from_index(store)
+    print("AI file rebuilt from both sides")
+    return _ai_conflicts(conflicts)
+
+
 def cmd_ai_status(store, a):
     from . import ai as AI
     _out(AI.AIStore(store).status())
@@ -406,6 +441,12 @@ def build_parser():
     tp.add_argument("--out", help="write the packet to this file (one element per line) instead of stdout")
     aisub.add_parser("status", help="counts of labelled, stale and unlabelled elements").set_defaults(fn=cmd_ai_status)
     aisub.add_parser("ops", help="list the AI operations").set_defaults(fn=cmd_ai_ops)
+    aisub.add_parser("resolve", help="rebuild the AI file after a git merge conflict").set_defaults(fn=cmd_ai_resolve)
+    mp = aisub.add_parser("merge-driver", help="(called by git)")
+    mp.set_defaults(fn=cmd_ai_merge_driver)
+    mp.add_argument("base")
+    mp.add_argument("ours")
+    mp.add_argument("theirs")
     sp = add("check", cmd_check, "all checks on the working or staged file (used by hooks)")
     sp.add_argument("--staged", action="store_true")
     sp = add("audit", cmd_audit, "check every commit of the branch history, or the commits <from> to <to> "

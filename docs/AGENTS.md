@@ -130,7 +130,9 @@ reviews (this project's evaluations assume Sonnet for labelling and Opus for the
    `ai todo --label-new <key>` lists elements whose words match it, to reconsider.
 
 Labels never block anything: a model change only makes them stale. Commit `specmodel.ai.json` and
-`specmodel.ai.log.jsonl`, preferably in their own commit.
+`specmodel.ai.log.jsonl`, preferably in their own commit. Labelling on two branches merges by itself (merge driver,
+`install-hooks`); "AI CONFLICT" means an administrator changed the same concept on both branches: settle it with
+`ai apply`, then `git add`. After a merge without the driver: `python sg.py ai resolve`.
 
 ## Change — always through `apply`, never by editing the file
 

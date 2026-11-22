@@ -56,7 +56,7 @@
 | AIL-04 | ai `test_ail04_*` (todo: missing/stale only, light links, context once, limit and remaining, neighbours capped at 10, `--label-new`, `--vocab` packet, label and hash prefix, empty labels, files in and out through `sg.py ai`) |
 | AIL-05 | ai `test_ail05_*` (index tables with staleness, rebuilt when only the AI file changes; validation ignores labels) |
 | AIL-06 | ai `test_ail06_*` (commit check and audit: vocabulary changed by a non-admin, hand-edited file; labels by any user pass; `.gitattributes`) |
-| AIL-07 | not built yet (merge driver, Phase 10) |
+| AIL-07 | ai `test_ail07_*` (labels as a cache, vocabulary and rules per key, same key on both sides; two clones labelling in parallel merge through the driver with a signed result and a clean audit; hand-edited side refused; `ai resolve` without the driver) |
 | AIL-08 | ai `test_ail08_*` (one log line per operation with reason, confidence, model, stamp) |
 | SRC-01, SRC-02, SRC-05 | core `test_src01_02_05_*`; ui |
 | SRC-03, SRC-04 | ui |
