@@ -1,0 +1,77 @@
+{
+ "_control_tokens": 55205,
+ "_model": "evals/build/p12/nolabels/specmodel.json (a copy of models/s1k-v2 without an AI file)",
+ "Q05a": {
+  "answer": [
+   "REQ-21bbfd7f",
+   "REQ-c23d28c8",
+   "REQ-474ffc00",
+   "REQ-8d879223",
+   "REQ-52e25b8d",
+   "REQ-5c4faaef",
+   "REQ-6b57f3d9",
+   "RISK-7c869825",
+   "RISK-f3f97be4",
+   "REQ-8f789263",
+   "REQ-afb8792a",
+   "REQ-9eff359a",
+   "REQ-d50b9f0f",
+   "REQ-15019a7b",
+   "REQ-6756fe51",
+   "REQ-4beebf3e",
+   "REQ-cc204fad",
+   "REQ-6803cee6",
+   "REQ-83b0f550",
+   "REQ-d0b9f78e"
+  ],
+  "tokens": 68388,
+  "note": "commands: search x3 + Grep on model"
+ },
+ "Q05b": {
+  "answer": [
+   "REQ-7b643c1f",
+   "REQ-b0834a66",
+   "REQ-3ca62ef0",
+   "REQ-5d62ebb3",
+   "REQ-89a5b21d",
+   "REQ-4e4b5339",
+   "REQ-920352b5",
+   "REQ-a8198cd0",
+   "REQ-b0decce5",
+   "REQ-3b37c0da",
+   "REQ-ad8778a6",
+   "RISK-1b104215",
+   "RISK-74e3ba86"
+  ],
+  "tokens": 66877,
+  "note": "commands: search x10 + Grep"
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-2091b92e",
+   "REQ-4800585c",
+   "REQ-2ac3b6b6",
+   "REQ-588119ff",
+   "REQ-95983def",
+   "REQ-97cd0a9e",
+   "REQ-43cf2144",
+   "REQ-45b7c3a6",
+   "REQ-a356c355",
+   "REQ-43a9a371"
+  ],
+  "tokens": 66706,
+  "note": "commands: search x5"
+ },
+ "Q11": {
+  "answer": [
+   "REQ-50375e72",
+   "REQ-3d7f7bc7",
+   "REQ-0696580b",
+   "REQ-1ea3cf09",
+   "REQ-87d2267d",
+   "REQ-bdeca294"
+  ],
+  "tokens": 81190,
+  "note": "commands: sql x8 (read all REQ topics)"
+ }
+}

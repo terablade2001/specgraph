@@ -43,6 +43,8 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
   an administrator with `ai.finding.add`; each must quote every element it names, and a dismissed finding is never
   accepted again (`ai.finding.dismiss`, `ai.finding.close`). The index gets `ai_findings` and
   `ai_finding_elements` (schema 3). A review never changes the model.
+- **AI labels stay optional (ADR-037):** measured with and without labels (`evals/results/LABELS-EVAL.md`); the README
+  says when labels pay off and what they cost.
 - (evaluations) A first labelling pass on the 1 000-element model: cost and quality in `evals/results/LABELS-S1K.md`.
 
 - **`sg.py index`**: builds a read-only SQLite index of the model in `.specgraph/<model file name>.db` next to the

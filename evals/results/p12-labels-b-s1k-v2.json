@@ -1,0 +1,84 @@
+{
+ "_control_tokens": 55205,
+ "_model": "evals/build/p12/labels/specmodel.json (a copy of models/s1k-v2 with the AI file of commit 5390fe8, without findings)",
+ "Q05a": {
+  "answer": [
+   "REQ-8d879223",
+   "REQ-474ffc00",
+   "REQ-6803cee6",
+   "RISK-f3f97be4",
+   "RISK-7c869825",
+   "REQ-21bbfd7f",
+   "REQ-52e25b8d",
+   "REQ-5c4faaef",
+   "REQ-6b57f3d9",
+   "REQ-c23d28c8",
+   "REQ-15019a7b",
+   "REQ-6756fe51",
+   "REQ-92c4fcd2",
+   "REQ-f260f85e",
+   "REQ-0b3babea",
+   "REQ-2b2930a1",
+   "REQ-8f789263",
+   "REQ-afb8792a",
+   "REQ-d0b9f78e",
+   "REQ-83b0f550"
+  ],
+  "tokens": 71292,
+  "note": "commands: search, sql fts x2, vocabulary x2, sql labels x2"
+ },
+ "Q05b": {
+  "answer": [
+   "REQ-4e4b5339",
+   "RISK-74e3ba86",
+   "RISK-1b104215",
+   "REQ-ad8778a6",
+   "REQ-3b37c0da",
+   "REQ-5d62ebb3",
+   "REQ-3ca62ef0",
+   "REQ-7b643c1f",
+   "REQ-89a5b21d",
+   "REQ-b0834a66",
+   "REQ-1280e9e4",
+   "REQ-8fbf3661",
+   "REQ-a3075d41",
+   "REQ-920352b5",
+   "REQ-a8198cd0",
+   "REQ-b0decce5"
+  ],
+  "tokens": 72013,
+  "note": "commands: search, sql fts, vocabulary, sql labels, schema, sql x2 (1 wrong column)"
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-2ac3b6b6",
+   "REQ-588119ff",
+   "REQ-2091b92e",
+   "REQ-4800585c",
+   "REQ-43a9a371",
+   "REQ-43cf2144",
+   "REQ-45b7c3a6",
+   "REQ-9ecdaba0",
+   "REQ-a356c355",
+   "REQ-a60153a1",
+   "REQ-e63389ab",
+   "REQ-efdf12b5",
+   "REQ-95983def",
+   "REQ-97cd0a9e"
+  ],
+  "tokens": 77668,
+  "note": "commands: search x5, sql labels+fts+like, vocabulary, show x3"
+ },
+ "Q11": {
+  "answer": [
+   "REQ-50375e72",
+   "REQ-3d7f7bc7",
+   "REQ-0696580b",
+   "REQ-1ea3cf09",
+   "REQ-87d2267d",
+   "REQ-bdeca294"
+  ],
+  "tokens": 89615,
+  "note": "commands: sql x12 (read all REQ topics)"
+ }
+}

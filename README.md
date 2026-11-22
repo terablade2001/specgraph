@@ -286,6 +286,14 @@ once to update them.
 Read `specmodel.json` directly (format: `docs/FORMAT.md`), or query a read-only SQLite copy of it with
 `sg.py sql "SELECT ..."` (kept in `.specgraph/`, never committed; `sg.py sql --schema` lists the tables). Change it only with `sg.py apply` (see `docs/AGENTS.md`).
 
+**AI labels (optional, ADR-034 to ADR-037).** A project can have an agent label every element with concepts from a
+controlled vocabulary (`specmodel.ai.json`, `sg.py ai …`), and have it review the specs concept by concept for
+duplicates, gaps and missing links. Nothing requires it; without labels everything works the same.
+Labels pay off when people ask "everything about X" on a large model and the specs word X in many ways. On a
+1 000-element test model, agents found 87% of such elements with labels against 37% without (`evals/results/LABELS-EVAL.md`).
+They cost tokens: a first pass about 470K at 1 000 elements (roughly ten times more at 10 000), a vocabulary revision
+with relabelling about 130K, and only changed elements afterwards. How to run a pass: `docs/AGENTS.md`.
+
 ## Example model
 
 `specmodel.example.json` is a complete model to look at: 26 elements of 11 types (B-REQ, U-REQ,

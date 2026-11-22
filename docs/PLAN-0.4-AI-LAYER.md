@@ -354,6 +354,11 @@ Labels can only show value on questions the index cannot answer. Before Phase 7:
 ### Phase 12 — Re-measure and decide → release 0.4.3
 
 - Evals with and without labels; results and the decision (labels on by default or not) in an ADR.
+- **Decision (owner, 2026-11-23): ADR-037 approved** — labels stay optional; the README says when they pay off.
+- **Done 2026-11-22:** 12 runs on s1k-v2, Q05a–c and Q11 (`evals/results/LABELS-EVAL.md`):
+  hidden concept elements 87% with labels (two runs, 16 and 17 of 19) against 37% without (6 and 8 of 19); concept
+  F1 0.95–0.97 against 0.84–0.86; Q11 1.00 either way; +5K tokens per concept question. Proposed: ADR-037 (labels stay
+  optional; the guide tells agents to use them when present). No release (owner).
 
 ---
 

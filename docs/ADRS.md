@@ -640,3 +640,25 @@ into the model as ISSUE elements.
 **Consequences.** The AI file grows with open findings; closing and dismissing keep it small, the log keeps history.
 Reviews cost tokens per concept, so they are run on request, not on every change. Findings are advice: nothing in the
 tool reads them to decide anything.
+
+## ADR-037 — AI labels stay optional; the guide tells agents to use them when present  · stakes: medium · **approved by the owner 2026-11-23**
+**Context.** Phase 12 (`evals/results/LABELS-EVAL.md`): on the 1 000-element model, agents with labels found 87% of the
+concept elements that never use the concept's words (33 of 38, steady between runs), against 37% without (14 of 38,
+spread from 0 to 100% per concept); mean F1 on concept questions 0.95–0.97 against 0.84–0.86. Near-duplicates and all
+structural questions do not need labels. Labels cost tokens: ~470K for a first pass at 1 000 elements (vocabulary
+with Opus, labels with Sonnet), ~3.4M estimated at 10 000, ~130K per vocabulary revision; answering costs ~5K more
+per concept question. Remaining errors are judgement about the question, not retrieval.
+**Options.** (a) labels on by default: `init` creates an AI file and the guide makes labelling part of every change;
+(b) optional: a project decides to label, the tool and guide support it, and agents use labels when the index has
+them; (c) drop Layer 2.
+**Decision.** (b).
+1. The tool never requires an AI file; everything works without one (as tested since Phase 7).
+2. `docs/AGENTS.md` keeps telling agents to read `ai_vocabulary` and use `ai_labels` together with full-text search
+   when the index has labels, and how to run labelling, revision and review passes.
+3. `README.md` says when labels pay off: large models, searches by meaning across folders, people asking "everything
+   about X"; and what they cost, with the measured numbers.
+4. Labelling is run on request (or by a project's own automation), never by the tool or its hooks; stale labels never
+   block a change.
+**Consequences.** Projects that do not label lose nothing. Projects that do get stable concept search at a one-off
+cost and a small upkeep. The decision is revisited if a measurement on a real model, or at 10 000 elements, shows a
+different balance.

@@ -1,0 +1,87 @@
+{
+ "_control_tokens": 55205,
+ "_model": "evals/build/p12/labels/specmodel.json (a copy of models/s1k-v2 with the AI file of commit 5390fe8, without findings)",
+ "Q05a": {
+  "answer": [
+   "REQ-21bbfd7f",
+   "REQ-c23d28c8",
+   "REQ-15019a7b",
+   "REQ-6756fe51",
+   "REQ-8f789263",
+   "REQ-afb8792a",
+   "REQ-6803cee6",
+   "REQ-83b0f550",
+   "REQ-d0b9f78e",
+   "REQ-0b3babea",
+   "REQ-2b2930a1",
+   "REQ-f260f85e",
+   "REQ-52e25b8d",
+   "REQ-5c4faaef",
+   "REQ-6b57f3d9",
+   "RISK-f3f97be4",
+   "RISK-7c869825",
+   "REQ-4beebf3e",
+   "REQ-cc204fad",
+   "REQ-9eff359a",
+   "REQ-d50b9f0f",
+   "REQ-8d879223",
+   "REQ-474ffc00"
+  ],
+  "tokens": 74444,
+  "note": "commands: search, sql fts x2, vocabulary, sql labels (LIKE on keys), notes"
+ },
+ "Q05b": {
+  "answer": [
+   "REQ-7b643c1f",
+   "REQ-b0834a66",
+   "REQ-4e4b5339",
+   "REQ-1280e9e4",
+   "REQ-8fbf3661",
+   "REQ-a3075d41",
+   "REQ-3b37c0da",
+   "REQ-ad8778a6",
+   "RISK-1b104215",
+   "RISK-74e3ba86",
+   "REQ-920352b5",
+   "REQ-a8198cd0",
+   "REQ-b0decce5",
+   "REQ-3ca62ef0",
+   "REQ-5d62ebb3",
+   "REQ-89a5b21d"
+  ],
+  "tokens": 72164,
+  "note": "commands: search x15, sql labels x3, show x3"
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-2091b92e",
+   "REQ-2ac3b6b6",
+   "REQ-43a9a371",
+   "REQ-43cf2144",
+   "REQ-45b7c3a6",
+   "REQ-4800585c",
+   "REQ-588119ff",
+   "REQ-95983def",
+   "REQ-97cd0a9e",
+   "REQ-9ecdaba0",
+   "REQ-a356c355",
+   "REQ-a60153a1",
+   "REQ-e63389ab",
+   "REQ-efdf12b5"
+  ],
+  "tokens": 68286,
+  "note": "commands: search, schema, sql labels+fts"
+ },
+ "Q11": {
+  "answer": [
+   "REQ-50375e72",
+   "REQ-3d7f7bc7",
+   "REQ-0696580b",
+   "REQ-1ea3cf09",
+   "REQ-87d2267d",
+   "REQ-bdeca294"
+  ],
+  "tokens": 85229,
+  "note": "commands: sql x8 (read all REQ topics)"
+ }
+}
