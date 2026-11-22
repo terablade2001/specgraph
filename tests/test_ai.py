@@ -68,7 +68,7 @@ def test_ail01_the_ai_file_is_next_to_the_model_signed_and_canonical(ada, world)
     assert text == M.canonical(ai)
     assert ai["format"] == "specgraph-ai" and ai["formatVersion"] == 1 and ai["vocabVersion"] == 1
     assert set(ai) == {"format", "formatVersion", "vocabVersion", "promptVersion", "vocabulary", "labels", "rules",
-                       "stamp"}
+                       "findings", "dismissed", "stamp"}
     assert ai["stamp"]["user"] == "ada"
     assert S.check_integrity(ai, ada.load()["users"]) == []
     assert ai["vocabulary"][world["auth"]] == {"label": "Authentication", "changed": 1,
@@ -423,9 +423,10 @@ def test_ail04_todo_and_apply_through_files(ada, world, only_key, keys, tmp_path
 
 # -- AIL-07: merging the AI file (ADR-035) -------------------------------------------------------------
 
-def _ai(vv=1, vocab=None, labels=None, rules=None):
+def _ai(vv=1, vocab=None, labels=None, rules=None, findings=None, dismissed=None):
     a = A.empty()
-    a.update(vocabVersion=vv, vocabulary=vocab or {}, labels=labels or {}, rules=rules or {})
+    a.update(vocabVersion=vv, vocabulary=vocab or {}, labels=labels or {}, rules=rules or {},
+             findings=findings or {}, dismissed=dismissed or {})
     return a
 
 
@@ -535,3 +536,93 @@ def test_ail07_merge_refuses_a_hand_edited_side_and_resolve_rebuilds(repo, ada, 
     edited["vocabulary"][world["pay"]]["definition"] = "by hand"
     with pytest.raises(M.ModelError, match="outside the tool"):
         A.merge_texts(None, M.canonical(ours), M.canonical(edited), bob.load()["users"], keys["bob"])
+
+
+# -- AIL-09: findings (ADR-036) -------------------------------------------------------------------------
+
+def _finding(store, kind, elements, quotes, suggestion="Link or merge them.", **kw):
+    ev = [{"element": e, "quote": q} for e, q in zip(elements, quotes)]
+    return ai_do(store, op("ai.finding.add", kind=kind, elements=elements, evidence=ev, suggestion=suggestion, **kw))[0]
+
+
+def test_ail09_a_finding_quotes_the_specs(ada, world):
+    before = open(ada.path, encoding="utf-8").read()
+    m = ada.load()["elements"]
+    fid = _finding(ada, "duplicate", [m[world["r1"]]["label"], world["r2"]],
+                   ["sign in with the CITY   account", "kiosk takes coins"], ops=[{"op": "element.delete"}])
+    f = A.AIStore(ada).load()["findings"][fid]
+    assert f["kind"] == "duplicate" and f["elements"] == sorted([world["r1"], world["r2"]]) and f["by"] == "ada"
+    assert f["hashes"] == [A.element_hash(m[e]) for e in f["elements"]] and f["ops"] == [{"op": "element.delete"}]
+    assert open(ada.path, encoding="utf-8").read() == before                      # the model is never changed
+    db = I.ensure(ada.path)["path"]
+    assert rows(db, "SELECT kind, stale FROM ai_findings WHERE id=?", fid) == [("duplicate", 0)]
+    assert sorted(rows(db, "SELECT element FROM ai_finding_elements WHERE finding=?", fid)) == \
+        sorted([(world["r1"],), (world["r2"],)])
+    do(ada, "element.update", id=world["r2"], topic="The kiosk takes coins and cards")
+    assert rows(I.ensure(ada.path)["path"], "SELECT stale FROM ai_findings WHERE id=?", fid) == [(1,)]
+
+
+@pytest.mark.parametrize("kind,elements,quotes,msg", [
+    ("duplicate", ["r1", "r2"], ["sign in with the city account", "not in this element"], "quote"),
+    ("duplicate", ["r1", "r2"], ["sign in with the city account", "coins"], "12"),
+    ("duplicate", ["r1"], ["sign in with the city account"], "two"),
+    ("gap", ["r1", "r2"], ["sign in with the city account"], "quote"),
+    ("wish", ["r1"], ["sign in with the city account"], "kind"),
+])
+def test_ail09_findings_without_evidence_are_refused(ada, world, kind, elements, quotes, msg):
+    with pytest.raises(StoreError, match=msg):
+        _finding(ada, kind, [world[e] for e in elements], quotes)
+
+
+def test_ail09_dismissed_findings_never_come_back(ada, world):
+    fid = _finding(ada, "duplicate", [world["r1"], world["r2"]], ["sign in with the city account", "kiosk takes coins"])
+    with pytest.raises(StoreError, match="open"):
+        _finding(ada, "duplicate", [world["r2"], world["r1"]], ["kiosk takes coins", "sign in with the city account"])
+    ai_do(ada, op("ai.finding.dismiss", id=fid, reason="different services"))
+    ai = A.AIStore(ada).load()
+    assert fid not in ai["findings"] and list(ai["dismissed"].values())[0]["reason"] == "different services"
+    with pytest.raises(StoreError, match="dismissed"):
+        _finding(ada, "duplicate", [world["r2"], world["r1"]], ["kiosk takes coins", "sign in with the city account"])
+    other = _finding(ada, "terminology", [world["r1"], world["r2"]], ["sign in with the city account", "kiosk takes coins"])
+    ai_do(ada, op("ai.finding.close", id=other, note="renamed"))
+    assert A.AIStore(ada).load()["findings"] == {}
+
+
+def test_ail09_only_administrators_record_findings(bob, world):
+    with pytest.raises(StoreError, match="administrator"):
+        _finding(bob, "gap", [world["r3"]], ["Export reports as CSV"])
+
+
+def test_ail09_review_packet_by_concept(ada, world):
+    label(ada, world["r1"], world["auth"])
+    label(ada, world["r2"], world["pay"], world["rep"])
+    label(ada, world["r3"], world["rep"])
+    sub_k = ai_do(ada, op("ai.vocab.add", label="CSV", definition="CSV exports.", parent=world["rep"]))[0]
+    label(ada, world["r3"], world["rep"], sub_k)
+    fid = _finding(ada, "gap", [world["r3"]], ["Export reports as CSV"])
+    p = A.AIStore(ada).review()
+    m = ada.load()["elements"]
+    assert [c["key"] for c in p["concepts"]][0] == world["rep"]                 # largest first
+    assert {e["label"] for e in p["elements"]} == {m[world[w]]["label"] for w in ("r1", "r2", "r3")}
+    e3 = [e for e in p["elements"] if e["label"] == m[world["r3"]]["label"]][0]
+    assert e3["folder"] == "Web" and e3["status"] == m[world["r3"]]["status"] and sub_k in e3["labels"]
+    assert [f["id"] for f in p["findings"]] == [fid] and "ai.finding.add" in p["prompt"]
+    p = A.AIStore(ada).review(label=world["rep"])                               # a concept and its children
+    assert {c["key"] for c in p["concepts"]} == {world["rep"], sub_k}
+    assert {e["label"] for e in p["elements"]} == {m[world["r2"]]["label"], m[world["r3"]]["label"]}
+    p = A.AIStore(ada).review(limit=1)
+    assert len(p["elements"]) == 1 and p["remaining"] == 2
+    later, now = {c["key"] for c in p["otherConcepts"]}, {c["key"] for c in p["concepts"]}
+    assert later | now == {world["auth"], world["pay"], world["rep"], sub_k} and not later & now
+    assert world["rep"] in now and len(later) == 2                   # the largest first; two wait for --label
+
+
+def test_ail09_findings_merge_and_dismissal_wins():
+    f = {"kind": "gap", "elements": ["e1"], "hashes": ["h"], "evidence": [], "suggestion": "s", "by": "ada",
+         "at": "t", "model": ""}
+    base = _ai(1, findings={"f1": f})
+    kept = _ai(1, findings={"f1": f, "f2": dict(f, elements=["e2"])})
+    dismissed = _ai(1, findings={}, dismissed={"gap:e1": {"kind": "gap", "elements": ["e1"], "reason": "no",
+                                                          "by": "ada", "at": "t"}})
+    merged, conflicts = A.merge3(base, kept, dismissed)
+    assert conflicts == [] and set(merged["findings"]) == {"f2"} and "gap:e1" in merged["dismissed"]

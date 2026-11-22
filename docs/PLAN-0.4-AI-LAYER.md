@@ -342,6 +342,14 @@ Labels can only show value on questions the index cannot answer. Before Phase 7:
 - `ai.finding.dismiss`: remembered; a dismissed finding (same kind + same element set) is not
   accepted again. Committing findings/dismissals: admin only.
 - Never edits the model; suggestions are text (optionally an `apply` batch for a person to run).
+- **Done 2026-11-22:** ADR-036 (approved), requirement AIL-09. `ai.finding.add/dismiss/close` (admin only),
+  `findings`/`dismissed` in the AI file (older files read as empty), evidence check (12+ characters per named
+  element, case and spacing ignored), signature = kind + sorted element ids, stale findings by element hash;
+  `sg.py ai review [--label] [--limit 300] [--out]` (largest concepts first, a concept with its children,
+  `otherConcepts` for later packets); index schema 3 (`ai_findings`, `ai_finding_elements`); merge per key, a
+  dismissal wins over a kept finding; 10 tests. Measured (`evals/results/LABELS-S1K.md`): one Opus review of the
+  first packet (147K tokens) gave 23 findings, all accepted; it found 1 of 3 planted duplicate pairs and the one
+  link-less element in its packet, and 20 real test-linking problems. No release (owner).
 
 ### Phase 12 — Re-measure and decide → release 0.4.3
 

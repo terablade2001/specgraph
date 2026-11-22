@@ -605,3 +605,38 @@ merge that ran without the driver.
 **Consequences.** Parallel labelling never needs a person. Administrators changing the same vocabulary key on two
 branches with the same version is the only conflict. After a merge with vocabulary changes on both sides, the next
 `ai todo` relabels the affected elements. The merge driver for the model (ADR-031) is unchanged.
+
+## ADR-036 — Findings: an agent reviews the specs through the labels  · stakes: medium · **approved by the owner 2026-11-22**
+**Context.** ADR-034 left findings for the review phase. Labels group elements by concept across folders, so an
+agent can read one concept's elements together and spot problems the folder tree hides: requirements that say the
+same thing, a concept with requirements but no tests, contradicting statements, the same thing named three ways, an
+element that sits apart from its neighbours. Labels derive from the specs, so a finding that only cites labels would
+be circular; and a finding nobody acts on must not come back on every run.
+**Options.** (a) print findings only, keep nothing; (b) store them in the AI file, signed and checked; (c) write them
+into the model as ISSUE elements.
+**Decision.** (b). The model is never changed by a review; (c) would turn an agent's opinion into spec content.
+1. **Packet:** `sg.py ai review [--label KEY] [--limit N] --out FILE`: per concept (all, or one), its elements with
+   type, status, folder path, topic, notes and fields, the traceable links among them and light links outward, the
+   open findings and dismissed signatures for those elements, and a prompt. Concepts are taken largest first; `--limit`
+   caps elements per packet (default 300).
+2. **Findings in the AI file:** `findings: {<id>: {kind, elements: [ids], hashes: [element hashes when found],
+   evidence: [{element, quote}], suggestion, ops?, by, at, model}}` and `dismissed: {<signature>: {kind, elements,
+   reason, by, at}}`. Kinds: `missing-link`, `gap`, `contradiction`, `duplicate`, `terminology`, `misplaced`.
+   `ops` is an optional `sg.py apply` batch a person may run; the tool never runs it.
+3. **Checks on `ai.finding.add`:** every listed element exists; at least one quote per listed element, each quote at
+   least 12 characters and found (case and spacing ignored) in that element's topic, notes or field values — evidence
+   from the specs, not from labels; two or more elements for `missing-link`, `duplicate` and `contradiction`; refused
+   when the signature (kind + sorted element ids) was dismissed, or an open finding has the same signature.
+4. **Lifecycle:** `ai.finding.dismiss {id, reason}` moves it to `dismissed` (never raised again);
+   `ai.finding.close {id, note?}` removes a finding that was acted on (the log keeps it). A finding whose elements'
+   hashes changed is shown as stale (possibly already fixed).
+5. **Who:** `ai.finding.*` operations are administrators only, so findings and dismissals enter git only through an
+   administrator (draft plan: "anyone runs locally, only the maintainer commits"). Anyone can run `ai review` and
+   read or act on what the agent reports.
+6. **Index:** `ai_findings(id, kind, suggestion, stale)` and `ai_finding_elements(finding, element, quote)`;
+   `columns_doc` describes them.
+7. **Merge** (ADR-035 extended): `findings` and `dismissed` three-way per key like `rules`; a finding dismissed on
+   one branch and kept on the other ends dismissed.
+**Consequences.** The AI file grows with open findings; closing and dismissing keep it small, the log keeps history.
+Reviews cost tokens per concept, so they are run on request, not on every change. Findings are advice: nothing in the
+tool reads them to decide anything.

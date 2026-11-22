@@ -60,3 +60,26 @@ An Opus agent reviewed the labelled model as an administrator would (`ai todo --
   the other 852 current. After relabelling: 1 031 current, 0 stale; vocabulary 84 active, 6 retired, version 2.
 - Planted concepts unchanged: authentication 24/24, payments 18/18, personal data 14/14, hidden 19/19; 2 extras.
 - Incremental cost: ~127K for 179 elements, of which ~55K is the fixed cost of one agent run.
+
+## Phase 11 — a first review through the labels (ADR-036)
+
+One Opus agent reviewed the first `ai review` packet of s1k-v2 (the 7 largest concepts, 300 elements, 109 KB) and
+wrote `ai.finding.add` operations; they were applied as the administrator.
+
+| Step | Agent | Tokens | Time |
+|---|---|---|---|
+| Review of packet 1 (7 concepts, 300 elements) | Opus | 147K | 3.2 min |
+
+- **23 findings, all accepted** (every quote found in its element): 21 `missing-link`, 1 `gap`, 1 `duplicate`.
+- **Planted problems** (`facts.json`): 1 of the 3 near-duplicate pairs recorded (`REQ-0696580b` / `REQ-1ea3cf09`, also
+  noted as misplaced); the other two pairs were spotted by a SQL check but not reported because their elements were
+  not in this packet. 1 of the 4 elements without links found (the only one in the packet), with an `ops` batch
+  linking it.
+- **Unplanted but real by the texts:** the generator links tests to requirements of the same module at random, so a
+  requirement "a … that waits more than N days is marked late" is often verified by an unrelated test while the "a
+  late … is marked late" test verifies something else. The agent reported 20 such pairs; read as specs they are true
+  findings. One `gap`: two business goals with no user requirement refining them.
+- No contradiction, terminology or misplaced finding of its own (the model has few to find).
+
+A full review of s1k-v2 would take about 4 such packets (~600K Opus tokens); reviews are meant to be run on request,
+per concept.

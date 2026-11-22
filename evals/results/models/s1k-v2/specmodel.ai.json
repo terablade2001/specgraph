@@ -1,4 +1,605 @@
 {
+ "findings": {
+  "0951f843-b2fc-4a0c-99d6-55ceb61956f4": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "1498ebdb-3baf-4454-a7c6-6a0d9dda59f5",
+    "3c95d17f-57a5-4100-8b4b-a4ffaa8a56cb"
+   ],
+   "evidence": [
+    {
+     "element": "3c95d17f-57a5-4100-8b4b-a4ffaa8a56cb",
+     "quote": "a lamp fault that waits more than 3 days is marked late"
+    },
+    {
+     "element": "1498ebdb-3baf-4454-a7c6-6a0d9dda59f5",
+     "quote": "Street lighting Scheduling: a late lamp fault is marked late"
+    }
+   ],
+   "hashes": [
+    "b4207b3615ef7d9d850d6a1f713d3ade5f225cc0dc5ef936cd0c6d25c8684390",
+    "4d70b251aa1e4bc9635dbdbf1b40c3ac9f3ac6d2605145a72fb642495941a7a3"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by a create-and-find test; the late-lamp-fault test in the same folder verifies an overview requirement instead. Add E2E-1498ebdb verifies REQ-3c95d17f."
+  },
+  "0ef1598e-4d54-4f32-ac2e-e6c99266563f": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "03ea1cb0-e864-469c-a9b6-49c1d0fdb1c8",
+    "efd5df54-b030-4058-b658-585835c77bcd"
+   ],
+   "evidence": [
+    {
+     "element": "efd5df54-b030-4058-b658-585835c77bcd",
+     "quote": "a gritting run that waits more than 6 days is marked late"
+    },
+    {
+     "element": "03ea1cb0-e864-469c-a9b6-49c1d0fdb1c8",
+     "quote": "Snow clearing Requests: a late gritting run is marked late"
+    }
+   ],
+   "hashes": [
+    "eddbeda49ef6482941763facf837d0ca52cd0e8677b86362f13979b3da100556",
+    "829472b92d810312574057a5ca85b7e795c1ee06f5756a7fcbd6198257a4bad5"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by a create-and-find test; the matching late test in the same folder is not linked to it. Add E2E-03ea1cb0 verifies REQ-efd5df54."
+  },
+  "10fc521c-c295-4147-af6c-5234a6e077d4": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "95983def-c8b2-4f8a-997d-ff302f2b1c4d",
+    "f8298b24-167d-4dc7-a427-f081c4ea65ac"
+   ],
+   "evidence": [
+    {
+     "element": "95983def-c8b2-4f8a-997d-ff302f2b1c4d",
+     "quote": "group enrolments by street in the weekly report"
+    },
+    {
+     "element": "f8298b24-167d-4dc7-a427-f081c4ea65ac",
+     "quote": "the weekly report counts every enrolment"
+    }
+   ],
+   "hashes": [
+    "b791a3584f7502971a683688ed0b86cc990ed4308954ab16ebd83c1850f53aca",
+    "120087fd8c4b022312db0aeccfc151283d897b00dcf22030a412bdf57a2d3334"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The implemented weekly-report requirement has no test; the weekly-report test in the same folder is not linked to it. Extend the test to check the grouping by street and add E2E-f8298b24 verifies REQ-95983def."
+  },
+  "148308ae-041a-48a2-af1b-a997055962db": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "19fe2b96-d86b-4964-a941-e3b78182074e",
+    "4fcb4e19-6473-4e3e-91ad-dadc116a4a3e"
+   ],
+   "evidence": [
+    {
+     "element": "4fcb4e19-6473-4e3e-91ad-dadc116a4a3e",
+     "quote": "a home visit that waits more than 9 days is marked late"
+    },
+    {
+     "element": "19fe2b96-d86b-4964-a941-e3b78182074e",
+     "quote": "Elder care Requests: a late home visit is marked late"
+    }
+   ],
+   "hashes": [
+    "34ee6506ce7564ef461d7ff4b8fba03900f83f7c41c7bc6f960444bf542b3173",
+    "50ce065aa1caf4aafa04bf414088e95a30540f440b61e4f8e169493d2a8fb8e0"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by a create-and-find test; the matching late test in the same folder is not linked to it. Add E2E-19fe2b96 verifies REQ-4fcb4e19."
+  },
+  "1a0e8a90-492c-4074-8347-b7127c9cba0d": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "39afdb9d-9051-434f-9a01-b218f28690fe",
+    "ec4736fe-7db0-4122-8279-5a8c6e6305ca"
+   ],
+   "evidence": [
+    {
+     "element": "ec4736fe-7db0-4122-8279-5a8c6e6305ca",
+     "quote": "a drop-off slot that waits more than 6 days is marked late"
+    },
+    {
+     "element": "39afdb9d-9051-434f-9a01-b218f28690fe",
+     "quote": "Recycling centres Requests: a late drop-off slot is marked late"
+    }
+   ],
+   "hashes": [
+    "5c544ea802e99b628fd77c2a3efcb77cc815983e6055496beb8e259d4db25b7f",
+    "db7084bb70f760def7bfa433f55bfeea6cf4d46692c50135cfe3c1ea7377c782"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by a create-and-find test; the matching late test in the same folder is not linked to it. Add E2E-39afdb9d verifies REQ-ec4736fe."
+  },
+  "261b57ba-a902-4214-bb01-b1a0249a9541": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "0696580b-114e-4c63-af8f-42c02331267f",
+    "1ea3cf09-485b-4625-aff3-6082305587cd"
+   ],
+   "evidence": [
+    {
+     "element": "0696580b-114e-4c63-af8f-42c02331267f",
+     "quote": "Cemeteries Requests: a clerk merges two plot reservations into one"
+    },
+    {
+     "element": "1ea3cf09-485b-4625-aff3-6082305587cd",
+     "quote": "Cemeteries Requests: a staff member combines two plot reservations into one"
+    }
+   ],
+   "hashes": [
+    "8fb5c538f0edcac5a28b80e9d7cebcf3beb2477d4b784b668790341023ef2e7d",
+    "a8bc162185f256525361f7e36eea9660dfb5b88bdb402b20ed70d1ea66da2928"
+   ],
+   "kind": "duplicate",
+   "model": "opus",
+   "suggestion": "REQ-1ea3cf09 restates REQ-0696580b in other words (staff member combines / clerk merges), and it sits in Housing/Housing Scheduling although it is about Cemeteries Requests. Keep REQ-0696580b and retire or delete REQ-1ea3cf09."
+  },
+  "2c6d26ed-bcca-406a-8f70-b6827103f6c5": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "0442b501-7c2b-4f45-ae07-1aae65cf982b",
+    "a292f634-5a7e-42d0-9ed2-f7aa30574150"
+   ],
+   "evidence": [
+    {
+     "element": "0442b501-7c2b-4f45-ae07-1aae65cf982b",
+     "quote": "Public transport: cut the paper work of the clerks in half"
+    },
+    {
+     "element": "a292f634-5a7e-42d0-9ed2-f7aa30574150",
+     "quote": "Markets: cut the paper work of the clerks in half"
+    }
+   ],
+   "hashes": [
+    "c74c6c7cc5ad2a80de7d8089cab85859ec6214b33fef1c34b90a8dd23bad8aec",
+    "ae5ada5c0de3b7ac1924b6e678ce0317211ae6123ae4123e0c8ffdc63cc8b703"
+   ],
+   "kind": "gap",
+   "model": "opus",
+   "suggestion": "Unlike the same goal in the other services, these two business requirements have no user requirement refining them, so nothing delivers them. Link the existing clerk user requirements of these services (for example U-REQ-f7d42eb2 and U-REQ-39ab82d7, which handle a case in one screen) as refining them, or add user requirements."
+  },
+  "3f07d5bc-6ef9-4fb5-b9c7-b5ce4a289668": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "6d18d13c-a327-48fd-bcc3-1793c6f07d69",
+    "8f05ae9d-b8d8-4401-8025-3d67728a128b"
+   ],
+   "evidence": [
+    {
+     "element": "8f05ae9d-b8d8-4401-8025-3d67728a128b",
+     "quote": "a loan that waits more than 7 days is marked late"
+    },
+    {
+     "element": "6d18d13c-a327-48fd-bcc3-1793c6f07d69",
+     "quote": "Libraries Requests: a late loan is marked late"
+    }
+   ],
+   "hashes": [
+    "ee84e07c6484c98bc1836abbcfd5daf4a5b1fc06b68676d3b605d9ed3669dbd8",
+    "c6a2dd012409b0ba75614f24b18ad69e87a0288aa5c5fdc69c6feff6c20d948a"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by a create-and-find test; the matching late test in the same folder is not linked to it. Add E2E-6d18d13c verifies REQ-8f05ae9d."
+  },
+  "60a6a3ae-4120-41d2-80c8-1a66b7c0593b": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "200c24cb-4a8a-4fea-8b9d-4f99945ba77e",
+    "f2c0e65e-ac4d-44bc-bc95-c547ef901fed"
+   ],
+   "evidence": [
+    {
+     "element": "200c24cb-4a8a-4fea-8b9d-4f99945ba77e",
+     "quote": "group bike rentals by street in the weekly report"
+    },
+    {
+     "element": "f2c0e65e-ac4d-44bc-bc95-c547ef901fed",
+     "quote": "the weekly report counts every bike rental"
+    }
+   ],
+   "hashes": [
+    "a7e45a902263e629684098a1f792338f1e1f9c8cd3bc0307a5dc66b2a3f5f15a",
+    "a705753ff450f8575a0d476ecae1db1f0099594291b9df17db327025479f68bc"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The approved weekly-report requirement has no test; the weekly-report test in the same folder is not linked to it. Extend the test to check the grouping by street and add E2E-f2c0e65e verifies REQ-200c24cb."
+  },
+  "6156610d-6f27-401d-ade4-41690a079157": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "334a93f3-b0a2-4093-8d57-eb0af172ff57",
+    "49ef5f43-969f-407b-8232-f9665dcbf153"
+   ],
+   "evidence": [
+    {
+     "element": "334a93f3-b0a2-4093-8d57-eb0af172ff57",
+     "quote": "a loan that waits more than 5 days is marked late"
+    },
+    {
+     "element": "49ef5f43-969f-407b-8232-f9665dcbf153",
+     "quote": "Libraries Scheduling: a late loan is marked late"
+    }
+   ],
+   "hashes": [
+    "b65b3e428545bb27020011e783fa7158378d070d521f5e4615367400402169a5",
+    "e6fcd3c4e90a39fcbdce998d2acd7877b4d9587e2e4775ad494a9a4bf9bea9aa"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by a weekly-report test; the test that checks late loans in the same folder is not linked to it. Add E2E-49ef5f43 verifies REQ-334a93f3."
+  },
+  "66792e31-2ed4-4171-a376-e36d0ff8c323": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "28713643-afa1-478a-b9ea-ed27e94206d6",
+    "f039f9ea-4e3f-41b4-b7de-90050b09fa3c"
+   ],
+   "evidence": [
+    {
+     "element": "f039f9ea-4e3f-41b4-b7de-90050b09fa3c",
+     "quote": "a lamp fault that waits more than 6 days is marked late"
+    },
+    {
+     "element": "28713643-afa1-478a-b9ea-ed27e94206d6",
+     "quote": "Street lighting Requests: a late lamp fault is marked late"
+    }
+   ],
+   "hashes": [
+    "048c1c96a99f1969fbab4ab3188712bd7d00ca39e7c3b6105d97f2685931c17d",
+    "460c3ce9752d17f41c6f3948a7df4a45ad5d710750a5a73a55821ee45c312ae8"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The implemented requirement has no test; the matching test in the same folder verifies other requirements. Add E2E-28713643 verifies REQ-f039f9ea."
+  },
+  "6a8a2066-dc00-4e95-b4e9-f467a1088f32": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "8f1d621d-1e5f-45cd-851e-1e9877be1678",
+    "c0654b80-fd13-44c9-b2e9-8b9407fd18b5",
+    "ccce4c78-369b-4c37-908a-5a4e3c0ada89"
+   ],
+   "evidence": [
+    {
+     "element": "c0654b80-fd13-44c9-b2e9-8b9407fd18b5",
+     "quote": "a workshop sign-up that waits more than 9 days is marked late"
+    },
+    {
+     "element": "ccce4c78-369b-4c37-908a-5a4e3c0ada89",
+     "quote": "Youth centres Requests: a late workshop sign-up is marked late"
+    },
+    {
+     "element": "8f1d621d-1e5f-45cd-851e-1e9877be1678",
+     "quote": "as a supervisor I see which workshop sign-ups are late"
+    }
+   ],
+   "hashes": [
+    "42770459733897dec115093fdeec0d649f7f819e15996ea580f82e63ed421d4f",
+    "52c89f2728059cfda085bbfbcadbf89a5b1c2fd1b4b21401f569cbf28ecc4112",
+    "78054d7fafecae91fa011cc20505e1f4b6f4e51bc911e9448902f6ca9ae22255"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "ops": [
+    {
+     "args": {
+      "source": "c0654b80-fd13-44c9-b2e9-8b9407fd18b5",
+      "target": "8bb52ac6-c63c-4a35-a39d-69bf7fa06136",
+      "type": "refines"
+     },
+     "op": "link.create"
+    },
+    {
+     "args": {
+      "source": "ccce4c78-369b-4c37-908a-5a4e3c0ada89",
+      "target": "c0654b80-fd13-44c9-b2e9-8b9407fd18b5",
+      "type": "verifies"
+     },
+     "op": "link.create"
+    }
+   ],
+   "suggestion": "REQ-c0654b80 has no links and no owner, so it refines no feature and nothing verifies it. Link it to the Youth centres Requests feature that delivers U-REQ-8f1d621d (FEAT-8bb52ac6), add E2E-ccce4c78 verifies REQ-c0654b80, and set an owner."
+  },
+  "6d77ab6f-3a81-4666-8a94-6c7e26b7e50b": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "4baad7a6-a3d2-4d16-b752-eeac0a3450a8",
+    "81dcc3b0-ba5b-41bc-825d-f1e44c26977d"
+   ],
+   "evidence": [
+    {
+     "element": "4baad7a6-a3d2-4d16-b752-eeac0a3450a8",
+     "quote": "a stall allocation that waits more than 7 days is marked late"
+    },
+    {
+     "element": "81dcc3b0-ba5b-41bc-825d-f1e44c26977d",
+     "quote": "Markets Requests: a late stall allocation is marked late"
+    }
+   ],
+   "hashes": [
+    "0e8fe51e5622ffa8b1733cc3514288530bfb4980e03956271a7aa2ca01a68e63",
+    "88c6347a2aff7638bcec487ce4573fd6cd5a19bbcca4857c9c7979494971242b"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by an integration test; the end-to-end late test in the same folder verifies other requirements. Add E2E-81dcc3b0 verifies REQ-4baad7a6."
+  },
+  "6f77a9d8-de7f-4b98-8f74-0009a151ccdc": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "3c5b2efd-b3cb-4918-bcd4-ef2b6250ad7e",
+    "4922ba32-3e38-41e6-98b0-cc631f4b7e3d"
+   ],
+   "evidence": [
+    {
+     "element": "4922ba32-3e38-41e6-98b0-cc631f4b7e3d",
+     "quote": "a plot reservation that waits more than 6 days is marked late"
+    },
+    {
+     "element": "3c5b2efd-b3cb-4918-bcd4-ef2b6250ad7e",
+     "quote": "Cemeteries Scheduling: a late plot reservation is marked late"
+    }
+   ],
+   "hashes": [
+    "d1406d4540d2e076e01c93bb295522e0c81fa4ebf914d306648a39e329ceee05",
+    "5b6cd804fefbf00a9337ce53dd618dc6f6f336c0ecbd056d75e375f3ba8f131c"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by a create-and-find test; the matching late test in the same folder is not linked to it. Add E2E-3c5b2efd verifies REQ-4922ba32."
+  },
+  "74440066-d754-4e5f-970f-d6f94497aac5": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "1dbd61a6-f008-4515-a3f7-d4b8cc66e7e8",
+    "a49c64bd-0812-49af-8198-198a7047412f"
+   ],
+   "evidence": [
+    {
+     "element": "a49c64bd-0812-49af-8198-198a7047412f",
+     "quote": "group guided tours by priority in the weekly report"
+    },
+    {
+     "element": "1dbd61a6-f008-4515-a3f7-d4b8cc66e7e8",
+     "quote": "the weekly report counts every guided tour"
+    }
+   ],
+   "hashes": [
+    "466fe26cb24a0a0495013288e563aca2aa09e89c65817e45f19b82cd88b06c27",
+    "8f01085f21ed875330aa183318a7e4c38009ced96f62f67d5aea5bda6e79aa5b"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The approved weekly-report requirement has no test; the weekly-report test in the same folder is not linked to it. Extend the test to check the grouping by priority and add E2E-1dbd61a6 verifies REQ-a49c64bd."
+  },
+  "82d94b21-2648-4af0-a324-d992e9e4fbd3": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "733bfed9-0bbd-4498-91f8-e6fa319091be",
+    "995c76ac-de83-461e-92a0-d549737457db"
+   ],
+   "evidence": [
+    {
+     "element": "995c76ac-de83-461e-92a0-d549737457db",
+     "quote": "a meter reading that waits more than 4 days is marked late"
+    },
+    {
+     "element": "733bfed9-0bbd-4498-91f8-e6fa319091be",
+     "quote": "Water supply Scheduling: a late meter reading is marked late"
+    }
+   ],
+   "hashes": [
+    "5357e51d473f54076f6ed5c985f907b3e982a2f331cee7100eb0f977fd61ca2c",
+    "787367cc9a37ded2a7373143669f3cb4b039dae09fdb25930c25b728df8f98ae"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The approved requirement has no test although a matching test exists in the same folder. Add E2E-733bfed9 verifies REQ-995c76ac."
+  },
+  "a1a40fe3-a0be-495e-b44b-fc11476ded76": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "a12269fd-0951-4767-9036-af462f0ebb1d",
+    "e9c41a70-ff6f-4f84-b576-4be3e650611e"
+   ],
+   "evidence": [
+    {
+     "element": "e9c41a70-ff6f-4f84-b576-4be3e650611e",
+     "quote": "a plot reservation that waits more than 3 days is marked late"
+    },
+    {
+     "element": "a12269fd-0951-4767-9036-af462f0ebb1d",
+     "quote": "Cemeteries Requests: a late plot reservation is marked late"
+    }
+   ],
+   "hashes": [
+    "33d63529e76119fa451839424ef279c13d5d62725f6a0219a42b06fa5dcbf14a",
+    "f4b6418d561c30308f02c6a429aef7ec4525ec82158db59247cc2e7e7d44d3f3"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The implemented requirement has no test although a matching test exists in the same folder. Add E2E-a12269fd verifies REQ-e9c41a70."
+  },
+  "c6ee110b-640e-4e0c-9c02-2cfba1189469": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "3a59ab75-46ef-4bab-bbe7-3672134b0d70",
+    "665d10f8-0e36-4fda-b034-dd0bfa2bc9a5"
+   ],
+   "evidence": [
+    {
+     "element": "665d10f8-0e36-4fda-b034-dd0bfa2bc9a5",
+     "quote": "a park event that waits more than 9 days is marked late"
+    },
+    {
+     "element": "3a59ab75-46ef-4bab-bbe7-3672134b0d70",
+     "quote": "Parks Requests: a late park event is marked late"
+    }
+   ],
+   "hashes": [
+    "e2e8a1f58dc78f2d7aaf6652388ae2d38858ccddd74bf6ca37278b31cc27a582",
+    "3a0d14fccd803fa9ba18c799afcde1e8a396d8133c2ed2c886efd7e1dd9c893c"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The approved requirement has no test; the matching test in Parks Requests verifies a map requirement instead. Add E2E-3a59ab75 verifies REQ-665d10f8."
+  },
+  "cee753bd-1724-4cc8-806a-80f6d3995896": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "67695dfa-5512-457d-83ed-f6e625a807e3",
+    "e6443fd3-efa1-4413-a9c9-b28b66c97950"
+   ],
+   "evidence": [
+    {
+     "element": "e6443fd3-efa1-4413-a9c9-b28b66c97950",
+     "quote": "group drop-off slots by street in the weekly report"
+    },
+    {
+     "element": "67695dfa-5512-457d-83ed-f6e625a807e3",
+     "quote": "the weekly report counts every drop-off slot"
+    }
+   ],
+   "hashes": [
+    "25f75e79b72ede5c74f69673ba9bd135bc59a4db08c568b7713b9d26d33dea3d",
+    "01de9aed5303db27f1c1efe7080001ee1feebde29eb83bf86dce54e405390b27"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The implemented weekly-report requirement has no test; the weekly-report test in the same folder is not linked to it. Extend the test to check the grouping by street and add E2E-67695dfa verifies REQ-e6443fd3."
+  },
+  "d88c546e-124b-423c-b73a-7b4b2404d3eb": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "6aca4fb1-2c35-4250-8870-286878449d83",
+    "eab3f4be-5f5b-463d-a901-14c01aed961b"
+   ],
+   "evidence": [
+    {
+     "element": "eab3f4be-5f5b-463d-a901-14c01aed961b",
+     "quote": "a enrolment that waits more than 8 days is marked late"
+    },
+    {
+     "element": "6aca4fb1-2c35-4250-8870-286878449d83",
+     "quote": "School enrolment Requests: a late enrolment is marked late"
+    }
+   ],
+   "hashes": [
+    "11603cc837d60aa8467f30c2c51c874a4f73a54b4bd7360dc617deb841491545",
+    "f0053be1302b5fc8c475df1d727bffabdda39aaaff8c90415f79cd4bb0bd7a31"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The requirement is verified only by an integration test about the nightly copy; the late-enrolment test in the same folder is not linked to it. Add E2E-6aca4fb1 verifies REQ-eab3f4be."
+  },
+  "e0881c38-117b-46a9-9586-3e934f252366": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "63c7b513-d657-40cc-9ffb-77448d751648",
+    "a795fa2e-1442-4845-8c0a-6979ffe1e7b5"
+   ],
+   "evidence": [
+    {
+     "element": "63c7b513-d657-40cc-9ffb-77448d751648",
+     "quote": "a stall allocation that waits more than 6 days is marked late"
+    },
+    {
+     "element": "a795fa2e-1442-4845-8c0a-6979ffe1e7b5",
+     "quote": "Markets Scheduling: a late stall allocation is marked late"
+    }
+   ],
+   "hashes": [
+    "ac99474e387c5c4e9f912b4dd9ee28cc38b06e6d37c2a6c2eb411c55ffecd36a",
+    "871ca783edb5869d7e5427f80d24362195e131414b9fe6326316aaae71576473"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The implemented requirement has no test although a matching test exists in the same folder. Add E2E-a795fa2e verifies REQ-63c7b513."
+  },
+  "f7e91458-2a82-4ad6-8c98-81509474394c": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "53b177d4-e210-4a69-9114-61af584fa030",
+    "f31de7a5-ef81-4ff5-a092-ce051125b131"
+   ],
+   "evidence": [
+    {
+     "element": "f31de7a5-ef81-4ff5-a092-ce051125b131",
+     "quote": "group lamp faults by age in the weekly report"
+    },
+    {
+     "element": "53b177d4-e210-4a69-9114-61af584fa030",
+     "quote": "the weekly report counts every lamp fault"
+    }
+   ],
+   "hashes": [
+    "8610a99f5fa14d40a2c142c24a052dedbb1c65f6a8f06dbb412f3c3f69186061",
+    "17ff4edd47e57e07935769d05d3672c8d4aca10d745b008d06e734887051af4f"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The implemented weekly-report requirement has no test; the weekly-report test in the same folder is not linked to it. Extend the test to check the grouping by age and add E2E-53b177d4 verifies REQ-f31de7a5."
+  },
+  "f973ed4b-9d47-476c-8fef-9c39fae63adf": {
+   "at": "2026-11-22T21:45:33Z",
+   "by": "synth",
+   "elements": [
+    "6baf0408-64d1-4398-a312-95f0ff907869",
+    "bce5935e-92d2-4d56-8d98-92698ff52dac"
+   ],
+   "evidence": [
+    {
+     "element": "6baf0408-64d1-4398-a312-95f0ff907869",
+     "quote": "a park event that waits more than 4 days is marked late"
+    },
+    {
+     "element": "bce5935e-92d2-4d56-8d98-92698ff52dac",
+     "quote": "Parks Scheduling: a late park event is marked late"
+    }
+   ],
+   "hashes": [
+    "b5dbe13ad402a90194104ccb6fe8192c431a6f6952cce89b58537f2beca20c85",
+    "400c6042e2a6c0af98156cee2bc4547b9cc5aa4c2041e35a7401478d1f255580"
+   ],
+   "kind": "missing-link",
+   "model": "opus",
+   "suggestion": "The implemented requirement has no test, while the end-to-end test in the same folder checks exactly this behaviour but verifies another requirement. Add E2E-bce5935e verifies REQ-6baf0408."
+  }
+ },
  "format": "specgraph-ai",
  "formatVersion": 1,
  "labels": {
@@ -11816,14 +12417,14 @@
  "promptVersion": 1,
  "rules": {},
  "stamp": {
-  "at": "2026-11-22T17:26:18Z",
-  "contentHash": "sha256:881f10804708d53a7b221156c59853ad423f7cdc480d8c482ae1a7bcd4d2ebd7",
-  "id": "de557a98-556e-494d-bcfc-e8fd8d4f2847",
-  "op": "batch:ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.label.set,ai.la",
+  "at": "2026-11-22T21:45:33Z",
+  "contentHash": "sha256:305f9039a9cb4166a37b4780a39a4a067b27ae3940f8206492af7d58f2985683",
+  "id": "9c08994b-6413-43e2-b575-4ac5d631f9c4",
+  "op": "batch:ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.finding.add,ai.fi",
   "prev": [
-   "53fc5868-062e-4152-a933-ade010124cf7"
+   "de557a98-556e-494d-bcfc-e8fd8d4f2847"
   ],
-  "sig": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgGI2vLgziIQbNl+vnqxyGCpWeO7\n7aPNEjaS71UBPnU5QAAAAJc3BlY2dyYXBoAAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1l\nZDI1NTE5AAAAQGQDUVbIYAiXVH2BGcrKVe9Ns+Hxpt3tbr7Oq4bn33wek1NDjHXq0wIfzY\n6wveI3QcxlEvNgtQjkZd+owW4SzAs=\n-----END SSH SIGNATURE-----",
+  "sig": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgGI2vLgziIQbNl+vnqxyGCpWeO7\n7aPNEjaS71UBPnU5QAAAAJc3BlY2dyYXBoAAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1l\nZDI1NTE5AAAAQOLFPx4+sABe36kFMPvtM3nl21jZ6bHXmZQHPxbf7LeucXRTzyUYNz1PZR\n3ROcuZmajm2MdW3KLqeqOwJ4UD7gk=\n-----END SSH SIGNATURE-----",
   "tool": "specgraph",
   "toolVersion": "0.4.0",
   "user": "synth"

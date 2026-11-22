@@ -129,6 +129,15 @@ reviews (this project's evaluations assume Sonnet for labelling and Opus for the
 3. After a vocabulary change, `ai todo` asks only for the elements whose labels went stale; for a new concept,
    `ai todo --label-new <key>` lists elements whose words match it, to reconsider.
 
+### Reviewing the specs through the labels (ADR-036)
+
+`python sg.py ai review --out review.json` gives the elements of the largest concepts (300 by default) with status,
+folder and links, the open and dismissed findings, and a prompt; `--label KEY` for one concept and its children (the
+packet lists `otherConcepts` for later packets). The agent reports `ai.finding.add` operations (kind, elements, a
+quote from each, a suggestion, optional `ops` for a person); an administrator applies them, and later dismisses
+(`ai.finding.dismiss`, never raised again) or closes (`ai.finding.close`) them. Open findings are in the index
+(`ai_findings`, `ai_finding_elements`). A review never changes the model.
+
 Labels never block anything: a model change only makes them stale. Commit `specmodel.ai.json` and
 `specmodel.ai.log.jsonl`, preferably in their own commit. Labelling on two branches merges by itself (merge driver,
 `install-hooks`); "AI CONFLICT" means an administrator changed the same concept on both branches: settle it with

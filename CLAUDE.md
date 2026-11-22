@@ -152,6 +152,7 @@ sg.py sql "SELECT ..."   # read-only SQL on the index .specgraph/<model file>.db
 sg.py index             # rebuild that index now (sql rebuilds it by itself when stale)
 sg.py ai status | ops   # AI labels (ADR-034); changed only with sg.py ai apply; ai resolve after a merge
 sg.py ai todo [--vocab] --out packet.json   # work packet for a labelling agent (docs/AGENTS.md)
+sg.py ai review --out review.json           # review packet: findings about the specs (ADR-036)
 ```
 
 ## Changing the model

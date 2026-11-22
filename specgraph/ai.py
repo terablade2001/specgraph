@@ -17,7 +17,9 @@ FORMAT = "specgraph-ai"
 FORMAT_VERSION = 1
 PROMPT_VERSION = 1          # version of the labelling prompt the tool ships (Phase 8)
 DEFINITION_MAX = 300
-ADMIN_KEYS = ("vocabVersion", "promptVersion", "vocabulary", "rules")
+ADMIN_KEYS = ("vocabVersion", "promptVersion", "vocabulary", "rules", "findings", "dismissed")
+KINDS = ("missing-link", "gap", "contradiction", "duplicate", "terminology", "misplaced")   # ADR-036
+QUOTE_MIN = 12
 
 
 class AIError(Exception):
@@ -39,7 +41,7 @@ def log_path(model_path):
 
 def empty():
     return {"format": FORMAT, "formatVersion": FORMAT_VERSION, "vocabVersion": 0, "promptVersion": PROMPT_VERSION,
-            "vocabulary": {}, "labels": {}, "rules": {}}
+            "vocabulary": {}, "labels": {}, "rules": {}, "findings": {}, "dismissed": {}}
 
 
 def parse(text):
@@ -284,6 +286,91 @@ def label_set(ai, model, a, ctx):
                        "model": str(llm or "")[:100], "elements": elements}
 
 
+# -- findings (ADR-036) ----------------------------------------------------------------------------------
+
+def _norm(text):
+    return " ".join(str(text).lower().split())
+
+
+def signature(kind, elements):
+    return "%s:%s" % (kind, ",".join(sorted(elements)))
+
+
+@op("ai.finding.add", "{kind, elements, evidence: [{element, quote}], suggestion, ops?, model?} -> id. A problem "
+    "found in the specs; every element needs a quote (12+ characters) from its own text.", admin=True)
+def finding_add(ai, model, a, ctx):
+    kind = a.get("kind")
+    if kind not in KINDS:
+        raise AIError("kind must be one of %s" % ", ".join(KINDS))
+    refs = a.get("elements")
+    if not isinstance(refs, list) or not refs:
+        raise AIError("elements must be a non-empty list")
+    ids = sorted({_element(model, r) for r in refs})
+    if kind in ("missing-link", "duplicate", "contradiction") and len(ids) < 2:
+        raise AIError("a %s finding needs two or more elements" % kind)
+    evidence, quoted = [], set()
+    for ev in a.get("evidence") or []:
+        if not isinstance(ev, dict):
+            raise AIError("evidence must be a list of {element, quote}")
+        eid, quote = _element(model, ev.get("element")), ev.get("quote")
+        if eid not in ids:
+            raise AIError("evidence quotes %s, which is not one of the finding's elements" % eid)
+        if not isinstance(quote, str) or len(_norm(quote)) < QUOTE_MIN:
+            raise AIError("quote %r is shorter than %d characters" % (quote, QUOTE_MIN))
+        el = model["elements"][eid]
+        text = _norm(" ".join([el.get("topic", ""), el.get("notes", "")] +
+                              [str(v) for v in (el.get("fields") or {}).values()]))
+        if _norm(quote) not in text:
+            raise AIError("quote %r is not found in the text of %s" % (quote, el.get("label") or eid))
+        evidence.append({"element": eid, "quote": quote})
+        quoted.add(eid)
+    missing = [model["elements"][i].get("label") or i for i in ids if i not in quoted]
+    if missing:
+        raise AIError("evidence needs a quote from each listed element (missing for %s)" % ", ".join(missing))
+    sig = signature(kind, ids)
+    if sig in ai.get("dismissed", {}):
+        raise AIError("this finding was dismissed (%s) and is not accepted again" % ai["dismissed"][sig]["reason"])
+    if any(signature(f["kind"], f["elements"]) == sig for f in ai.get("findings", {}).values()):
+        raise AIError("an open finding already says this")
+    fid = M.new_id()
+    entry = {"kind": kind, "elements": ids, "hashes": [element_hash(model["elements"][i]) for i in ids],
+             "evidence": evidence, "suggestion": _text(a.get("suggestion"), "suggestion", 1000), "by": ctx["actor"],
+             "at": now_iso(), "model": str(a.get("model") or ctx.get("model") or "")[:100]}
+    if a.get("ops") is not None:
+        if not isinstance(a["ops"], list):
+            raise AIError("ops must be a list of operations (for a person to run)")
+        entry["ops"] = a["ops"]
+    ai.setdefault("findings", {})[fid] = entry
+    return fid
+
+
+def _finding(ai, fid):
+    if fid not in ai.get("findings", {}):
+        raise AIError("finding %r does not exist" % fid)
+    return ai["findings"][fid]
+
+
+@op("ai.finding.dismiss", "{id, reason} not a problem; the same finding is never accepted again.", admin=True)
+def finding_dismiss(ai, model, a, ctx):
+    f = _finding(ai, a.get("id"))
+    ai.setdefault("dismissed", {})[signature(f["kind"], f["elements"])] = {
+        "kind": f["kind"], "elements": f["elements"], "reason": _text(a.get("reason"), "reason", 300),
+        "by": ctx["actor"], "at": now_iso()}
+    del ai["findings"][a["id"]]
+
+
+@op("ai.finding.close", "{id, note?} the finding was acted on; it is removed (the log keeps it).", admin=True)
+def finding_close(ai, model, a, ctx):
+    _finding(ai, a.get("id"))
+    del ai["findings"][a["id"]]
+
+
+def finding_stale(f, model):
+    """True when an element of the finding is gone or its content changed since (possibly already fixed)."""
+    return any(i not in model["elements"] or element_hash(model["elements"][i]) != h
+               for i, h in zip(f["elements"], f.get("hashes", [])))
+
+
 # -- work packets for agents (ADR-034 §6) --------------------------------------------------------------
 
 PROMPT = """You label elements of a specification model with concepts from a controlled vocabulary.
@@ -441,6 +528,79 @@ def vocab_packet(ai, model, samples=400, terms=200):
             "samples": picked}
 
 
+REVIEW_PROMPT = """You review a specification model concept by concept and report problems in the specs.
+
+`concepts` groups the elements of `elements` by an AI label (with its definition). Read each concept's elements
+together, with their links, folders and statuses, and look for:
+- missing-link: elements that clearly depend on, refine or verify each other but have no link;
+- gap: a concept with requirements but nothing that verifies or implements them, or an obvious missing case;
+- contradiction: statements that cannot both hold;
+- duplicate: two or more elements that say the same thing;
+- terminology: the same thing named in different ways;
+- misplaced: an element whose folder or type does not fit what it says.
+Report only what the element texts show. Every finding quotes each element it names (at least 12 characters, copied
+from its topic, notes or fields): the labels are not evidence. `findings` are already open and `dismissed` were
+judged not to be problems: do not report them again. `otherConcepts` are reviewed in later packets
+(`ai review --label <key>`). Suggest a fix in words; you may add `ops`, an `sg.py apply`
+batch a person could run. Never change the model.
+
+Write one JSON list of operations to a file, for an administrator to apply:
+  {"op": "ai.finding.add", "args": {"kind": "...", "elements": ["<label>", ...],
+   "evidence": [{"element": "<label>", "quote": "..."}, ...], "suggestion": "...", "ops": [...]?}}
+The administrator runs:  python sg.py --file <model> ai apply --ops-file <that file> --model <model name>"""
+
+
+def review(ai, model, label=None, limit=300):
+    """A review packet (ADR-036 §1): concepts largest first (or one concept and its children), their elements with
+    status, folder and links, and the open and dismissed findings that touch them."""
+    from .query import folder_path
+    ai = ai or empty()
+    got = {i: l for i, (l, stale) in element_labels(ai, model).items() if not stale}
+    vocab = ai["vocabulary"]
+    if label is not None:
+        if label not in vocab:
+            raise AIError("label %r is not in the vocabulary" % label)
+        keys = [label] + sorted(k for k, v in vocab.items() if v.get("parent") == label)
+    else:
+        keys = [k for k, v in vocab.items() if not v.get("retired")]
+    members = {k: sorted(i for i, l in got.items() if k in l) for k in keys}
+    keys = sorted((k for k in keys if members[k]), key=lambda k: (-len(members[k]), k))
+    els, types = model["elements"], model["config"]["linkTypes"]
+    chosen, concepts = [], []
+    for k in keys:
+        fresh = [i for i in members[k] if i not in chosen]
+        room = (limit - len(chosen)) if limit else len(fresh)
+        take = fresh[:max(room, 0)]
+        chosen += take
+        if take or not fresh:
+            concepts.append({"key": k, "label": vocab[k]["label"], "definition": vocab[k]["definition"],
+                             "elements": [els[i].get("label") or i for i in members[k]]})
+    out = []
+    for i in chosen:
+        x = els[i]
+        e = {"label": x.get("label") or i, "type": x.get("stereotype"), "status": x.get("status"),
+             "folder": folder_path(model, x.get("folder")), "topic": x.get("topic", "")}
+        if x.get("notes"):
+            e["notes"] = x["notes"]
+        if x.get("fields"):
+            e["fields"] = x["fields"]
+        e["labels"] = got.get(i, [])
+        e["links"] = [t for t, _ in _links(model, i, types)[:10]]
+        out.append(e)
+    inside = set(chosen)
+    remaining = len({i for k in keys for i in members[k]} - inside)      # distinct elements for later packets
+    lab = lambda i: els[i].get("label") or i if i in els else i
+    findings = [{"id": fid, "kind": f["kind"], "elements": [lab(i) for i in f["elements"]],
+                 "suggestion": f["suggestion"], "stale": finding_stale(f, model)}
+                for fid, f in sorted(ai.get("findings", {}).items()) if inside & set(f["elements"])]
+    dismissed = [{"kind": d["kind"], "elements": [lab(i) for i in d["elements"]], "reason": d["reason"]}
+                 for d in ai.get("dismissed", {}).values() if inside & set(d["elements"])]
+    done = {c["key"] for c in concepts}
+    later = [{"key": k, "elements": len(members[k])} for k in keys if k not in done]   # ask with --label KEY
+    return {"promptVersion": PROMPT_VERSION, "prompt": REVIEW_PROMPT, "concepts": concepts, "findings": findings,
+            "dismissed": dismissed, "remaining": remaining, "otherConcepts": later, "elements": out}
+
+
 def dump_packet(p):
     """JSON text with one element (or sample) per line, so a reader can page through it."""
     head = {k: v for k, v in p.items() if k not in ("elements", "samples")}
@@ -523,7 +683,7 @@ def merge3(base, ours, theirs):
             labels[h] = e
     out["labels"] = labels
     ov, tv = ours.get("vocabVersion", 0), theirs.get("vocabVersion", 0)
-    for coll in ("vocabulary", "rules"):
+    for coll in ("vocabulary", "rules", "findings", "dismissed"):
         b, o, t = base.get(coll, {}), ours.get(coll, {}), theirs.get(coll, {})
         merged = {}
         for k in sorted(set(b) | set(o) | set(t)):
@@ -542,6 +702,8 @@ def merge3(base, ours, theirs):
             if v is not None:
                 merged[k] = v
         out[coll] = merged
+    gone = set(out["dismissed"])                         # ADR-036 §7: a dismissal wins over a kept finding
+    out["findings"] = {k: f for k, f in out["findings"].items() if signature(f["kind"], f["elements"]) not in gone}
     both = ours.get("vocabulary") != base.get("vocabulary") and theirs.get("vocabulary") != base.get("vocabulary") \
         and ours.get("vocabulary") != theirs.get("vocabulary")
     out["vocabVersion"] = max(ov, tv) + (1 if both else 0)
@@ -703,6 +865,9 @@ class AIStore:
 
     def todo(self, **kw):
         return todo(self.load(), self.store.load(), **kw)
+
+    def review(self, **kw):
+        return review(self.load(), self.store.load(), **kw)
 
     def vocab_packet(self, **kw):
         return vocab_packet(self.load(), self.store.load(), **kw)

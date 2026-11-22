@@ -264,6 +264,23 @@ def cmd_ai_resolve(store, a):
     return _ai_conflicts(conflicts)
 
 
+def cmd_ai_review(store, a):
+    from . import ai as AI
+    try:
+        p = AI.AIStore(store).review(label=a.label, limit=a.limit)
+    except AI.AIError as exc:
+        raise StoreError(str(exc))
+    text = AI.dump_packet(p)
+    if not a.out:
+        sys.stdout.write(text)
+        return 0
+    with open(a.out, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+    print("%d concept(s), %d element(s) written to %s; %d more element(s) in other packets" % (
+        len(p["concepts"]), len(p["elements"]), a.out, p["remaining"]))
+    return 0
+
+
 def cmd_ai_status(store, a):
     from . import ai as AI
     _out(AI.AIStore(store).status())
@@ -439,6 +456,11 @@ def build_parser():
     tp.add_argument("--samples", type=int, default=400, help="--vocab: topics sampled across the model")
     tp.add_argument("--terms", type=int, default=200, help="--vocab: most frequent words")
     tp.add_argument("--out", help="write the packet to this file (one element per line) instead of stdout")
+    rp = aisub.add_parser("review", help="a review packet: elements by concept, to find problems in the specs")
+    rp.set_defaults(fn=cmd_ai_review)
+    rp.add_argument("--label", metavar="KEY", help="one concept and its children")
+    rp.add_argument("--limit", type=int, default=300, help="elements per packet (default 300; 0 = all)")
+    rp.add_argument("--out", help="write the packet to this file instead of stdout")
     aisub.add_parser("status", help="counts of labelled, stale and unlabelled elements").set_defaults(fn=cmd_ai_status)
     aisub.add_parser("ops", help="list the AI operations").set_defaults(fn=cmd_ai_ops)
     aisub.add_parser("resolve", help="rebuild the AI file after a git merge conflict").set_defaults(fn=cmd_ai_resolve)

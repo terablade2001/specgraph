@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from . import VERSION
 from . import ai as AI, model as M, query as Q, rules, stamp as S, validate as V
 
-SCHEMA_VERSION = 2       # 2: AI labels (ADR-034)
+SCHEMA_VERSION = 3       # 2: AI labels (ADR-034); 3: findings (ADR-036)
 SWAP_WAIT = 2.0        # seconds to retry the swap while another process holds the old index (Windows)
 
 # (table, column, meaning); column "" is the table itself. Feeds `columns_doc` and `sql --schema`.
@@ -142,6 +142,17 @@ DOC = [
     ("ai_labels", "element", "element id"),
     ("ai_labels", "label", "concept key, see ai_vocabulary.key"),
     ("ai_labels", "stale", "1 = possibly outdated: the element or the concept changed since it was labelled"),
+    ("ai_findings", "", "open findings of AI reviews (ADR-036): advice about the specs, never acted on by the tool"),
+    ("ai_findings", "id", "finding id"),
+    ("ai_findings", "kind", "missing-link, gap, contradiction, duplicate, terminology or misplaced"),
+    ("ai_findings", "suggestion", "the proposed fix, in words"),
+    ("ai_findings", "stale", "1 = an element changed since the finding (possibly already fixed)"),
+    ("ai_findings", "by", "administrator who recorded it"),
+    ("ai_findings", "at", "when"),
+    ("ai_finding_elements", "", "the elements a finding names, with the quoted evidence"),
+    ("ai_finding_elements", "finding", "finding id"),
+    ("ai_finding_elements", "element", "element id"),
+    ("ai_finding_elements", "quote", "text quoted from that element"),
 ]
 FTS_DOC = [
     ("elements_fts", "", "full-text search (FTS5, stemmed, accents ignored): WHERE elements_fts MATCH 'word*'; "
@@ -190,6 +201,8 @@ CREATE TABLE ai_vocabulary (key TEXT PRIMARY KEY, label TEXT, definition TEXT, p
   replaced_by TEXT);
 CREATE TABLE ai_labels (element TEXT, label TEXT, stale INTEGER, PRIMARY KEY (element, label));
 CREATE INDEX ai_labels_label ON ai_labels(label, element);
+CREATE TABLE ai_findings (id TEXT PRIMARY KEY, kind TEXT, suggestion TEXT, stale INTEGER, by TEXT, at TEXT);
+CREATE TABLE ai_finding_elements (finding TEXT, element TEXT, quote TEXT);
 CREATE TABLE columns_doc ("table" TEXT, "column" TEXT, meaning TEXT, PRIMARY KEY ("table", "column"));
 CREATE INDEX links_source ON links(source);
 CREATE INDEX links_target ON links(target);
@@ -371,6 +384,13 @@ def _fill(con, model, info):
         ins("INSERT INTO ai_labels VALUES (?,?,?)", [
             (eid, k, int(stale)) for eid, (labels, stale) in sorted(AI.element_labels(ai, model).items())
             for k in labels])
+        findings = sorted(ai.get("findings", {}).items())
+        ins("INSERT INTO ai_findings VALUES (?,?,?,?,?,?)", [
+            (fid, f["kind"], f["suggestion"], int(AI.finding_stale(f, model)), f.get("by"), f.get("at"))
+            for fid, f in findings])
+        ins("INSERT INTO ai_finding_elements VALUES (?,?,?)", [
+            (fid, eid, " … ".join(e["quote"] for e in f.get("evidence", []) if e["element"] == eid))
+            for fid, f in findings for eid in f["elements"]])
     ins("INSERT INTO columns_doc VALUES (?,?,?)", doc)
 
 

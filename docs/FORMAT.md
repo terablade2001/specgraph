@@ -149,6 +149,9 @@ An optional second file next to the model, written only by `sg.py ai apply`. Wit
   "labels":     { "<elementHash>": { "v": 3, "labels": [keys], "by": "<user>", "model": "<LLM name>",
                                      "elements": [ids] } },
   "rules":      { "<id>": { "element", "label", "kind": "never" | "always", "reason", "by", "at" } },
+  "findings":   { "<id>": { "kind", "elements": [ids], "hashes": [...], "evidence": [{ "element", "quote" }],
+                            "suggestion", "ops"?: [...], "by", "at", "model" } },
+  "dismissed":  { "<kind>:<sorted ids>": { "kind", "elements", "reason", "by", "at" } },
   "stamp":      { ...as the model's, verified against the model's users... } }
 ```
 
@@ -161,6 +164,12 @@ An optional second file next to the model, written only by `sg.py ai apply`. Wit
 - `specmodel.ai.log.jsonl`: one line per operation (who, when, which, reason, confidence, model), append-only,
   `merge=union`, never read by the tool to decide anything.
 - Labels are a retrieval aid. Validation, coverage, locks and every other decision ignore them.
+- `findings` (ADR-036): problems an AI review found in the specs, kinds `missing-link`, `gap`, `contradiction`,
+  `duplicate`, `terminology`, `misplaced`. Each element named is quoted (12+ characters of its own text). A dismissed
+  finding (same kind and elements) is never accepted again; a closed one is removed (the log keeps it). A finding is
+  stale when an element's content hash changed since. Recorded, dismissed and closed by administrators only; the
+  model is never changed by a review; `ops` is a suggestion for a person to run. Older AI files without these keys
+  are read as empty.
 - Merging (ADR-035, `merge=specgraph-ai` set by `install-hooks`): `labels` union per hash (same hash, different
   entries: the higher `v` wins, equal `v` drops the entry); `vocabulary` and `rules` three-way per key (both sides
   changed a key: the higher `vocabVersion` wins, equal is a conflict kept as ours and reported); `vocabVersion` = the

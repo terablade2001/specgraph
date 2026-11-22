@@ -38,6 +38,11 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
   again later), vocabulary and rules per key; only the same concept changed on both sides at the same vocabulary
   version is a conflict for an administrator. A side changed outside the tool is refused. The merged file is signed by
   the person merging. `sg.py ai resolve` rebuilds the AI file (and joins the log) after a merge without the driver.
+- **Findings (ADR-036):** `sg.py ai review` gives an agent the elements of a concept (or the largest ones) to look
+  for missing links, gaps, contradictions, duplicates, terminology and misplaced elements. Findings are recorded by
+  an administrator with `ai.finding.add`; each must quote every element it names, and a dismissed finding is never
+  accepted again (`ai.finding.dismiss`, `ai.finding.close`). The index gets `ai_findings` and
+  `ai_finding_elements` (schema 3). A review never changes the model.
 - (evaluations) A first labelling pass on the 1 000-element model: cost and quality in `evals/results/LABELS-S1K.md`.
 
 - **`sg.py index`**: builds a read-only SQLite index of the model in `.specgraph/<model file name>.db` next to the

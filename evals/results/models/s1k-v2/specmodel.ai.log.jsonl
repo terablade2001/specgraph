@@ -1304,3 +1304,26 @@
 {"at": "2026-11-22T17:26:18Z", "by": "synth", "element": "E2E-230bd9c7", "labels": ["weekly-report"], "model": "sonnet", "op": "ai.label.set", "result": null, "stamp": "de557a98-556e-494d-bcfc-e8fd8d4f2847"}
 {"at": "2026-11-22T17:26:18Z", "by": "synth", "element": "E2E-8c4bf2d0", "labels": ["record-creation", "finding-records"], "model": "sonnet", "op": "ai.label.set", "result": null, "stamp": "de557a98-556e-494d-bcfc-e8fd8d4f2847"}
 {"at": "2026-11-22T17:26:18Z", "by": "synth", "element": "E2E-ccce4c78", "labels": ["overdue-cases"], "model": "sonnet", "op": "ai.label.set", "result": null, "stamp": "de557a98-556e-494d-bcfc-e8fd8d4f2847"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "f973ed4b-9d47-476c-8fef-9c39fae63adf", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "c6ee110b-640e-4e0c-9c02-2cfba1189469", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "82d94b21-2648-4af0-a324-d992e9e4fbd3", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "e0881c38-117b-46a9-9586-3e934f252366", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "a1a40fe3-a0be-495e-b44b-fc11476ded76", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "66792e31-2ed4-4171-a376-e36d0ff8c323", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "6156610d-6f27-401d-ade4-41690a079157", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "0951f843-b2fc-4a0c-99d6-55ceb61956f4", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "6f77a9d8-de7f-4b98-8f74-0009a151ccdc", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "6d77ab6f-3a81-4666-8a94-6c7e26b7e50b", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "148308ae-041a-48a2-af1b-a997055962db", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "3f07d5bc-6ef9-4fb5-b9c7-b5ce4a289668", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "0ef1598e-4d54-4f32-ac2e-e6c99266563f", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "1a0e8a90-492c-4074-8347-b7127c9cba0d", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "d88c546e-124b-423c-b73a-7b4b2404d3eb", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "6a8a2066-dc00-4e95-b4e9-f467a1088f32", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "60a6a3ae-4120-41d2-80c8-1a66b7c0593b", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "cee753bd-1724-4cc8-806a-80f6d3995896", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "f7e91458-2a82-4ad6-8c98-81509474394c", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "10fc521c-c295-4147-af6c-5234a6e077d4", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "missing-link", "op": "ai.finding.add", "result": "74440066-d754-4e5f-970f-d6f94497aac5", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "gap", "op": "ai.finding.add", "result": "2c6d26ed-bcca-406a-8f70-b6827103f6c5", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}
+{"at": "2026-11-22T21:45:33Z", "by": "synth", "kind": "duplicate", "op": "ai.finding.add", "result": "261b57ba-a902-4214-bb01-b1a0249a9541", "stamp": "9c08994b-6413-43e2-b575-4ac5d631f9c4"}

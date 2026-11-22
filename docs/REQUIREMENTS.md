@@ -182,6 +182,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | AIL-06 | The commit check and the audit verify the AI file's stamp and that only administrators changed vocabulary and rules. |
 | AIL-07 | Parallel labelling on two branches merges without a person; only both sides changing the same vocabulary key at the same version is a conflict. |
 | AIL-08 | Every AI operation is recorded in an append-only log that the tool never reads to decide anything. |
+| AIL-09 | An agent can review the specs concept by concept and record findings (ADR-036): each finding quotes the specs as evidence, a dismissed finding is never accepted again, and the model is never changed by a review. |
 
 ## IDs with no recorded meaning
 
