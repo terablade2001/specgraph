@@ -14,6 +14,10 @@ python sg.py history REQ-3d6e7863
 python sg.py validate
 ```
 
+`python sg.py index` builds a read-only SQLite copy of the model, `.specgraph/<model file>.db` next to the
+model (ADR-032; never committed, safe to delete). Its table `columns_doc` says what every table and column holds.
+A command to query it with SQL is being added in 0.4.0.
+
 What the types mean in this project: every stereotype, status and link type has a `description` in
 `config` (empty when nobody wrote one). Read them before interpreting the model.
 

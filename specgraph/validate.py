@@ -145,20 +145,24 @@ def coverage_violations(model):
     """REQ-TRC-05. Returns [(rule_key, element_id, message)]."""
     out = []
     cfg = model["config"]
+    els = model["elements"]
+    ends = {}   # (link type, end of the covered element) -> {element id: [ids at the other end]}
     for rkey, rule in sorted(cfg.get("coverageRules", {}).items()):
-        for eid, el in sorted(model["elements"].items()):
+        mine, other = ("target", "source") if rule.get("direction") == "incoming" else ("source", "target")
+        key = (rule.get("linkType"), mine)
+        if key not in ends:
+            ends[key] = {}
+            for link in model["links"].values():
+                if link.get("type") == rule.get("linkType"):
+                    ends[key].setdefault(link.get(mine), []).append(link.get(other))
+        for eid, el in sorted(els.items()):
             if el.get("stereotype") != rule.get("stereotype"):
                 continue
             if rule.get("statuses") is not None and el.get("status") not in rule["statuses"]:
                 continue
             ok = False
-            for link in model["links"].values():
-                if link.get("type") != rule.get("linkType"):
-                    continue
-                mine, other = ("target", "source") if rule.get("direction") == "incoming" else ("source", "target")
-                if link.get(mine) != eid:
-                    continue
-                oel = model["elements"].get(link.get(other))
+            for oid in ends[key].get(eid, ()):
+                oel = els.get(oid)
                 if oel and (rule.get("other") is None or oel.get("stereotype") == rule["other"]):
                     ok = True
                     break

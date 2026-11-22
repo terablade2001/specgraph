@@ -18,6 +18,20 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
 - A merge no longer reports a conflict just because one side was upgraded to version 3 and the other was not.
 - The stored example model is rebuilt (format 3; its *verifies* link type has a description).
 
+### Added
+
+- **`sg.py index`**: builds a read-only SQLite index of the model in `.specgraph/<model file name>.db` next to the
+  model (ADR-032). It is derived and disposable: the tool writes `.specgraph/.gitignore`, so it is never committed,
+  and deleting it loses nothing. It holds elements, notes, fields, links, folders with paths and locks in force,
+  diagrams, users, the configuration with its descriptions, coverage violations, a full-text index when the Python
+  build has FTS5, and `columns_doc`, the meaning of every column. Prints what it built as JSON. A 10 000-element
+  model builds in about half a second. Querying it (`sg.py sql`) comes next.
+
+### Faster
+
+- `sg.py validate` and the editor's *Check* compute coverage rules in one pass over the links (same results; a
+  10 000-element model went from about 2 s to well under 0.1 s).
+
 ### Added (for evaluations, not part of the tool)
 
 - `sample/build_synthetic.py`: a large synthetic model with planted facts, the same for the same seed.

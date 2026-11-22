@@ -193,6 +193,18 @@ New module `specgraph/index.py` (only `sqlite3`, `hashlib`, `json`). One transac
 - Tests: deterministic content for the same model; rebuild when the file changes; no rebuild when not;
   FTS absent → build still works; 10K synthetic build time (target ≈ 1 s, measured and reported).
 - **Accept:** owner reviews schema and timings.
+- **Done 2026-11-22:** `specgraph/index.py`, `sg.py index`, 14 tests (`tests/test_index.py`). Additions to the
+  table above: `folders.locked_from` (folder carrying the lock in force), `config_stereotypes.statuses` (JSON list,
+  NULL = all), an index on `element_fields(key, value)`. `element_fields.value` keeps the type (numbers stay
+  numbers, booleans 1/0) so `value > 3` works. `ensure()` (used by `sql`) rebuilds only when stale; when the swap
+  cannot happen in 2 s (Windows, a reader holds the old file) the caller gets a private fresh copy, removed after
+  use. `validate.coverage_violations` now indexes links once (same output, checked on s1k and s10k).
+  Timings (Windows, Python 3.13, SQLite 3.53, `fts5+trigram`):
+
+  | Model | Build | Fresh check (no rebuild) | Index size |
+  |---|---|---|---|
+  | s1k (1 034 elements) | 0.07 s | — | — |
+  | s10k (9 966 elements, 13 325 links) | 0.44 s (2.2 s before the coverage fix) | 0.006 s | 20 MB |
 
 ### Phase 5 — `sg.py sql`
 

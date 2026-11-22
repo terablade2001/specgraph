@@ -1,7 +1,7 @@
 # Requirement → test
 
 `core` = tests/test_core.py, `integ` = tests/test_integrity.py, `changes` = tests/test_changes.py,
-`example` = tests/test_example.py, `descriptions` = tests/test_descriptions.py, `ui` = tests/test_ui.py (browser). What each requirement says: `docs/REQUIREMENTS.md`.
+`example` = tests/test_example.py, `descriptions` = tests/test_descriptions.py, `index` = tests/test_index.py, `ui` = tests/test_ui.py (browser). What each requirement says: `docs/REQUIREMENTS.md`.
 
 | Requirement | Covered by |
 |---|---|
@@ -44,6 +44,11 @@
 | CFG-07 | core `test_cfg07_*` |
 | CFG-08 | core `test_cfg08_*` |
 | CFG-09 | descriptions `test_cfg09_*` (6 tests: defaults, new entries, validation, v2 upgrade, merge of v2 and v3); ui (description typed in the configuration dialog, saved and shown as tooltip) |
+| AGT-01 | index `test_agt01_*` (6 tests: location and `.gitignore`, content, deleted elements absent, same model same index, hand-edited model indexed with a warning, `sg.py index`) |
+| AGT-02 | index `test_agt02_*` (4 tests: rebuilt on model/schema/tool change only, broken file replaced, failed build keeps the old index, a reader holding the old index; on Windows the private copy) |
+| AGT-03, AGT-04 | not built yet (`sg.py sql`, Phase 5) |
+| AGT-05 | index `test_agt05_*` (configuration with descriptions, every table and column described) |
+| AGT-06 | index `test_agt06_*` (FTS5 with stemming, accents and field values; build without FTS) |
 | SRC-01, SRC-02, SRC-05 | core `test_src01_02_05_*`; ui |
 | SRC-03, SRC-04 | ui |
 | INT-01 | integ `test_int01_*` |

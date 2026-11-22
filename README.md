@@ -283,8 +283,8 @@ once to update them.
 
 ## For AI agents
 
-Read `specmodel.json` directly (format: `docs/FORMAT.md`). Change it only with
-`sg.py apply` (see `docs/AGENTS.md`).
+Read `specmodel.json` directly (format: `docs/FORMAT.md`), or build a read-only SQLite index of it with
+`sg.py index` (in `.specgraph/`, never committed). Change it only with `sg.py apply` (see `docs/AGENTS.md`).
 
 ## Example model
 

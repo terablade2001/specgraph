@@ -118,6 +118,16 @@ def cmd_validate(store, a):
     return 1 if any(p["level"] == "error" for p in problems) else 0
 
 
+def cmd_index(store, a):
+    from . import index as I
+    info = I.build(store.path)
+    I.release(info)
+    if info["private"]:
+        raise StoreError("the index is in use by another process; it was not replaced. Try again.")
+    del info["private"], info["built"]
+    _out(info)
+
+
 def cmd_check(store, a):
     """validation + integrity + locks + identity, for the hooks."""
     if a.staged:
@@ -255,6 +265,7 @@ def build_parser():
     sp = add("history", cmd_history, "change history of an element from git")
     sp.add_argument("id")
     add("validate", cmd_validate, "validate the model")
+    add("index", cmd_index, "build the read-only SQLite index of the model now (ADR-032)")
     sp = add("check", cmd_check, "all checks on the working or staged file (used by hooks)")
     sp.add_argument("--staged", action="store_true")
     sp = add("audit", cmd_audit, "check every commit of the branch history, or the commits <from> to <to> "
