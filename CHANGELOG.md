@@ -26,6 +26,8 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
   diagrams, users, the configuration with its descriptions, coverage violations, a full-text index when the Python
   build has FTS5, and `columns_doc`, the meaning of every column. Prints what it built as JSON. A 10 000-element
   model builds in about half a second.
+- `docs/AGENTS.md`: "Reading a large model", a short guide with example queries for agents.
+- `docs/FORMAT.md`: where the derived index lives and what it is not.
 - **`sg.py sql "<query>"`**: runs one read-only `SELECT`/`WITH` statement on the index, rebuilding it first when
   the model changed. Writing, `ATTACH`, schema changes, transactions, writing pragmas and extensions are refused
   (exit code 2), and a query stops after 10 s. Output is a compact table (`a | b`, `NULL`, line breaks as `\n`)
@@ -43,6 +45,8 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
 
 - `sample/build_synthetic.py`: a large synthetic model with planted facts, the same for the same seed.
 - `evals/`: questions, expected answers, scoring and the baseline of agents on 0.3.1 (`evals/results/BASELINE.md`).
+- The same evaluations with the index (`evals/results/INDEX.md`): at 10 000 elements mean F1 0.85 → 0.95, and
+  questions that needed 90–145K tokens now need about 65K.
 
 ## 0.3.1 — 2026-11-21
 

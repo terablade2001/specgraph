@@ -44,7 +44,8 @@ to the repository root.
 - **Variants:**
   - `baseline` — docs (`README.md`, `docs/FORMAT.md`, `docs/AGENTS.md`), the Read and Grep tools on the
     model file, and `python sg.py --file <model> search|show|trace|impact|matrix|validate`.
-  - `index` (Phase 6) — the same plus `sg.py sql` and the new agent guide.
+  - `index` (Phase 6) — the same plus `sg.py sql|index` and the "Reading a large model" section of
+    `docs/AGENTS.md`. Recorded in `results/INDEX.md` (`index-*.json`).
 - **Forbidden in every variant:** reading any other repository file (`sample/`, `evals/`, `specgraph/`,
   `tests/` — the generator would give answers away), Grep/Read on saved tool output files, pipes,
   redirection, shell `grep`/`cat`/`head`, `python -c`, any other script.

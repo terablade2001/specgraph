@@ -37,6 +37,70 @@ python sg.py sql "SELECT ..." --json                         # {columns, rows, t
 What the types mean in this project: every stereotype, status and link type has a `description` in
 `config` (empty when nobody wrote one). Read them before interpreting the model.
 
+## Reading a large model
+
+A model of a few thousand elements is several megabytes: do not read the file, and do not page through
+`search ""` or `validate`. Work like this:
+
+1. **Learn the vocabulary first.** `sql --schema`, then the configuration with its descriptions:
+   `SELECT key, label, description FROM config_stereotypes` (also `config_statuses`, `config_link_types`,
+   `config_fields`, `config_coverage_rules`). A project may describe its own glossary type there; use it to
+   widen searches.
+2. **Count before you fetch.** `SELECT count(*) …` or `GROUP BY`; fetch rows only when the number is small,
+   and always with `LIMIT`. When the footer says rows were left out, the answer is incomplete: narrow the
+   query or page with `LIMIT/OFFSET`.
+3. **Summaries first.** `elements` has label, type, status, topic and folder path; read `element_notes` only for
+   the ids you chose.
+4. **One element's trace or impact:** `sg.py trace` / `sg.py impact` answer exactly. Use SQL when you need it
+   for many elements at once or combined with other conditions.
+5. **Search by meaning, not by one word.** A concept is worded many ways. Search topics and notes with several
+   words and stems at once, read the hits, then add the words you find in them and search again. Follow links
+   from the hits when the question is about what they lead to.
+6. **Answer with labels** (`elements.label`) unless the question asks for something else.
+
+Example queries (labels and names are placeholders):
+
+```sql
+-- how many elements of each type and status
+SELECT stereotype, status, count(*) FROM elements GROUP BY stereotype, status;
+
+-- something missing: approved requirements that no ADR implements
+SELECT e.label, e.topic FROM elements e
+WHERE e.stereotype = 'REQ' AND e.status = 'approved' AND NOT EXISTS (
+  SELECT 1 FROM links l JOIN elements a ON a.id = l.source
+  WHERE l.target = e.id AND l.type = 'implements' AND a.stereotype = 'ADR');
+
+-- impact: everything that traces to an element (follows traceable links only; UNION stops on cycles)
+WITH RECURSIVE up(id) AS (
+  SELECT id FROM elements WHERE label = 'FEAT-1234abcd'
+  UNION
+  SELECT l.source FROM links l JOIN up ON l.target = up.id
+  JOIN config_link_types t ON t.key = l.type AND t.traceable = 1)
+SELECT e.label, e.stereotype, e.topic FROM up JOIN elements e ON e.id = up.id
+WHERE e.label <> 'FEAT-1234abcd';
+-- what it traces to: swap source and target. Add a depth column (depth + 1 … WHERE depth < 3) to stop early.
+
+-- coverage problems per rule, and in one folder tree
+SELECT rule, count(*) FROM coverage_violations GROUP BY rule;
+SELECT e.label, e.topic FROM coverage_violations v JOIN elements e ON e.id = v.element
+WHERE e.folder_path = 'Billing' OR e.folder_path LIKE 'Billing/%';
+
+-- concept search: stemmed full text over label, topic, notes and text fields, best first
+SELECT f.label, e.stereotype, e.topic FROM elements_fts f JOIN elements e ON e.id = f.id
+WHERE elements_fts MATCH 'deliver* OR shipping OR dispatch* OR courier OR "sent out"' ORDER BY rank LIMIT 40;
+-- without full text (meta fts = 'none'): WHERE lower(topic) LIKE '%deliver%' OR ...
+
+-- locks: what is locked, by whom, and is a given element's folder under a lock
+SELECT path, lock_owner, lock_reason FROM folders WHERE lock_owner IS NOT NULL;
+SELECT e.label, f.locked_by, f.locked_from FROM elements e JOIN folders f ON f.id = e.folder
+WHERE e.label = 'REQ-1234abcd';
+
+-- custom fields: one row per element and field
+SELECT e.label, p.value FROM elements e
+JOIN element_fields p ON p.element = e.id AND p.key = 'priority'
+WHERE e.stereotype = 'REQ' AND p.value = 'Must';
+```
+
 ## Change — always through `apply`, never by editing the file
 
 ```

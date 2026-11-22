@@ -1,0 +1,205 @@
+{
+ "_control_tokens": 55205,
+ "Q01": {
+  "answer": [
+   "B-REQ-3b384c25"
+  ],
+  "tokens": 60033,
+  "note": "commands: trace"
+ },
+ "Q02": {
+  "answer": [
+   "REQ-18609e1e",
+   "INT-fe208a14",
+   "REQ-3f844e76",
+   "ADR-3211ad07",
+   "E2E-7d925879",
+   "REQ-a08c5822",
+   "REQ-efde138b",
+   "E2E-3a271e9d",
+   "REQ-f56fb83b",
+   "ADR-d33e2391"
+  ],
+  "tokens": 61037,
+  "note": "commands: impact x2 (first: path)"
+ },
+ "Q03": {
+  "answer": [
+   "REQ-3c4685c8"
+  ],
+  "tokens": 60597,
+  "note": "commands: sql x2"
+ },
+ "Q04": {
+  "answer": 1104,
+  "tokens": 62351,
+  "note": "commands: sql x2 (first: path)"
+ },
+ "Q05a": {
+  "answer": [
+   "REQ-cee291be",
+   "REQ-6434c6ff",
+   "REQ-25fb0704",
+   "REQ-586a24ae",
+   "REQ-0dac87a3",
+   "REQ-bd30254b",
+   "RISK-34463932",
+   "RISK-b316080b",
+   "REQ-93391395",
+   "REQ-8f04ff65",
+   "REQ-e09ef1a6",
+   "REQ-0090491f",
+   "REQ-703394f6",
+   "REQ-737b6ac3",
+   "REQ-dcd24b6a",
+   "REQ-441d9dc7",
+   "REQ-d5d27bf5",
+   "REQ-b972d44c",
+   "REQ-7b5e8244",
+   "REQ-60c8a507",
+   "REQ-18609e1e",
+   "REQ-3c52a764",
+   "REQ-f4acfb35",
+   "REQ-ffd768e3"
+  ],
+  "tokens": 70159,
+  "note": "commands: sql fts x2, show, schema, sql x2"
+ },
+ "Q05b": {
+  "answer": [
+   "RISK-8055007b",
+   "RISK-1a5d2d6c",
+   "REQ-379277f9",
+   "REQ-f0fc6a40",
+   "REQ-4e6a8d11",
+   "REQ-2d5dfba6",
+   "REQ-86c551ee",
+   "REQ-4f241e79",
+   "REQ-e8d24f8c",
+   "REQ-f6eb9431",
+   "REQ-096b40d7",
+   "REQ-1ecd1f9c",
+   "REQ-4cc13160",
+   "REQ-aaff1ba1",
+   "REQ-26324936"
+  ],
+  "tokens": 64597,
+  "note": "commands: search, sql fts x2"
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-6f04fd61",
+   "REQ-471527ad",
+   "REQ-fb399be2",
+   "REQ-c0d16cad",
+   "REQ-4e5f960c",
+   "REQ-3c183411",
+   "REQ-085e298d",
+   "REQ-2c797255",
+   "REQ-ee402b1b",
+   "REQ-ea9e4be1",
+   "REQ-660b240b",
+   "REQ-b524beff",
+   "REQ-f71d52f6"
+  ],
+  "tokens": 82907,
+  "note": "commands: sql (several), schema"
+ },
+ "Q06": {
+  "answer": [
+   "RISK-2809a0eb",
+   "RISK-8544fd80",
+   "RISK-8645abd7",
+   "RISK-b90206ca",
+   "RISK-77eda77c"
+  ],
+  "tokens": 62439,
+  "note": "commands: sql --help, schema, sql"
+ },
+ "Q07": {
+  "answer": [
+   "Markets/Markets Requests",
+   "Road works/Road works Staff planning",
+   "School enrolment/School enrolment Work orders"
+  ],
+  "tokens": 60683,
+  "note": "commands: Grep only"
+ },
+ "Q08": {
+  "answer": [
+   "REQ-0de6176c",
+   "REQ-9fa791ec"
+  ],
+  "tokens": 62855,
+  "note": "commands: sql"
+ },
+ "Q09": {
+  "answer": [
+   "U-REQ-0f3e66e5",
+   "REQ-54e023aa",
+   "FEAT-55618880",
+   "RISK-8333732d",
+   "REQ-dc77e4df"
+  ],
+  "tokens": 64774,
+  "note": "commands: schema x2, sql"
+ },
+ "Q10": {
+  "answer": [
+   "REQ-21fc3f7d",
+   "REQ-276ec10f",
+   "REQ-2ae7c7ca",
+   "REQ-39b01990",
+   "REQ-417346ce",
+   "REQ-506f09c7",
+   "REQ-7df6bc05",
+   "REQ-a5d05f53",
+   "REQ-b7997c9e",
+   "REQ-bbbaec2c",
+   "REQ-c70f794a",
+   "REQ-e548cf76",
+   "REQ-f107d037"
+  ],
+  "tokens": 62845,
+  "note": "commands: sql x2 (first: path)"
+ },
+ "Q11": {
+  "answer": [
+   "REQ-5adf26ef",
+   "REQ-f107d037"
+  ],
+  "tokens": 102771,
+  "note": "commands: sql x15, show x2, schema"
+ },
+ "Q12": {
+  "answer": 1256,
+  "tokens": 59969,
+  "note": "commands: search x2, sql"
+ },
+ "Q13": {
+  "answer": [
+   "E2E-52eb6952",
+   "E2E-33c5e964",
+   "E2E-b46da42c",
+   "INT-da65b4ca"
+  ],
+  "tokens": 65760,
+  "note": "commands: show x2 (first: path), matrix, schema, sql"
+ },
+ "Q14": {
+  "answer": [
+   "REQ-e7dcdd05"
+  ],
+  "tokens": 62239,
+  "note": "commands: sql"
+ },
+ "Q15": {
+  "answer": [
+   "REQ-09172810",
+   "REQ-50ce007b",
+   "RISK-9f7e7c0c"
+  ],
+  "tokens": 59779,
+  "note": "commands: show x2 (first: path)"
+ }
+}

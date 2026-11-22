@@ -238,6 +238,14 @@ New module `specgraph/index.py` (only `sqlite3`, `hashlib`, `json`). One transac
 - Add a view or command only for a query the agents repeatedly got wrong or rewrote.
 - **Decision gate** for Layer 2: residual concept-search misses large enough to justify labels.
 - Raise `VERSION` to 0.4.0.
+- **Gate decision (owner, 2026-11-22): go on to Layer 2 (labels).**
+- **Done 2026-11-22:** guide in `docs/AGENTS.md` (examples checked on s1k and the
+  example; they avoid the subjects of the eval questions), `docs/FORMAT.md` section on the index, evals rerun on
+  the same models and questions (`evals/results/INDEX.md`). Mean F1 baseline → index: example 1.00 → 1.00,
+  s1k 0.96 → 0.91 (0.96 → 0.97 without Q11), s10k 0.85 → 0.95 (0.90 → 0.99 without Q11); mean tokens down
+  ~5–10K per question, largest 1K run 144K → 86K. No query was repeatedly got wrong: no new view or command.
+  Residual concept misses: 11 planted elements over 6 concept questions, of which 3 are genuine meaning misses;
+  Q11 (near-duplicates) is spoiled by the generator's " (2)" topics. `VERSION` was already 0.4.0 (Phase 3).
 
 > **Phases 7–12 are an outline, not decisions** (owner, 2026-11-22). They keep the direction of the
 > draft's Layer 2; details (file layout, hashing, signing, merge, scope, roles) are decided after the

@@ -128,3 +128,13 @@ the stamp that was in force. A copy of the tool from before this change refuses 
   removes an element without its line. `.gitattributes` merges it with `merge=union`, so two
   branches never conflict in it.
 - It is not signed. It is an index for people; the proof is git history.
+
+## The derived index (`.specgraph/`, ADR-032)
+
+`sg.py sql` and `sg.py index` keep a read-only SQLite copy of the model in `.specgraph/<model file name>.db` next
+to the model file, for example `.specgraph/specmodel.json.db`. It is **not part of the format**:
+
+- It is derived from the model file only, rebuilt when the file's bytes, the index schema or the tool version
+  change, and never read to decide a change. The model file stays the only source of truth.
+- The tool writes `.specgraph/.gitignore` (`*`), so the folder is never committed. Deleting it loses nothing.
+- Deleted elements are not in it. `sg.py sql --schema` lists its tables and what every column holds.

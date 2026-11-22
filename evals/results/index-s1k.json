@@ -1,0 +1,291 @@
+{
+ "_control_tokens": 55205,
+ "Q01": {
+  "answer": [
+   "B-REQ-43d49e42"
+  ],
+  "tokens": 59779,
+  "note": "commands: trace"
+ },
+ "Q02": {
+  "answer": [
+   "REQ-5df18fe8",
+   "ADR-3fc1dc77",
+   "ADR-f159dea2",
+   "REQ-6c3435b6",
+   "REQ-a00c69da",
+   "E2E-3f6c0f5f",
+   "REQ-eb1973dc",
+   "E2E-d2103285",
+   "REQ-b369b784",
+   "E2E-76bcb0e0",
+   "REQ-d548e4ab",
+   "INT-e4a260f9"
+  ],
+  "tokens": 61438,
+  "note": "commands: impact"
+ },
+ "Q03": {
+  "answer": [
+   "REQ-60ab5308",
+   "REQ-8e7c3b09"
+  ],
+  "tokens": 62585,
+  "note": "commands: sql"
+ },
+ "Q04": {
+  "answer": 100,
+  "tokens": 62360,
+  "note": "commands: sql x2"
+ },
+ "Q05a": {
+  "answer": [
+   "REQ-8aafc348",
+   "REQ-08c80d01",
+   "REQ-217310e3",
+   "REQ-9e302adb",
+   "REQ-d22db0cb",
+   "RISK-3da6baaf",
+   "REQ-3d826a46",
+   "RISK-24668b99",
+   "REQ-9b60094d",
+   "REQ-2b94bbff",
+   "REQ-ac49ed89",
+   "REQ-b8c92dbb",
+   "REQ-93625ee5",
+   "REQ-738723e9",
+   "REQ-77b01eae",
+   "REQ-eb1973dc",
+   "REQ-257f89bd",
+   "REQ-ca3b381b",
+   "REQ-0e0522ad",
+   "REQ-ce82f3ae",
+   "REQ-01331006",
+   "REQ-0f1eea98",
+   "REQ-8162cf3b",
+   "REQ-834fe403"
+  ],
+  "tokens": 75828,
+  "note": "commands: search, sql x6 (2 wrong columns), schema"
+ },
+ "Q05b": {
+  "answer": [
+   "RISK-0c0c14f3",
+   "RISK-24f65b2f",
+   "REQ-501cddbc",
+   "REQ-3f5d921b",
+   "REQ-c1027b25",
+   "REQ-a555e671",
+   "REQ-08fab36e",
+   "REQ-daacbf69",
+   "REQ-21203e8b",
+   "REQ-85fe5706",
+   "REQ-b5db4d0a",
+   "REQ-54200778",
+   "REQ-5c106d81",
+   "REQ-74c0a207",
+   "REQ-0080e172"
+  ],
+  "tokens": 64868,
+  "note": "commands: sql fts x2"
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-9c7a3055",
+   "REQ-a028539d",
+   "REQ-b3327ae7",
+   "REQ-dfc598b1",
+   "REQ-12c04dbd",
+   "REQ-3641a06d",
+   "REQ-89fef3c9",
+   "REQ-b33381b3",
+   "REQ-fb7b67cf",
+   "REQ-dfa04250"
+  ],
+  "tokens": 65194,
+  "note": "commands: search x4, sql x5 (2 errors)"
+ },
+ "Q06": {
+  "answer": [
+   "RISK-61bb844f"
+  ],
+  "tokens": 64890,
+  "note": "commands: schema, sql x3"
+ },
+ "Q07": {
+  "answer": [
+   "Waste collection/Waste collection Scheduling",
+   "Street lighting/Street lighting Requests",
+   "Youth centres/Youth centres Requests"
+  ],
+  "tokens": 61163,
+  "note": "commands: Grep only"
+ },
+ "Q08": {
+  "answer": [],
+  "tokens": 66196,
+  "note": "commands: sql x3"
+ },
+ "Q09": {
+  "answer": [
+   "U-REQ-2b87cb75",
+   "REQ-4fc86ec5",
+   "RISK-6db98f68",
+   "REQ-88f91dd1",
+   "REQ-94390ebf"
+  ],
+  "tokens": 62167,
+  "note": "commands: sql --help, schema x2, sql"
+ },
+ "Q10": {
+  "answer": [
+   "REQ-073345b3",
+   "B-REQ-11e33af0",
+   "REQ-15c159fd",
+   "B-REQ-1bd1582a",
+   "B-REQ-33423110",
+   "REQ-3a4e9d8c",
+   "REQ-3c265051",
+   "B-REQ-41b46506",
+   "REQ-5aab425b",
+   "B-REQ-7cb6729a",
+   "B-REQ-89f288da",
+   "B-REQ-8bbc5253",
+   "B-REQ-af6551c0",
+   "REQ-f43ab8ea"
+  ],
+  "tokens": 62813,
+  "note": "commands: sql"
+ },
+ "Q11": {
+  "answer": [
+   "REQ-08e42bb0",
+   "REQ-2498d6df",
+   "REQ-0befdbbd",
+   "REQ-4266c006",
+   "REQ-1b5c2c0f",
+   "REQ-63178f77",
+   "REQ-21203e8b",
+   "REQ-54200778",
+   "REQ-2313afc0",
+   "REQ-1fda1946",
+   "REQ-fec4b1eb",
+   "REQ-2333c39b",
+   "REQ-17b12a02",
+   "REQ-2b94bbff",
+   "REQ-257f89bd",
+   "REQ-2c10bd3c",
+   "REQ-ac5cd34e",
+   "REQ-33efeb19",
+   "REQ-9111689b",
+   "REQ-3d295c64",
+   "REQ-942163d8",
+   "REQ-3dee766a",
+   "REQ-afc2fbd0",
+   "REQ-50e1391e",
+   "REQ-98e791e2",
+   "REQ-c95be86f",
+   "REQ-6c3435b6",
+   "REQ-8ff299e7",
+   "REQ-6fe77ee0",
+   "REQ-6eea2edb",
+   "REQ-76f29787",
+   "REQ-189bc477",
+   "REQ-78bc1a67",
+   "REQ-4bb2f12d",
+   "REQ-93a92c50",
+   "REQ-c0254e86",
+   "REQ-a2a794f0",
+   "REQ-f4d83858",
+   "REQ-a99e7eeb",
+   "REQ-7e8cb6d3",
+   "REQ-abfd28a4",
+   "REQ-5aab425b",
+   "REQ-ac49ed89",
+   "REQ-0e0522ad",
+   "REQ-aef67784",
+   "REQ-09a5a6b5",
+   "REQ-c3913a02",
+   "REQ-468d2f99",
+   "REQ-d824dffb",
+   "REQ-1ff22eb6",
+   "REQ-da109f2b",
+   "REQ-f8893bbd",
+   "REQ-dc17fd39",
+   "REQ-d5df3c84",
+   "REQ-ddbe9bcb",
+   "REQ-cda49ec3",
+   "REQ-e7c6dc94",
+   "REQ-50ddac38",
+   "REQ-e89dd2b8",
+   "REQ-07de4f04",
+   "REQ-eed92d4d",
+   "REQ-0420a9aa",
+   "REQ-f81ff03d",
+   "REQ-5b44e6c1",
+   "U-REQ-03e57385",
+   "U-REQ-115688b1",
+   "U-REQ-12145482",
+   "U-REQ-ca1c12dd",
+   "U-REQ-1a66e3ed",
+   "U-REQ-071b6a21",
+   "U-REQ-3a599f15",
+   "U-REQ-b78f8df4",
+   "U-REQ-532f0cc2",
+   "U-REQ-ff4e081b",
+   "U-REQ-59d6ffad",
+   "U-REQ-bfd66e6e",
+   "U-REQ-6deeae21",
+   "U-REQ-0fc2f247",
+   "U-REQ-6f0f5580",
+   "U-REQ-ea4f801d",
+   "U-REQ-733530df",
+   "U-REQ-2eb0fd10",
+   "U-REQ-853141fa",
+   "U-REQ-bed8cbd7",
+   "U-REQ-98a985c7",
+   "U-REQ-b6ec329c",
+   "U-REQ-9f1edc66",
+   "U-REQ-d86ee278",
+   "U-REQ-ba44012c",
+   "U-REQ-315d51b8",
+   "U-REQ-c5511227",
+   "U-REQ-162f1fbf",
+   "U-REQ-e9730a7e",
+   "U-REQ-4d021055",
+   "U-REQ-f8ae2c68",
+   "U-REQ-ffb41850"
+  ],
+  "tokens": 86119,
+  "note": "commands: schema x2, sql x9"
+ },
+ "Q12": {
+  "answer": 120,
+  "tokens": 60013,
+  "note": "commands: search x2, sql"
+ },
+ "Q13": {
+  "answer": [
+   "INT-0c324214",
+   "E2E-88a2b164"
+  ],
+  "tokens": 62720,
+  "note": "commands: trace x2 (first: path)"
+ },
+ "Q14": {
+  "answer": [
+   "REQ-e17b5664"
+  ],
+  "tokens": 62832,
+  "note": "commands: sql x2 (first: path)"
+ },
+ "Q15": {
+  "answer": [
+   "REQ-e2cd6362",
+   "REQ-78bc1a67",
+   "REQ-3e8ac2c6"
+  ],
+  "tokens": 59842,
+  "note": "commands: show x2 (first: path)"
+ }
+}

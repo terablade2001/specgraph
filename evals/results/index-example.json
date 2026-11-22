@@ -1,0 +1,122 @@
+{
+ "_control_tokens": 55205,
+ "Q01": {
+  "answer": [
+   "B-REQ-001"
+  ],
+  "tokens": 60221,
+  "note": "commands: trace"
+ },
+ "Q02": {
+  "answer": [
+   "REQ-001",
+   "REQ-003",
+   "E2E-001",
+   "ADR-001",
+   "REQ-002",
+   "INT-001",
+   "ADR-003"
+  ],
+  "tokens": 59750,
+  "note": "commands: impact"
+ },
+ "Q03": {
+  "answer": [
+   "REQ-001"
+  ],
+  "tokens": 62136,
+  "note": "commands: sql"
+ },
+ "Q04": {
+  "answer": 1,
+  "tokens": 60194,
+  "note": "commands: sql x2"
+ },
+ "Q05a": {
+  "answer": [
+   "REQ-004",
+   "REQ-005",
+   "ADR-002",
+   "FEAT-002",
+   "U-REQ-002",
+   "T-ADR-001",
+   "RISK-002",
+   "E2E-002"
+  ],
+  "tokens": 63136,
+  "note": "commands: Grep/Read only"
+ },
+ "Q05b": {
+  "answer": [
+   "CON-001",
+   "CON-002"
+  ],
+  "tokens": 62894,
+  "note": "commands: Grep/Read only"
+ },
+ "Q05c": {
+  "answer": [
+   "E2E-001",
+   "ADR-001",
+   "REQ-003",
+   "RISK-001"
+  ],
+  "tokens": 61030,
+  "note": "commands: Grep only"
+ },
+ "Q07": {
+  "answer": [
+   "Compliance (locked)"
+  ],
+  "tokens": 59183,
+  "note": "commands: Grep only"
+ },
+ "Q08": {
+  "answer": [
+   "ADR-003",
+   "REQ-006"
+  ],
+  "tokens": 64484,
+  "note": "commands: sql x2, schema"
+ },
+ "Q09": {
+  "answer": [
+   "ISS-001"
+  ],
+  "tokens": 64919,
+  "note": "commands: search, schema, sql"
+ },
+ "Q10": {
+  "answer": [],
+  "tokens": 59313,
+  "note": "commands: search --unused x2, sql"
+ },
+ "Q12": {
+  "answer": 2,
+  "tokens": 58822,
+  "note": "commands: search"
+ },
+ "Q13": {
+  "answer": [
+   "INT-001",
+   "E2E-001"
+  ],
+  "tokens": 65222,
+  "note": "commands: show, matrix, trace x3"
+ },
+ "Q14": {
+  "answer": [
+   "REQ-006"
+  ],
+  "tokens": 62308,
+  "note": "commands: sql x2, schema"
+ },
+ "Q15": {
+  "answer": [
+   "REQ-003",
+   "RISK-001"
+  ],
+  "tokens": 59246,
+  "note": "commands: show"
+ }
+}
