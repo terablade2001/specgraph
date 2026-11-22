@@ -3,6 +3,26 @@
 Changes of the tool that a user or an agent can notice, newest first. The version is `VERSION` in
 `specgraph/__init__.py` (`python sg.py --version`). Design reasons are in `docs/ADRS.md`.
 
+## 0.4.0 — in progress
+
+Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.4-AI-LAYER.md`.
+
+### Changed
+
+- **Format version 3: every stereotype, status and link type has a description.** Write in it what the type means
+  in your project (Configure → the type → *Description*); people see it as a tooltip and agents read it from the
+  file. New models start with short generic descriptions of the initial types. An older model is read as before
+  and is written as version 3 on its first change, with empty descriptions. **Upgrade everyone together:** a tool
+  before 0.4.0 refuses a version-3 file.
+- `config.put` gives a new stereotype, status or link type `description: ""` when none is passed.
+- A merge no longer reports a conflict just because one side was upgraded to version 3 and the other was not.
+- The stored example model is rebuilt (format 3; its *verifies* link type has a description).
+
+### Added (for evaluations, not part of the tool)
+
+- `sample/build_synthetic.py`: a large synthetic model with planted facts, the same for the same seed.
+- `evals/`: questions, expected answers, scoring and the baseline of agents on 0.3.1 (`evals/results/BASELINE.md`).
+
 ## 0.3.1 — 2026-11-21
 
 Design: ADR-031 (approved by the owner 2026-11-21). Fixes two findings of the security review of 0.3.0.

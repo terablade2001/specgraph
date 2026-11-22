@@ -91,7 +91,8 @@ DIAGRAMS = [  # ref, name, folder ref, [(element ref, x, y)]
         ("a3", 380, 530), ("r2", 720, 460), ("c2", 720, 600)]),
 ]
 
-VERIFIES = {"label": "verifies", "lineStyle": "dashed", "color": "#6d28d9", "sourceArrow": "none",
+VERIFIES = {"label": "verifies", "description": "The test (source) proves that the target is met.",
+            "lineStyle": "dashed", "color": "#6d28d9", "sourceArrow": "none",
             "targetArrow": "open", "showLabel": True, "routing": "auto", "traceable": True,
             "sources": ["TEST-E2E", "TEST-INT"], "targets": None, "retired": False}
 RULE = {"description": "An approved requirement is verified by a test", "stereotype": "REQ",

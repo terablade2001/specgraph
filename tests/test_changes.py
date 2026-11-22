@@ -8,7 +8,7 @@ import urllib.request
 
 import pytest
 
-from specgraph import VERSION, audit as A, hooks, merge as MG, model as M, stamp as S, validate as V
+from specgraph import FORMAT_VERSION, VERSION, audit as A, hooks, merge as MG, model as M, stamp as S, validate as V
 from specgraph.cli import main
 from specgraph.server import start
 from specgraph.store import StoreError
@@ -39,7 +39,7 @@ def log_lines(store):
 
 def test_adr016_every_element_change_records_author_and_date(ada, bob, base):
     m = ada.load()
-    assert m["formatVersion"] == 2
+    assert m["formatVersion"] == FORMAT_VERSION
     first = m["elements"][base["r1"]]["modified"]
     assert first["by"] == "ada" and len(first["at"]) == 20 and first["at"].endswith("Z")
     other = m["elements"][base["r2"]]["modified"]
@@ -78,7 +78,7 @@ def test_adr016_version1_file_is_upgraded_on_first_change(ada, bob, base, keys):
     assert ada.load()["formatVersion"] == 1 and not V.errors(ada.load())   # still readable
     do(ada, "element.update", id=base["r2"], notes="after the upgrade")
     m = ada.load()
-    assert m["formatVersion"] == 2 and not V.errors(m)
+    assert m["formatVersion"] == FORMAT_VERSION and not V.errors(m)
     assert m["elements"][base["r1"]]["modified"] == {"at": st["at"], "by": "bob"}   # from the old stamp
     assert m["elements"][base["r2"]]["modified"]["by"] == "ada"
 

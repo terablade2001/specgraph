@@ -158,6 +158,8 @@ Versions: 0.4.0 after Phase 6, 0.4.1 after Phase 9, 0.4.2 after Phase 11, 0.4.3 
 - Tests: v2 file loads, first change writes v3 with empty descriptions; merge of a v2 and a v3 side;
   0.3-style config without description validates after upgrade; editor round trip (ui).
 - **Accept:** old models load and upgrade on first change; all tests pass.
+- **Done 2026-11-22:** format 3, upgrade in `ops.upgrade`/`add_descriptions`, merge normalises the three sides,
+  default descriptions, editor field and tooltips, example rebuilt, `VERSION` 0.4.0; 89 tests pass (incl. browser).
 
 ### Phase 4 — The index (`sg.py index`)
 

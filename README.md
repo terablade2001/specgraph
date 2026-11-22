@@ -11,7 +11,7 @@ through a command.
 - No third-party code is bundled. Test-only extras: `pytest`, and optionally `playwright`.
 - MIT licensed.
 
-**Status: version 0.3.0, an early release.** It works for the author's own use, and the file format
+**Status: version 0.4.0 (in progress), an early release.** It works for the author's own use, and the file format
 and commands may still change. It has been run on Windows (Git Bash) with Python 3.13 only; Linux,
 macOS and older Python versions are expected to work but have not been checked. The signing and
 integrity checks have not been reviewed by anyone independent: read ADR-003 in `docs/ADRS.md` for

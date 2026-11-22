@@ -467,6 +467,7 @@ def config_put(m, a, ctx):
         entry = dict(value)
         if kind != "coverageRules":
             entry.setdefault("retired", False)
+            entry.setdefault("description", "")
         if kind == "stereotypes":
             entry.setdefault("fields", {})
             entry.setdefault("statuses", None)
@@ -621,11 +622,23 @@ def _core(el):
     return {k: v for k, v in el.items() if k not in ("modified", "order")} if isinstance(el, dict) else el
 
 
+def add_descriptions(m):
+    """Format 2 -> 3 (ADR-033): every stereotype, status and link type gets a description ("" if none)."""
+    cfg = m.get("config")
+    for kind in V.DESCRIBED:
+        coll = cfg.get(kind) if isinstance(cfg, dict) else None
+        for entry in (coll or {}).values() if isinstance(coll, dict) else ():
+            if isinstance(entry, dict):
+                entry.setdefault("description", "")
+
+
 def upgrade(m, by, at):
-    """Format 1 -> 2 (ADR-016): elements without an author get `by` and `at`."""
+    """Bring a model to the current format. 1 -> 2 (ADR-016): elements without an author get `by` and
+    `at`. 2 -> 3 (ADR-033): types without a description get "". """
     for el in m.get("elements", {}).values():
         if isinstance(el, dict) and not el.get("modified"):
             el["modified"] = {"at": at, "by": by}
+    add_descriptions(m)
     m["formatVersion"] = FORMAT_VERSION
 
 

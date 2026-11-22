@@ -169,7 +169,9 @@ function align(axis, where) {
 const alignMenu = () => ['Align', ALIGN.map(([axis, label, wheres]) => [label, wheres.map(([w, l, key]) => [l + ' (' + key + ')', () => align(axis, w)])])];
 function chip(stKey) {
   const st = stOf(stKey);
-  return h('span', { class: 'chip', style: 'background:' + st.fill + ';border-color:' + st.border + ';color:' + st.border },
+  const attrs = { class: 'chip', style: 'background:' + st.fill + ';border-color:' + st.border + ';color:' + st.border };
+  if (st.description) attrs.title = st.description;   // ADR-033: the type's meaning in this project
+  return h('span', attrs,
     (st.icon ? st.icon + ' ' : '') + st.label);
 }
 
@@ -1223,11 +1225,11 @@ function usersDialog() {
 // ---- configuration dialog -------------------------------------------------
 const ARROWS = ['none', 'open', 'triangle', 'hollow-triangle', 'diamond', 'hollow-diamond'];
 const SCHEMA = {
-  stereotypes: [['label', 'Label', 'text'], ['fill', 'Fill colour', 'color'], ['border', 'Border colour', 'color'], ['icon', 'Symbol (one character)', 'text'],
+  stereotypes: [['label', 'Label', 'text'], ['description', 'Description: what this means in this project, for people and agents', 'textarea'], ['fill', 'Fill colour', 'color'], ['border', 'Border colour', 'color'], ['icon', 'Symbol (one character)', 'text'],
     ['shape', 'Shape', 'select', ['rect', 'rounded', 'hexagon', 'ellipse']], ['labelPrefix', 'Label prefix (REQ gives REQ-3d6e7863…)', 'text'],
     ['statuses', 'Allowed statuses (none ticked = all)', 'keys', 'statuses'], ['fields', 'Custom fields', 'fields'], ['retired', 'Retired: keep existing items, allow no new ones', 'bool']],
-  statuses: [['label', 'Label', 'text'], ['color', 'Colour', 'color'], ['symbol', 'Symbol', 'text'], ['order', 'Order', 'number'], ['retired', 'Retired: keep existing items, allow no new ones', 'bool']],
-  linkTypes: [['label', 'Label', 'text'], ['lineStyle', 'Line style', 'select', ['solid', 'dashed', 'dotted']], ['color', 'Colour', 'color'],
+  statuses: [['label', 'Label', 'text'], ['description', 'Description: what this means in this project, for people and agents', 'textarea'], ['color', 'Colour', 'color'], ['symbol', 'Symbol', 'text'], ['order', 'Order', 'number'], ['retired', 'Retired: keep existing items, allow no new ones', 'bool']],
+  linkTypes: [['label', 'Label', 'text'], ['description', 'Description: what this means in this project, for people and agents', 'textarea'], ['lineStyle', 'Line style', 'select', ['solid', 'dashed', 'dotted']], ['color', 'Colour', 'color'],
     ['sourceArrow', 'Arrow at the start', 'select', ARROWS], ['targetArrow', 'Arrow at the end', 'select', ARROWS], ['showLabel', 'Show the type name on the link', 'bool'],
     ['routing', 'Default routing', 'select', ['straight', 'auto', 'custom']], ['traceable', 'Counts for traceability', 'bool'],
     ['sources', 'May start at (none ticked = any)', 'keys', 'stereotypes'], ['targets', 'May end at (none ticked = any)', 'keys', 'stereotypes'],
@@ -1239,9 +1241,9 @@ const SCHEMA = {
 const KIND_NAMES = { stereotypes: 'Stereotypes', statuses: 'Statuses', linkTypes: 'Link types', coverageRules: 'Coverage rules' };
 function blank(kind) {
   const c = cfg();
-  return { stereotypes: { label: 'New type', fill: '#e0e7ff', border: '#3730a3', icon: '★', shape: 'rect', labelPrefix: '', statuses: null, fields: {}, retired: false },
-    statuses: { label: 'New status', color: '#0f766e', symbol: '•', retired: false },
-    linkTypes: { label: 'new link', lineStyle: 'solid', color: '#374151', sourceArrow: 'none', targetArrow: 'open', showLabel: true, routing: 'auto', traceable: true, sources: null, targets: null, retired: false },
+  return { stereotypes: { label: 'New type', description: '', fill: '#e0e7ff', border: '#3730a3', icon: '★', shape: 'rect', labelPrefix: '', statuses: null, fields: {}, retired: false },
+    statuses: { label: 'New status', description: '', color: '#0f766e', symbol: '•', retired: false },
+    linkTypes: { label: 'new link', description: '', lineStyle: 'solid', color: '#374151', sourceArrow: 'none', targetArrow: 'open', showLabel: true, routing: 'auto', traceable: true, sources: null, targets: null, retired: false },
     coverageRules: { description: '', stereotype: Object.keys(c.stereotypes)[0], statuses: null, linkType: Object.keys(c.linkTypes)[0], direction: 'incoming', other: null } }[kind];
 }
 function configDialog(kind, key) {
@@ -1250,13 +1252,14 @@ function configDialog(kind, key) {
   const val = JSON.parse(JSON.stringify(isNew ? blank(kind) : (coll[key] || null)));
   const dis = readOnly();
   const tabs = h('div', { class: 'btns' }, Object.keys(SCHEMA).map((k) => h('button', { class: k === kind ? 'primary' : '', onclick: () => configDialog(k) }, KIND_NAMES[k])));
-  const list = h('div', { class: 'list' }, Object.keys(coll).map((k) => h('div', { class: 'row' + (k === key ? ' sel' : ''), onclick: () => configDialog(kind, k) },
+  const list = h('div', { class: 'list' }, Object.keys(coll).map((k) => h('div', { class: 'row' + (k === key ? ' sel' : ''), title: coll[k].description || k, onclick: () => configDialog(kind, k) },
     h('span', { class: 't' }, coll[k].label || coll[k].description || k), coll[k].retired ? h('span', { class: 'lk mute' }, 'retired') : null)),
     h('div', { class: 'row mute' + (isNew ? ' sel' : ''), onclick: () => configDialog(kind, '+') }, '+ new'));
   const form = h('div', { class: 'form' });
   let fieldRows = null;
   if (val) SCHEMA[kind].forEach(([k, label, type, extra]) => {
-    if (type === 'text' || type === 'number') put(form, field(label, h('input', { type, value: val[k] == null ? '' : val[k], disabled: dis, oninput: (e) => { val[k] = type === 'number' ? Number(e.target.value) : e.target.value; } })));
+    if (type === 'textarea') put(form, field(label, h('textarea', { rows: 3, value: val[k] == null ? '' : val[k], disabled: dis, oninput: (e) => { val[k] = e.target.value; } })));
+    else if (type === 'text' || type === 'number') put(form, field(label, h('input', { type, value: val[k] == null ? '' : val[k], disabled: dis, oninput: (e) => { val[k] = type === 'number' ? Number(e.target.value) : e.target.value; } })));
     else if (type === 'color') put(form, field(label, h('input', { type: 'color', value: val[k] || '#888888', disabled: dis, style: 'width:60px;height:26px;padding:1px', oninput: (e) => { val[k] = e.target.value; } })));
     else if (type === 'bool') put(form, field(label, h('input', { type: 'checkbox', checked: k === 'traceable' ? val[k] !== false : !!val[k], disabled: dis, onchange: (e) => { val[k] = e.target.checked; } }), true));
     else if (type === 'select') put(form, field(label, selectIn(extra.map((x) => [x, x]), val[k], (v) => { val[k] = v; }, dis)));

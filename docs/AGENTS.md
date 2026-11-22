@@ -14,6 +14,9 @@ python sg.py history REQ-3d6e7863
 python sg.py validate
 ```
 
+What the types mean in this project: every stereotype, status and link type has a `description` in
+`config` (empty when nobody wrote one). Read them before interpreting the model.
+
 ## Change — always through `apply`, never by editing the file
 
 ```

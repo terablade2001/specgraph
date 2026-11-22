@@ -9,6 +9,8 @@ COLOR = re.compile(r"^#[0-9a-fA-F]{6}$")
 KEY = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,39}$")
 USERNAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._@-]{0,63}$")
 ROLES = ("admin", "user")
+DESCRIBED = ("stereotypes", "statuses", "linkTypes")   # kinds with a description (ADR-033)
+DESCRIPTION_MAX = 2000
 
 
 def traceable(link_type):
@@ -33,8 +35,9 @@ def _key_list(v, pool):
     return v is None or (isinstance(v, list) and all(k in pool for k in v))
 
 
-def check_config_value(kind, value, config):
-    """Return a list of problems with one configuration entry."""
+def check_config_value(kind, value, config, need_description=True):
+    """Return a list of problems with one configuration entry. `need_description`: format 3 and later
+    (ADR-033); an older file may lack it until its first change upgrades it."""
     errs = []
     if not isinstance(value, dict):
         return ["entry must be an object"]
@@ -46,6 +49,9 @@ def check_config_value(kind, value, config):
     if kind != "coverageRules":
         need(_is_str(value.get("label")) and value.get("label", "").strip(), "label is required")
         need(isinstance(value.get("retired", False), bool), "retired must be true/false")
+    if kind in DESCRIBED and ("description" in value or need_description):
+        need(_is_str(value.get("description"), DESCRIPTION_MAX),
+             "description must be text of at most %d characters" % DESCRIPTION_MAX)
     if kind == "stereotypes":
         need(COLOR.match(str(value.get("fill", ""))), "fill must be a colour like #aabbcc")
         need(COLOR.match(str(value.get("border", ""))), "border must be a colour like #aabbcc")
@@ -189,7 +195,7 @@ def validate(model):
         for key, value in cfg[kind].items():
             if not KEY.match(key):
                 err("config", "%s key %r is invalid" % (kind, key), key)
-            for msg in check_config_value(kind, value, cfg):
+            for msg in check_config_value(kind, value, cfg, model.get("formatVersion", 1) >= 3):
                 err("config", "%s %s: %s" % (kind, key, msg), key)
     if any(p["code"] == "config" for p in out):
         return out

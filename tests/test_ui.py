@@ -198,9 +198,12 @@ def test_editor_end_to_end(sample, page_for):
     pg.click(".modal >> text=Link types")
     pg.click(".modal >> text=+ new")
     pg.fill(".modal .form input[type=text]", "verifies")
+    pg.fill(".modal .form textarea", "The test proves the target.")          # REQ-CFG-09
     pg.click("#cfgSave")
     pg.wait_for_timeout(500)
     assert "verifies" in sample.load()["config"]["linkTypes"]
+    assert sample.load()["config"]["linkTypes"]["verifies"]["description"] == "The test proves the target."
+    assert pg.get_attribute(".modal .list .row.sel", "title") == "The test proves the target."
     pg.click(".modal >> text=Close")
     # REQ-TRC-04: matrix
     pg.click("#bar >> text=Matrix")

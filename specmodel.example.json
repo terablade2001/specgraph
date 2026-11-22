@@ -17,6 +17,7 @@
   "linkTypes": {
    "association": {
     "color": "#6b7280",
+    "description": "A plain connection between two elements, as on a diagram; not followed for traceability.",
     "label": "association",
     "lineStyle": "solid",
     "retired": false,
@@ -30,6 +31,7 @@
    },
    "depends_on": {
     "color": "#374151",
+    "description": "The source needs the target: if the target changes, the source may have to change.",
     "label": "depends on",
     "lineStyle": "solid",
     "retired": false,
@@ -43,6 +45,7 @@
    },
    "implements": {
     "color": "#1d4ed8",
+    "description": "The source realises the target, for example a decision that meets a requirement.",
     "label": "implements",
     "lineStyle": "dashed",
     "retired": false,
@@ -56,6 +59,7 @@
    },
    "mitigates": {
     "color": "#b91c1c",
+    "description": "The source reduces the target risk.",
     "label": "mitigates",
     "lineStyle": "solid",
     "retired": false,
@@ -69,6 +73,7 @@
    },
    "refines": {
     "color": "#15803d",
+    "description": "The source details the target: a more concrete statement of the same need.",
     "label": "refines",
     "lineStyle": "solid",
     "retired": false,
@@ -82,6 +87,7 @@
    },
    "relates_to": {
     "color": "#9ca3af",
+    "description": "A loose association for orientation only; not followed for traceability.",
     "label": "relates to",
     "lineStyle": "dotted",
     "retired": false,
@@ -95,6 +101,7 @@
    },
    "trace": {
     "color": "#6b7280",
+    "description": "General traceability from the source to the target, when no more specific type fits.",
     "label": "trace",
     "lineStyle": "dashed",
     "retired": false,
@@ -108,6 +115,7 @@
    },
    "verifies": {
     "color": "#6d28d9",
+    "description": "The test (source) proves that the target is met.",
     "label": "verifies",
     "lineStyle": "dashed",
     "retired": false,
@@ -126,6 +134,7 @@
   "statuses": {
    "approved": {
     "color": "#2563eb",
+    "description": "Agreed by the people who decide; work may start.",
     "label": "Approved",
     "order": 20,
     "retired": false,
@@ -133,6 +142,7 @@
    },
    "deprecated": {
     "color": "#78716c",
+    "description": "Was valid, no longer is; kept for the record.",
     "label": "Deprecated",
     "order": 60,
     "retired": false,
@@ -140,6 +150,7 @@
    },
    "implemented": {
     "color": "#15803d",
+    "description": "Delivered in the product.",
     "label": "Implemented",
     "order": 40,
     "retired": false,
@@ -147,6 +158,7 @@
    },
    "proposed": {
     "color": "#6b7280",
+    "description": "Written down, not yet agreed.",
     "label": "Proposed",
     "order": 10,
     "retired": false,
@@ -154,6 +166,7 @@
    },
    "rejected": {
     "color": "#dc2626",
+    "description": "Considered and turned down; kept for the record.",
     "label": "Rejected",
     "order": 50,
     "retired": false,
@@ -161,6 +174,7 @@
    },
    "validated": {
     "color": "#7c3aed",
+    "description": "Checked to be right, for example reviewed or tested, but not yet delivered.",
     "label": "Validated",
     "order": 30,
     "retired": false,
@@ -170,6 +184,7 @@
   "stereotypes": {
    "ADR": {
     "border": "#1d4ed8",
+    "description": "Architecture decision: a choice made, the options considered and why. Usually implements requirements.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -186,6 +201,7 @@
    },
    "ASSET": {
     "border": "#4b5563",
+    "description": "Something the system uses or produces (data, device, document) that requirements refer to.",
     "fields": {},
     "fill": "#f3f4f6",
     "icon": "▤",
@@ -197,6 +213,7 @@
    },
    "B-REQ": {
     "border": "#047857",
+    "description": "Business requirement: a goal of the organisation that pays for the product. User requirements refine it.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -222,6 +239,7 @@
    },
    "CONSTRAINT": {
     "border": "#b45309",
+    "description": "A limit the solution must respect (law, policy, budget, existing systems), not chosen by the project.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -238,6 +256,7 @@
    },
    "DOC": {
     "border": "#475569",
+    "description": "A document outside the model that elements refer to.",
     "fields": {},
     "fill": "#f1f5f9",
     "icon": "☰",
@@ -249,6 +268,7 @@
    },
    "FEAT": {
     "border": "#a16207",
+    "description": "Feature: a coherent piece of product functionality that delivers user requirements.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -265,6 +285,7 @@
    },
    "ISSUE": {
     "border": "#c2410c",
+    "description": "An open problem or question found during the work, to be resolved.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -281,6 +302,7 @@
    },
    "NAMESPACE": {
     "border": "#4338ca",
+    "description": "Grouping element that gives a name to a part of the system; carries no requirement itself.",
     "fields": {},
     "fill": "#e0e7ff",
     "icon": "◫",
@@ -292,6 +314,7 @@
    },
    "REQ": {
     "border": "#15803d",
+    "description": "System requirement: one behaviour or quality the product must have, specific enough to test.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -317,6 +340,7 @@
    },
    "RISK": {
     "border": "#b91c1c",
+    "description": "Something that may go wrong, with its severity and likelihood. Decisions mitigate it.",
     "fields": {
      "likelihood": {
       "label": "Likelihood",
@@ -347,6 +371,7 @@
    },
    "TEMPORAL-ADR": {
     "border": "#0e7490",
+    "description": "A decision meant to hold only for a while; its notes say when it is reviewed.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -363,6 +388,7 @@
    },
    "TEST-E2E": {
     "border": "#6d28d9",
+    "description": "End-to-end test: checks a requirement through the whole system as a user would.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -379,6 +405,7 @@
    },
    "TEST-INT": {
     "border": "#a21caf",
+    "description": "Integration test: checks a requirement across two or more components.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -395,6 +422,7 @@
    },
    "U-REQ": {
     "border": "#0f766e",
+    "description": "User requirement: what a user needs to do, in the user's words. Features refine it.",
     "fields": {
      "owner": {
       "label": "Owner",
@@ -421,586 +449,251 @@
   }
  },
  "diagrams": {
-  "8a9e581d-e970-4537-9c68-2852c2359336": {
-   "folder": "8b389dba-8b71-4c77-8cfd-27be1439c711",
-   "links": {},
-   "name": "Checkout: from business goal to tests",
-   "nodes": {
-    "0636432c-82c8-4962-a75e-8230d2eda533": {
-     "h": 96,
-     "w": 190,
-     "x": 40,
-     "y": 320
-    },
-    "4fc47f01-4589-4f08-bb79-9988009992f2": {
-     "h": 96,
-     "w": 190,
-     "x": 790,
-     "y": 320
-    },
-    "56ef05b7-71d3-4638-aa7d-0c61baa98740": {
-     "h": 96,
-     "w": 190,
-     "x": 790,
-     "y": 650
-    },
-    "607da908-0918-4132-a1dd-6185d97cfde8": {
-     "h": 96,
-     "w": 190,
-     "x": 290,
-     "y": 650
-    },
-    "6330c256-81fa-48ea-94ac-ea70579ed25c": {
-     "h": 96,
-     "w": 190,
-     "x": 40,
-     "y": 650
-    },
-    "73ccdbde-1ab1-44f2-8c54-07cc490b326c": {
-     "h": 96,
-     "w": 190,
-     "x": 40,
-     "y": 480
-    },
-    "743922ca-d0a2-4e07-9112-fd073db1322f": {
-     "h": 96,
-     "w": 190,
-     "x": 290,
-     "y": 170
-    },
-    "94cab476-75a6-4d82-b43e-b9ca77c35051": {
-     "h": 96,
-     "w": 190,
-     "x": 290,
-     "y": 320
-    },
-    "97cba967-00ea-4c4b-bc90-da90781706e8": {
-     "h": 96,
-     "w": 190,
-     "x": 290,
-     "y": 480
-    },
-    "c7e6927d-9124-4ec5-a917-c8b0e38909a2": {
-     "h": 96,
-     "w": 190,
-     "x": 540,
-     "y": 480
-    },
-    "d79c3762-01c7-4248-b659-a9c0482eab8a": {
-     "h": 96,
-     "w": 190,
-     "x": 540,
-     "y": 650
-    },
-    "dc8a6b7f-015d-4380-9629-a5d77f1535da": {
-     "h": 96,
-     "w": 190,
-     "x": 290,
-     "y": 20
-    }
-   }
-  },
-  "9aa5734e-0808-42ae-b962-efd88483cbd6": {
-   "folder": "94c68937-2f5c-4149-9ce6-c0b6bef10aa3",
-   "links": {},
-   "name": "Reminders and overdue loans",
-   "nodes": {
-    "25a32c3f-3171-4b54-951d-285b44fa46b2": {
-     "h": 96,
-     "w": 190,
-     "x": 415,
-     "y": 320
-    },
-    "2777f8c2-9251-4e47-9cba-77c4871b8549": {
-     "h": 96,
-     "w": 190,
-     "x": 790,
-     "y": 170
-    },
-    "29ae4e1f-80da-47fc-acce-16338426b04a": {
-     "h": 96,
-     "w": 190,
-     "x": 790,
-     "y": 480
-    },
-    "34248ef1-5fdc-42f4-820c-e15e0a1f1764": {
-     "h": 96,
-     "w": 190,
-     "x": 40,
-     "y": 650
-    },
-    "36d07f84-1ce5-4102-b9e1-ed465688777a": {
-     "h": 96,
-     "w": 190,
-     "x": 415,
-     "y": 170
-    },
-    "40a4e7a6-4770-4248-b82f-1226cc86cc0f": {
-     "h": 96,
-     "w": 190,
-     "x": 540,
-     "y": 650
-    },
-    "42bbb895-776b-4dd5-a5a0-72eb0b3e122c": {
-     "h": 96,
-     "w": 190,
-     "x": 290,
-     "y": 480
-    },
-    "5f826dff-a56c-4448-9a11-1a262985669f": {
-     "h": 96,
-     "w": 190,
-     "x": 600,
-     "y": 20
-    },
-    "6a840192-a37e-4c13-ba5f-627c83a0653c": {
-     "h": 96,
-     "w": 190,
-     "x": 540,
-     "y": 480
-    },
-    "7dd6530e-8a52-481d-9df1-f9cacc4d8c55": {
-     "h": 96,
-     "w": 190,
-     "x": 1040,
-     "y": 480
-    },
-    "9cdb7142-3c40-4875-802d-cdb361ed86ec": {
-     "h": 96,
-     "w": 190,
-     "x": 290,
-     "y": 650
-    },
-    "9d32fcca-5734-4c04-b56f-6b0438790815": {
-     "h": 96,
-     "w": 190,
-     "x": 40,
-     "y": 480
-    },
-    "d13f147f-7d29-462c-b37b-ab8a17942809": {
-     "h": 96,
-     "w": 190,
-     "x": 790,
-     "y": 320
-    }
-   }
-  },
-  "e0cd2e70-5637-4163-be47-ec32d9ffcbc1": {
-   "folder": "900200d4-b8a4-4018-8dfc-a25208b04971",
+  "6c342452-2895-47d7-80c0-1c503bbedfff": {
+   "folder": "45008719-774e-4272-8c59-bef4c8109c5f",
    "links": {},
    "name": "Decisions, what they implement and the risks",
    "nodes": {
-    "34248ef1-5fdc-42f4-820c-e15e0a1f1764": {
-     "h": 96,
-     "w": 190,
-     "x": 40,
-     "y": 20
-    },
-    "40a4e7a6-4770-4248-b82f-1226cc86cc0f": {
-     "h": 96,
-     "w": 190,
-     "x": 380,
-     "y": 190
-    },
-    "42bbb895-776b-4dd5-a5a0-72eb0b3e122c": {
+    "0bdb84cd-7a73-444a-8b6b-e79fa6d50d2d": {
      "h": 96,
      "w": 190,
      "x": 720,
      "y": 20
     },
-    "56ef05b7-71d3-4638-aa7d-0c61baa98740": {
+    "0d2f17e8-6e50-47d8-8b7d-e938de67fd98": {
      "h": 96,
      "w": 190,
-     "x": 40,
+     "x": 380,
      "y": 360
     },
-    "607da908-0918-4132-a1dd-6185d97cfde8": {
-     "h": 96,
-     "w": 190,
-     "x": 380,
-     "y": 530
-    },
-    "6a840192-a37e-4c13-ba5f-627c83a0653c": {
-     "h": 96,
-     "w": 190,
-     "x": 720,
-     "y": 150
-    },
-    "951faed6-92f4-44ac-95db-d76dc95a2a45": {
+    "0f150495-6d5f-484e-88b5-68360134220b": {
      "h": 96,
      "w": 190,
      "x": 720,
      "y": 600
     },
-    "97cba967-00ea-4c4b-bc90-da90781706e8": {
+    "193003c7-dd6b-4079-9442-de5d51e8b2ce": {
      "h": 96,
      "w": 190,
      "x": 720,
-     "y": 460
+     "y": 150
     },
-    "9cdb7142-3c40-4875-802d-cdb361ed86ec": {
+    "1af0007d-e555-4366-b022-b6d2cf4e7929": {
      "h": 96,
      "w": 190,
      "x": 380,
      "y": 20
     },
-    "c7e6927d-9124-4ec5-a917-c8b0e38909a2": {
+    "3a617a2b-f40e-46da-9d90-38ebf57271d0": {
      "h": 96,
      "w": 190,
      "x": 720,
      "y": 330
     },
-    "d79c3762-01c7-4248-b659-a9c0482eab8a": {
+    "4197c3c3-6ea6-4068-91c9-f223cbac1faf": {
      "h": 96,
      "w": 190,
      "x": 380,
+     "y": 190
+    },
+    "52ed8f32-d2cc-4cbc-9791-ee4b302c11cd": {
+     "h": 96,
+     "w": 190,
+     "x": 720,
+     "y": 460
+    },
+    "83edd5ab-3c67-41b4-b3fd-2f58585aa09d": {
+     "h": 96,
+     "w": 190,
+     "x": 380,
+     "y": 530
+    },
+    "a9e3ef38-0b2d-46da-b43e-128218759674": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
      "y": 360
+    },
+    "b5ea51de-fa74-4d03-b79c-92e73f39c64d": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 20
+    }
+   }
+  },
+  "aad1588d-3cd3-465e-93c8-f97a19b78540": {
+   "folder": "20bcde5d-6663-4a70-a334-50c07b32e6ef",
+   "links": {},
+   "name": "Reminders and overdue loans",
+   "nodes": {
+    "04d929a4-6f29-4ca0-ae40-9e61c0e005fe": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 320
+    },
+    "0bdb84cd-7a73-444a-8b6b-e79fa6d50d2d": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 480
+    },
+    "193003c7-dd6b-4079-9442-de5d51e8b2ce": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 480
+    },
+    "1af0007d-e555-4366-b022-b6d2cf4e7929": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 650
+    },
+    "1e14b8a1-8a79-4033-b71a-03467159392d": {
+     "h": 96,
+     "w": 190,
+     "x": 415,
+     "y": 320
+    },
+    "1fbc4f25-301c-43b2-b4b6-812cf608eb41": {
+     "h": 96,
+     "w": 190,
+     "x": 415,
+     "y": 170
+    },
+    "374df369-b705-45e0-a6b8-6a0545e4187f": {
+     "h": 96,
+     "w": 190,
+     "x": 600,
+     "y": 20
+    },
+    "4197c3c3-6ea6-4068-91c9-f223cbac1faf": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 650
+    },
+    "4789ecb0-072f-4aa9-a47d-10126b44be9d": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 170
+    },
+    "782472be-14c4-4426-b912-6a2b83d30d8e": {
+     "h": 96,
+     "w": 190,
+     "x": 1040,
+     "y": 480
+    },
+    "983e3f8a-bf5f-4e58-9a49-7ee2c68e1740": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 480
+    },
+    "b5ea51de-fa74-4d03-b79c-92e73f39c64d": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 650
+    },
+    "f4b7a293-7fbd-4172-9b6c-ae1d5a6934b1": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 480
+    }
+   }
+  },
+  "f1d46aa4-9655-4c06-a731-264609a3bf49": {
+   "folder": "4a5acc67-5875-4aa5-96ed-61c3dc3760bb",
+   "links": {},
+   "name": "Checkout: from business goal to tests",
+   "nodes": {
+    "0aa4fdcd-0ff8-417b-9efd-d97a1f6b11a0": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 320
+    },
+    "0d2f17e8-6e50-47d8-8b7d-e938de67fd98": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 650
+    },
+    "230ba74e-ea32-48bd-98ee-c3f098a827bc": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 320
+    },
+    "268f87d3-870d-4470-bd73-998a681c9a78": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 480
+    },
+    "3a617a2b-f40e-46da-9d90-38ebf57271d0": {
+     "h": 96,
+     "w": 190,
+     "x": 540,
+     "y": 480
+    },
+    "52ed8f32-d2cc-4cbc-9791-ee4b302c11cd": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 480
+    },
+    "57172d3e-5c19-49f1-8d08-e460871899e4": {
+     "h": 96,
+     "w": 190,
+     "x": 40,
+     "y": 650
+    },
+    "7f20d6d8-1dbd-4626-9e93-9f88963bbf0e": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 20
+    },
+    "83edd5ab-3c67-41b4-b3fd-2f58585aa09d": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 650
+    },
+    "a6109e95-d3ea-4736-a6c5-4f0ce6009e38": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 170
+    },
+    "a9e3ef38-0b2d-46da-b43e-128218759674": {
+     "h": 96,
+     "w": 190,
+     "x": 790,
+     "y": 650
+    },
+    "aa236bb6-b641-4dca-98a6-11cab4df230e": {
+     "h": 96,
+     "w": 190,
+     "x": 290,
+     "y": 320
     }
    }
   }
  },
  "elements": {
-  "0636432c-82c8-4962-a75e-8230d2eda533": {
+  "04d929a4-6f29-4ca0-ae40-9e61c0e005fe": {
    "fields": {},
-   "folder": "4e87a8a1-ca03-4369-9bb4-9c6241aacf67",
-   "label": "INT-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "implemented",
-   "stereotype": "TEST-INT",
-   "topic": "Loan API answers within 2 seconds under load"
-  },
-  "25a32c3f-3171-4b54-951d-285b44fa46b2": {
-   "fields": {
-    "owner": "Backend team"
-   },
-   "folder": "94c68937-2f5c-4149-9ce6-c0b6bef10aa3",
-   "label": "FEAT-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "approved",
-   "stereotype": "FEAT",
-   "topic": "Due-date reminders"
-  },
-  "2777f8c2-9251-4e47-9cba-77c4871b8549": {
-   "fields": {
-    "priority": "Could"
-   },
-   "folder": "6200bf05-a2e7-41e1-aecf-59e979a68be1",
-   "label": "U-REQ-003",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "proposed",
-   "stereotype": "U-REQ",
-   "topic": "As a librarian I see overdue loans at a glance"
-  },
-  "29ae4e1f-80da-47fc-acce-16338426b04a": {
-   "fields": {
-    "priority": "Should"
-   },
-   "folder": "688bbb53-2f7e-4004-b1d6-8f348b26a93b",
-   "label": "REQ-006",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "proposed",
-   "stereotype": "REQ",
-   "topic": "List overdue loans sorted by days late"
-  },
-  "34248ef1-5fdc-42f4-820c-e15e0a1f1764": {
-   "fields": {
-    "likelihood": "Medium",
-    "severity": "Medium"
-   },
-   "folder": "900200d4-b8a4-4018-8dfc-a25208b04971",
-   "label": "RISK-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "proposed",
-   "stereotype": "RISK",
-   "topic": "Reminders land in the spam folder"
-  },
-  "36d07f84-1ce5-4102-b9e1-ed465688777a": {
-   "fields": {
-    "priority": "Should"
-   },
-   "folder": "6200bf05-a2e7-41e1-aecf-59e979a68be1",
-   "label": "U-REQ-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "validated",
-   "stereotype": "U-REQ",
-   "topic": "As a member I am reminded before a loan is due"
-  },
-  "40a4e7a6-4770-4248-b82f-1226cc86cc0f": {
-   "fields": {},
-   "folder": "900200d4-b8a4-4018-8dfc-a25208b04971",
-   "label": "T-ADR-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "Temporary. Review when procurement closes the SMS contract.",
-   "status": "approved",
-   "stereotype": "TEMPORAL-ADR",
-   "topic": "E-mail only until the SMS contract is signed"
-  },
-  "42bbb895-776b-4dd5-a5a0-72eb0b3e122c": {
-   "fields": {
-    "priority": "Must"
-   },
-   "folder": "94c68937-2f5c-4149-9ce6-c0b6bef10aa3",
-   "label": "REQ-004",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "approved",
-   "stereotype": "REQ",
-   "topic": "Send a reminder 3 days before the due date"
-  },
-  "4fc47f01-4589-4f08-bb79-9988009992f2": {
-   "fields": {},
-   "folder": "4e87a8a1-ca03-4369-9bb4-9c6241aacf67",
-   "label": "E2E-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "implemented",
-   "stereotype": "TEST-E2E",
-   "topic": "Borrow offline, reconnect, the loan appears"
-  },
-  "56ef05b7-71d3-4638-aa7d-0c61baa98740": {
-   "fields": {
-    "likelihood": "Medium",
-    "severity": "High"
-   },
-   "folder": "900200d4-b8a4-4018-8dfc-a25208b04971",
-   "label": "RISK-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "approved",
-   "stereotype": "RISK",
-   "topic": "Two phones borrow the same copy while offline"
-  },
-  "5f826dff-a56c-4448-9a11-1a262985669f": {
-   "fields": {
-    "priority": "Should"
-   },
-   "folder": "904be0e4-2b77-42f4-b228-559a60eaca36",
-   "label": "B-REQ-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "approved",
-   "stereotype": "B-REQ",
-   "topic": "Fewer than 5% of loans are returned late"
-  },
-  "607da908-0918-4132-a1dd-6185d97cfde8": {
-   "fields": {},
-   "folder": "900200d4-b8a4-4018-8dfc-a25208b04971",
-   "label": "ADR-003",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "implemented",
-   "stereotype": "ADR",
-   "topic": "Store loans in PostgreSQL hosted in Frankfurt"
-  },
-  "6330c256-81fa-48ea-94ac-ea70579ed25c": {
-   "fields": {
-    "owner": "Mobile team"
-   },
-   "folder": "8b389dba-8b71-4c77-8cfd-27be1439c711",
-   "label": "ISS-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "proposed",
-   "stereotype": "ISSUE",
-   "topic": "Camera fails on barcodes under glossy covers"
-  },
-  "6a840192-a37e-4c13-ba5f-627c83a0653c": {
-   "fields": {
-    "priority": "Could"
-   },
-   "folder": "94c68937-2f5c-4149-9ce6-c0b6bef10aa3",
-   "label": "REQ-005",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "E-mail, SMS or push.",
-   "status": "proposed",
-   "stereotype": "REQ",
-   "topic": "The member chooses the reminder channel"
-  },
-  "73ccdbde-1ab1-44f2-8c54-07cc490b326c": {
-   "fields": {
-    "priority": "Must"
-   },
-   "folder": "8b389dba-8b71-4c77-8cfd-27be1439c711",
-   "label": "REQ-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "implemented",
-   "stereotype": "REQ",
-   "topic": "Scan the book barcode with the phone camera"
-  },
-  "743922ca-d0a2-4e07-9112-fd073db1322f": {
-   "fields": {
-    "priority": "Must"
-   },
-   "folder": "6200bf05-a2e7-41e1-aecf-59e979a68be1",
-   "label": "U-REQ-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "No queue at the desk, also when the desk is closed.",
-   "status": "approved",
-   "stereotype": "U-REQ",
-   "topic": "As a member I borrow a book with my phone"
-  },
-  "7dd6530e-8a52-481d-9df1-f9cacc4d8c55": {
-   "fields": {
-    "owner": "Data protection officer"
-   },
-   "folder": "38221a8d-c82c-4257-8e1d-f0bd447dbd1d",
-   "label": "CON-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "Privacy rule. Do not change without the data protection officer.",
-   "status": "approved",
-   "stereotype": "CONSTRAINT",
-   "topic": "Loan history is deleted 30 days after return"
-  },
-  "94cab476-75a6-4d82-b43e-b9ca77c35051": {
-   "fields": {
-    "owner": "Mobile team"
-   },
-   "folder": "8b389dba-8b71-4c77-8cfd-27be1439c711",
-   "label": "FEAT-001",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "implemented",
-   "stereotype": "FEAT",
-   "topic": "Self-service checkout"
-  },
-  "951faed6-92f4-44ac-95db-d76dc95a2a45": {
-   "fields": {
-    "owner": "Data protection officer"
-   },
-   "folder": "38221a8d-c82c-4257-8e1d-f0bd447dbd1d",
-   "label": "CON-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "approved",
-   "stereotype": "CONSTRAINT",
-   "topic": "Personal data stays in the EU"
-  },
-  "97cba967-00ea-4c4b-bc90-da90781706e8": {
-   "fields": {
-    "priority": "Must"
-   },
-   "folder": "8b389dba-8b71-4c77-8cfd-27be1439c711",
-   "label": "REQ-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "Measured from the scan to the confirmation on the screen.",
-   "status": "validated",
-   "stereotype": "REQ",
-   "topic": "A loan is recorded within 2 seconds"
-  },
-  "9cdb7142-3c40-4875-802d-cdb361ed86ec": {
-   "fields": {},
-   "folder": "900200d4-b8a4-4018-8dfc-a25208b04971",
-   "label": "ADR-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "approved",
-   "stereotype": "ADR",
-   "topic": "Send all reminders through one notification service"
-  },
-  "9d32fcca-5734-4c04-b56f-6b0438790815": {
-   "fields": {},
-   "folder": "4e87a8a1-ca03-4369-9bb4-9c6241aacf67",
-   "label": "E2E-002",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "",
-   "status": "approved",
-   "stereotype": "TEST-E2E",
-   "topic": "Reminder arrives 3 days before the due date"
-  },
-  "c7e6927d-9124-4ec5-a917-c8b0e38909a2": {
-   "fields": {
-    "priority": "Should"
-   },
-   "folder": "8b389dba-8b71-4c77-8cfd-27be1439c711",
-   "label": "REQ-003",
-   "modified": {
-    "at": "2026-11-21T10:30:34Z",
-    "by": "demo"
-   },
-   "notes": "The basement shelves have no reception.",
-   "status": "approved",
-   "stereotype": "REQ",
-   "topic": "Checkout works without network and syncs later"
-  },
-  "d13f147f-7d29-462c-b37b-ab8a17942809": {
-   "fields": {},
-   "folder": "688bbb53-2f7e-4004-b1d6-8f348b26a93b",
+   "folder": "4cebb2a9-d101-4e99-832b-8972698b218b",
    "label": "FEAT-003",
    "modified": {
-    "at": "2026-11-21T10:30:34Z",
+    "at": "2026-11-22T11:30:41Z",
     "by": "demo"
    },
    "notes": "",
@@ -1008,14 +701,42 @@
    "stereotype": "FEAT",
    "topic": "Overdue dashboard"
   },
-  "d79c3762-01c7-4248-b659-a9c0482eab8a": {
+  "0aa4fdcd-0ff8-417b-9efd-d97a1f6b11a0": {
+   "fields": {},
+   "folder": "aae203f1-32db-4cba-a84a-1c2929b04aa8",
+   "label": "E2E-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "TEST-E2E",
+   "topic": "Borrow offline, reconnect, the loan appears"
+  },
+  "0bdb84cd-7a73-444a-8b6b-e79fa6d50d2d": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "20bcde5d-6663-4a70-a334-50c07b32e6ef",
+   "label": "REQ-004",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "REQ",
+   "topic": "Send a reminder 3 days before the due date"
+  },
+  "0d2f17e8-6e50-47d8-8b7d-e938de67fd98": {
    "fields": {
     "owner": "Mobile team"
    },
-   "folder": "900200d4-b8a4-4018-8dfc-a25208b04971",
+   "folder": "45008719-774e-4272-8c59-bef4c8109c5f",
    "label": "ADR-001",
    "modified": {
-    "at": "2026-11-21T10:30:34Z",
+    "at": "2026-11-22T11:30:41Z",
     "by": "demo"
    },
    "notes": "Loans made offline are queued and sent when the phone is online again. The server decides which loan wins.",
@@ -1023,252 +744,559 @@
    "stereotype": "ADR",
    "topic": "Keep an offline queue of loans on the phone"
   },
-  "dc8a6b7f-015d-4380-9629-a5d77f1535da": {
+  "0f150495-6d5f-484e-88b5-68360134220b": {
+   "fields": {
+    "owner": "Data protection officer"
+   },
+   "folder": "48f167e2-84d6-4338-b7fe-62507bae04cc",
+   "label": "CON-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "CONSTRAINT",
+   "topic": "Personal data stays in the EU"
+  },
+  "193003c7-dd6b-4079-9442-de5d51e8b2ce": {
+   "fields": {
+    "priority": "Could"
+   },
+   "folder": "20bcde5d-6663-4a70-a334-50c07b32e6ef",
+   "label": "REQ-005",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "E-mail, SMS or push.",
+   "status": "proposed",
+   "stereotype": "REQ",
+   "topic": "The member chooses the reminder channel"
+  },
+  "1af0007d-e555-4366-b022-b6d2cf4e7929": {
+   "fields": {},
+   "folder": "45008719-774e-4272-8c59-bef4c8109c5f",
+   "label": "ADR-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "ADR",
+   "topic": "Send all reminders through one notification service"
+  },
+  "1e14b8a1-8a79-4033-b71a-03467159392d": {
+   "fields": {
+    "owner": "Backend team"
+   },
+   "folder": "20bcde5d-6663-4a70-a334-50c07b32e6ef",
+   "label": "FEAT-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "FEAT",
+   "topic": "Due-date reminders"
+  },
+  "1fbc4f25-301c-43b2-b4b6-812cf608eb41": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "d29dbd50-3b4a-496b-8659-15f2cb0ceb3c",
+   "label": "U-REQ-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "validated",
+   "stereotype": "U-REQ",
+   "topic": "As a member I am reminded before a loan is due"
+  },
+  "230ba74e-ea32-48bd-98ee-c3f098a827bc": {
+   "fields": {},
+   "folder": "aae203f1-32db-4cba-a84a-1c2929b04aa8",
+   "label": "INT-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "TEST-INT",
+   "topic": "Loan API answers within 2 seconds under load"
+  },
+  "268f87d3-870d-4470-bd73-998a681c9a78": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "4a5acc67-5875-4aa5-96ed-61c3dc3760bb",
+   "label": "REQ-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "REQ",
+   "topic": "Scan the book barcode with the phone camera"
+  },
+  "374df369-b705-45e0-a6b8-6a0545e4187f": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "04a28d3a-3e1a-4b16-8274-9317e0cbe021",
+   "label": "B-REQ-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "B-REQ",
+   "topic": "Fewer than 5% of loans are returned late"
+  },
+  "3a617a2b-f40e-46da-9d90-38ebf57271d0": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "4a5acc67-5875-4aa5-96ed-61c3dc3760bb",
+   "label": "REQ-003",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "The basement shelves have no reception.",
+   "status": "approved",
+   "stereotype": "REQ",
+   "topic": "Checkout works without network and syncs later"
+  },
+  "4197c3c3-6ea6-4068-91c9-f223cbac1faf": {
+   "fields": {},
+   "folder": "45008719-774e-4272-8c59-bef4c8109c5f",
+   "label": "T-ADR-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "Temporary. Review when procurement closes the SMS contract.",
+   "status": "approved",
+   "stereotype": "TEMPORAL-ADR",
+   "topic": "E-mail only until the SMS contract is signed"
+  },
+  "4789ecb0-072f-4aa9-a47d-10126b44be9d": {
+   "fields": {
+    "priority": "Could"
+   },
+   "folder": "d29dbd50-3b4a-496b-8659-15f2cb0ceb3c",
+   "label": "U-REQ-003",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "U-REQ",
+   "topic": "As a librarian I see overdue loans at a glance"
+  },
+  "52ed8f32-d2cc-4cbc-9791-ee4b302c11cd": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "4a5acc67-5875-4aa5-96ed-61c3dc3760bb",
+   "label": "REQ-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "Measured from the scan to the confirmation on the screen.",
+   "status": "validated",
+   "stereotype": "REQ",
+   "topic": "A loan is recorded within 2 seconds"
+  },
+  "57172d3e-5c19-49f1-8d08-e460871899e4": {
+   "fields": {
+    "owner": "Mobile team"
+   },
+   "folder": "4a5acc67-5875-4aa5-96ed-61c3dc3760bb",
+   "label": "ISS-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "ISSUE",
+   "topic": "Camera fails on barcodes under glossy covers"
+  },
+  "782472be-14c4-4426-b912-6a2b83d30d8e": {
+   "fields": {
+    "owner": "Data protection officer"
+   },
+   "folder": "48f167e2-84d6-4338-b7fe-62507bae04cc",
+   "label": "CON-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "Privacy rule. Do not change without the data protection officer.",
+   "status": "approved",
+   "stereotype": "CONSTRAINT",
+   "topic": "Loan history is deleted 30 days after return"
+  },
+  "7f20d6d8-1dbd-4626-9e93-9f88963bbf0e": {
    "fields": {
     "owner": "Library board",
     "priority": "Must"
    },
-   "folder": "904be0e4-2b77-42f4-b228-559a60eaca36",
+   "folder": "04a28d3a-3e1a-4b16-8274-9317e0cbe021",
    "label": "B-REQ-001",
    "modified": {
-    "at": "2026-11-21T10:30:34Z",
+    "at": "2026-11-22T11:30:41Z",
     "by": "demo"
    },
    "notes": "Today a librarian spends about 40% of a shift scanning books in and out.",
    "status": "approved",
    "stereotype": "B-REQ",
    "topic": "Halve the desk time spent on loans"
+  },
+  "83edd5ab-3c67-41b4-b3fd-2f58585aa09d": {
+   "fields": {},
+   "folder": "45008719-774e-4272-8c59-bef4c8109c5f",
+   "label": "ADR-003",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "ADR",
+   "topic": "Store loans in PostgreSQL hosted in Frankfurt"
+  },
+  "983e3f8a-bf5f-4e58-9a49-7ee2c68e1740": {
+   "fields": {
+    "priority": "Should"
+   },
+   "folder": "4cebb2a9-d101-4e99-832b-8972698b218b",
+   "label": "REQ-006",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "REQ",
+   "topic": "List overdue loans sorted by days late"
+  },
+  "a6109e95-d3ea-4736-a6c5-4f0ce6009e38": {
+   "fields": {
+    "priority": "Must"
+   },
+   "folder": "d29dbd50-3b4a-496b-8659-15f2cb0ceb3c",
+   "label": "U-REQ-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "No queue at the desk, also when the desk is closed.",
+   "status": "approved",
+   "stereotype": "U-REQ",
+   "topic": "As a member I borrow a book with my phone"
+  },
+  "a9e3ef38-0b2d-46da-b43e-128218759674": {
+   "fields": {
+    "likelihood": "Medium",
+    "severity": "High"
+   },
+   "folder": "45008719-774e-4272-8c59-bef4c8109c5f",
+   "label": "RISK-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "RISK",
+   "topic": "Two phones borrow the same copy while offline"
+  },
+  "aa236bb6-b641-4dca-98a6-11cab4df230e": {
+   "fields": {
+    "owner": "Mobile team"
+   },
+   "folder": "4a5acc67-5875-4aa5-96ed-61c3dc3760bb",
+   "label": "FEAT-001",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "implemented",
+   "stereotype": "FEAT",
+   "topic": "Self-service checkout"
+  },
+  "b5ea51de-fa74-4d03-b79c-92e73f39c64d": {
+   "fields": {
+    "likelihood": "Medium",
+    "severity": "Medium"
+   },
+   "folder": "45008719-774e-4272-8c59-bef4c8109c5f",
+   "label": "RISK-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "proposed",
+   "stereotype": "RISK",
+   "topic": "Reminders land in the spam folder"
+  },
+  "f4b7a293-7fbd-4172-9b6c-ae1d5a6934b1": {
+   "fields": {},
+   "folder": "aae203f1-32db-4cba-a84a-1c2929b04aa8",
+   "label": "E2E-002",
+   "modified": {
+    "at": "2026-11-22T11:30:41Z",
+    "by": "demo"
+   },
+   "notes": "",
+   "status": "approved",
+   "stereotype": "TEST-E2E",
+   "topic": "Reminder arrives 3 days before the due date"
   }
  },
  "folders": {
-  "38221a8d-c82c-4257-8e1d-f0bd447dbd1d": {
+  "04a28d3a-3e1a-4b16-8274-9317e0cbe021": {
+   "lock": null,
+   "name": "Business",
+   "parent": null
+  },
+  "20bcde5d-6663-4a70-a334-50c07b32e6ef": {
+   "lock": null,
+   "name": "Reminders",
+   "parent": "8b3d2117-e09d-424c-ac9e-e7391342d714"
+  },
+  "45008719-774e-4272-8c59-bef4c8109c5f": {
+   "lock": null,
+   "name": "Architecture",
+   "parent": null
+  },
+  "48f167e2-84d6-4338-b7fe-62507bae04cc": {
    "lock": {
-    "at": "2026-11-21T10:30:34Z",
+    "at": "2026-11-22T11:30:41Z",
     "owner": "demo",
     "reason": "Agreed with the data protection officer; ask before changing"
    },
    "name": "Compliance (locked)",
    "parent": null
   },
-  "4e87a8a1-ca03-4369-9bb4-9c6241aacf67": {
-   "lock": null,
-   "name": "Verification",
-   "parent": null
-  },
-  "6200bf05-a2e7-41e1-aecf-59e979a68be1": {
-   "lock": null,
-   "name": "Users",
-   "parent": null
-  },
-  "688bbb53-2f7e-4004-b1d6-8f348b26a93b": {
-   "lock": null,
-   "name": "Overdue",
-   "parent": "912797d1-739f-40b4-a03a-12203e3e0e60"
-  },
-  "8b389dba-8b71-4c77-8cfd-27be1439c711": {
+  "4a5acc67-5875-4aa5-96ed-61c3dc3760bb": {
    "lock": null,
    "name": "Checkout",
-   "parent": "912797d1-739f-40b4-a03a-12203e3e0e60"
+   "parent": "8b3d2117-e09d-424c-ac9e-e7391342d714"
   },
-  "900200d4-b8a4-4018-8dfc-a25208b04971": {
+  "4cebb2a9-d101-4e99-832b-8972698b218b": {
    "lock": null,
-   "name": "Architecture",
-   "parent": null
+   "name": "Overdue",
+   "parent": "8b3d2117-e09d-424c-ac9e-e7391342d714"
   },
-  "904be0e4-2b77-42f4-b228-559a60eaca36": {
-   "lock": null,
-   "name": "Business",
-   "parent": null
-  },
-  "912797d1-739f-40b4-a03a-12203e3e0e60": {
+  "8b3d2117-e09d-424c-ac9e-e7391342d714": {
    "lock": null,
    "name": "Product",
    "parent": null
   },
-  "94c68937-2f5c-4149-9ce6-c0b6bef10aa3": {
+  "aae203f1-32db-4cba-a84a-1c2929b04aa8": {
    "lock": null,
-   "name": "Reminders",
-   "parent": "912797d1-739f-40b4-a03a-12203e3e0e60"
+   "name": "Verification",
+   "parent": null
+  },
+  "d29dbd50-3b4a-496b-8659-15f2cb0ceb3c": {
+   "lock": null,
+   "name": "Users",
+   "parent": null
   }
  },
  "format": "specgraph-model",
- "formatVersion": 2,
+ "formatVersion": 3,
  "links": {
-  "03a1c59d-e5e8-4400-b9ae-072c76f88f62": {
+  "0572826f-cb8a-4f1c-a3ad-f78de0681c4a": {
    "label": "",
-   "source": "94cab476-75a6-4d82-b43e-b9ca77c35051",
-   "target": "743922ca-d0a2-4e07-9112-fd073db1322f",
-   "type": "refines"
-  },
-  "1768b27f-c482-4b8c-b943-77cac8643dd5": {
-   "label": "",
-   "source": "9cdb7142-3c40-4875-802d-cdb361ed86ec",
-   "target": "42bbb895-776b-4dd5-a5a0-72eb0b3e122c",
+   "source": "83edd5ab-3c67-41b4-b3fd-2f58585aa09d",
+   "target": "52ed8f32-d2cc-4cbc-9791-ee4b302c11cd",
    "type": "implements"
   },
-  "1a4f284c-d731-42fb-bb1d-fb0b65d1d197": {
+  "12652d2e-3251-436b-867d-6bd11319308a": {
    "label": "",
-   "source": "9cdb7142-3c40-4875-802d-cdb361ed86ec",
-   "target": "34248ef1-5fdc-42f4-820c-e15e0a1f1764",
+   "source": "1af0007d-e555-4366-b022-b6d2cf4e7929",
+   "target": "193003c7-dd6b-4079-9442-de5d51e8b2ce",
+   "type": "implements"
+  },
+  "1ed5117f-9bb5-4e7d-a813-6b59ede6de54": {
+   "label": "",
+   "source": "83edd5ab-3c67-41b4-b3fd-2f58585aa09d",
+   "target": "0f150495-6d5f-484e-88b5-68360134220b",
+   "type": "implements"
+  },
+  "36d3e324-dd22-4a44-ac95-c4711550c7b7": {
+   "label": "",
+   "source": "983e3f8a-bf5f-4e58-9a49-7ee2c68e1740",
+   "target": "04d929a4-6f29-4ca0-ae40-9e61c0e005fe",
+   "type": "refines"
+  },
+  "4a98b2c0-55fb-4ace-885f-15d27472f7b0": {
+   "label": "",
+   "source": "268f87d3-870d-4470-bd73-998a681c9a78",
+   "target": "aa236bb6-b641-4dca-98a6-11cab4df230e",
+   "type": "refines"
+  },
+  "4d0bf93a-847e-41fd-9683-28b2e1dc59db": {
+   "label": "",
+   "source": "193003c7-dd6b-4079-9442-de5d51e8b2ce",
+   "target": "1e14b8a1-8a79-4033-b71a-03467159392d",
+   "type": "refines"
+  },
+  "4ddde072-d673-4612-bf0b-074151e2b972": {
+   "label": "",
+   "source": "1fbc4f25-301c-43b2-b4b6-812cf608eb41",
+   "target": "374df369-b705-45e0-a6b8-6a0545e4187f",
+   "type": "refines"
+  },
+  "52e77169-f4e3-403c-b6af-1a125eecb082": {
+   "label": "",
+   "source": "0bdb84cd-7a73-444a-8b6b-e79fa6d50d2d",
+   "target": "1e14b8a1-8a79-4033-b71a-03467159392d",
+   "type": "refines"
+  },
+  "5c549978-7861-47ab-98f6-bd211b7f79e8": {
+   "label": "",
+   "source": "0aa4fdcd-0ff8-417b-9efd-d97a1f6b11a0",
+   "target": "3a617a2b-f40e-46da-9d90-38ebf57271d0",
+   "type": "verifies"
+  },
+  "6af6eb80-437f-440d-b99a-5cd77956e788": {
+   "label": "",
+   "source": "230ba74e-ea32-48bd-98ee-c3f098a827bc",
+   "target": "52ed8f32-d2cc-4cbc-9791-ee4b302c11cd",
+   "type": "verifies"
+  },
+  "6e0b3d05-ebb0-48cb-8af0-58447513ea79": {
+   "label": "",
+   "source": "983e3f8a-bf5f-4e58-9a49-7ee2c68e1740",
+   "target": "782472be-14c4-4426-b912-6a2b83d30d8e",
+   "type": "depends_on"
+  },
+  "70f5248e-b2e5-4f2a-8f81-265a0af5f293": {
+   "label": "",
+   "source": "3a617a2b-f40e-46da-9d90-38ebf57271d0",
+   "target": "aa236bb6-b641-4dca-98a6-11cab4df230e",
+   "type": "refines"
+  },
+  "82ae32fd-c8a2-4079-899b-9a6b96f21b3d": {
+   "label": "",
+   "source": "1af0007d-e555-4366-b022-b6d2cf4e7929",
+   "target": "0bdb84cd-7a73-444a-8b6b-e79fa6d50d2d",
+   "type": "implements"
+  },
+  "887d8eca-5426-4fc1-b3d8-47a105ccc06f": {
+   "label": "",
+   "source": "3a617a2b-f40e-46da-9d90-38ebf57271d0",
+   "target": "52ed8f32-d2cc-4cbc-9791-ee4b302c11cd",
+   "type": "depends_on"
+  },
+  "8f2924e6-4a3e-4b77-a921-ce2a1131f4ee": {
+   "label": "",
+   "source": "1e14b8a1-8a79-4033-b71a-03467159392d",
+   "target": "1fbc4f25-301c-43b2-b4b6-812cf608eb41",
+   "type": "refines"
+  },
+  "9a2e895c-3a69-4751-b9d9-ede38f886833": {
+   "label": "",
+   "source": "f4b7a293-7fbd-4172-9b6c-ae1d5a6934b1",
+   "target": "0bdb84cd-7a73-444a-8b6b-e79fa6d50d2d",
+   "type": "verifies"
+  },
+  "a258ff6e-4bfa-44d1-9c3b-25d147d1d7ff": {
+   "label": "",
+   "source": "0d2f17e8-6e50-47d8-8b7d-e938de67fd98",
+   "target": "a9e3ef38-0b2d-46da-b43e-128218759674",
    "type": "mitigates"
   },
-  "260a408c-bdeb-45d4-bccb-ea4f6b7aff8f": {
+  "a59abb99-ff72-4fab-af29-295c4c66002e": {
    "label": "",
-   "source": "d79c3762-01c7-4248-b659-a9c0482eab8a",
-   "target": "c7e6927d-9124-4ec5-a917-c8b0e38909a2",
+   "source": "4197c3c3-6ea6-4068-91c9-f223cbac1faf",
+   "target": "193003c7-dd6b-4079-9442-de5d51e8b2ce",
    "type": "implements"
   },
-  "2623fc91-232c-40df-91fb-888d955ed0b2": {
+  "b9eace61-919b-4e6b-b1bd-6386ef13679b": {
    "label": "",
-   "source": "4fc47f01-4589-4f08-bb79-9988009992f2",
-   "target": "c7e6927d-9124-4ec5-a917-c8b0e38909a2",
-   "type": "verifies"
+   "source": "1af0007d-e555-4366-b022-b6d2cf4e7929",
+   "target": "b5ea51de-fa74-4d03-b79c-92e73f39c64d",
+   "type": "mitigates"
   },
-  "2cbacde9-2173-43bd-a9d1-4671a2f3d247": {
+  "babb8cc6-38e0-4f61-8164-c1b2f260df99": {
    "label": "",
-   "source": "36d07f84-1ce5-4102-b9e1-ed465688777a",
-   "target": "5f826dff-a56c-4448-9a11-1a262985669f",
+   "source": "4789ecb0-072f-4aa9-a47d-10126b44be9d",
+   "target": "374df369-b705-45e0-a6b8-6a0545e4187f",
    "type": "refines"
   },
-  "2f54c6bf-57df-4b44-8ca3-911a9597172e": {
+  "bee93bd9-bfd9-4c36-b96b-2a188489e7b4": {
    "label": "",
-   "source": "9cdb7142-3c40-4875-802d-cdb361ed86ec",
-   "target": "6a840192-a37e-4c13-ba5f-627c83a0653c",
+   "source": "a6109e95-d3ea-4736-a6c5-4f0ce6009e38",
+   "target": "7f20d6d8-1dbd-4626-9e93-9f88963bbf0e",
+   "type": "refines"
+  },
+  "c62d7099-901b-4fb2-96b0-c7e88e65e9c7": {
+   "label": "",
+   "source": "0d2f17e8-6e50-47d8-8b7d-e938de67fd98",
+   "target": "3a617a2b-f40e-46da-9d90-38ebf57271d0",
    "type": "implements"
   },
-  "43326f2e-7b45-4def-83aa-ad9acc0d2f4f": {
+  "c9e8cbd2-ac39-447f-b3c6-0f974ebfa997": {
    "label": "",
-   "source": "25a32c3f-3171-4b54-951d-285b44fa46b2",
-   "target": "36d07f84-1ce5-4102-b9e1-ed465688777a",
+   "source": "04d929a4-6f29-4ca0-ae40-9e61c0e005fe",
+   "target": "4789ecb0-072f-4aa9-a47d-10126b44be9d",
    "type": "refines"
   },
-  "45406fb0-388e-48aa-97b1-0a9d6c84c028": {
+  "cf8c2c7a-40f8-42f1-9589-4bdcfe1638bc": {
    "label": "",
-   "source": "c7e6927d-9124-4ec5-a917-c8b0e38909a2",
-   "target": "97cba967-00ea-4c4b-bc90-da90781706e8",
-   "type": "depends_on"
-  },
-  "4f65e217-e0b9-4379-9bbc-d448ab434e27": {
-   "label": "",
-   "source": "29ae4e1f-80da-47fc-acce-16338426b04a",
-   "target": "d13f147f-7d29-462c-b37b-ab8a17942809",
+   "source": "52ed8f32-d2cc-4cbc-9791-ee4b302c11cd",
+   "target": "aa236bb6-b641-4dca-98a6-11cab4df230e",
    "type": "refines"
   },
-  "50155b95-a68a-4a60-b820-011a341df1a4": {
+  "e7845b74-f8d8-45e9-9f17-7fb620ead95f": {
    "label": "",
-   "source": "743922ca-d0a2-4e07-9112-fd073db1322f",
-   "target": "dc8a6b7f-015d-4380-9629-a5d77f1535da",
+   "source": "aa236bb6-b641-4dca-98a6-11cab4df230e",
+   "target": "a6109e95-d3ea-4736-a6c5-4f0ce6009e38",
    "type": "refines"
   },
-  "5e8dab18-29d3-4306-bbbc-43d8fbb8dc54": {
+  "e91ebe0e-0c14-48f0-9ddf-0cfc00e81656": {
    "label": "",
-   "source": "9d32fcca-5734-4c04-b56f-6b0438790815",
-   "target": "42bbb895-776b-4dd5-a5a0-72eb0b3e122c",
-   "type": "verifies"
-  },
-  "5ffcbf26-0090-4f60-ac4d-86137acc410c": {
-   "label": "",
-   "source": "607da908-0918-4132-a1dd-6185d97cfde8",
-   "target": "97cba967-00ea-4c4b-bc90-da90781706e8",
-   "type": "implements"
-  },
-  "8ae58fcf-0820-43de-b939-a1e10b34b4ab": {
-   "label": "",
-   "source": "42bbb895-776b-4dd5-a5a0-72eb0b3e122c",
-   "target": "25a32c3f-3171-4b54-951d-285b44fa46b2",
-   "type": "refines"
-  },
-  "925e6a9f-4770-49db-9685-3761069e7e4b": {
-   "label": "",
-   "source": "d13f147f-7d29-462c-b37b-ab8a17942809",
-   "target": "2777f8c2-9251-4e47-9cba-77c4871b8549",
-   "type": "refines"
-  },
-  "9f692318-94b2-4d3f-aaa9-f2c47ecc4886": {
-   "label": "",
-   "source": "c7e6927d-9124-4ec5-a917-c8b0e38909a2",
-   "target": "94cab476-75a6-4d82-b43e-b9ca77c35051",
-   "type": "refines"
-  },
-  "ab6161bf-af1d-4b49-bad8-f7e20725783a": {
-   "label": "",
-   "source": "40a4e7a6-4770-4248-b82f-1226cc86cc0f",
-   "target": "6a840192-a37e-4c13-ba5f-627c83a0653c",
-   "type": "implements"
-  },
-  "beddbc43-f863-47ee-9685-a6ddc73b0593": {
-   "label": "",
-   "source": "6a840192-a37e-4c13-ba5f-627c83a0653c",
-   "target": "25a32c3f-3171-4b54-951d-285b44fa46b2",
-   "type": "refines"
-  },
-  "c4790c12-ae37-4452-82b6-4b4b5f9e11e3": {
-   "label": "",
-   "source": "73ccdbde-1ab1-44f2-8c54-07cc490b326c",
-   "target": "94cab476-75a6-4d82-b43e-b9ca77c35051",
-   "type": "refines"
-  },
-  "c610c558-8810-4712-b97d-efa318be5bc5": {
-   "label": "",
-   "source": "607da908-0918-4132-a1dd-6185d97cfde8",
-   "target": "951faed6-92f4-44ac-95db-d76dc95a2a45",
-   "type": "implements"
-  },
-  "c9bfaf60-4472-4608-a399-b1bd45c8477d": {
-   "label": "",
-   "source": "2777f8c2-9251-4e47-9cba-77c4871b8549",
-   "target": "5f826dff-a56c-4448-9a11-1a262985669f",
-   "type": "refines"
-  },
-  "d2d27e9b-2c70-470c-9bce-f30b5dd9baff": {
-   "label": "",
-   "source": "97cba967-00ea-4c4b-bc90-da90781706e8",
-   "target": "94cab476-75a6-4d82-b43e-b9ca77c35051",
-   "type": "refines"
-  },
-  "d694e586-ce5c-49b1-94c1-b45b47edcc22": {
-   "label": "",
-   "source": "29ae4e1f-80da-47fc-acce-16338426b04a",
-   "target": "7dd6530e-8a52-481d-9df1-f9cacc4d8c55",
-   "type": "depends_on"
-  },
-  "e69a8454-36a6-4efd-8ea7-4a07812e0c06": {
-   "label": "",
-   "source": "6330c256-81fa-48ea-94ac-ea70579ed25c",
-   "target": "73ccdbde-1ab1-44f2-8c54-07cc490b326c",
+   "source": "57172d3e-5c19-49f1-8d08-e460871899e4",
+   "target": "268f87d3-870d-4470-bd73-998a681c9a78",
    "type": "relates_to"
-  },
-  "ebaeb948-afb5-42bf-a69c-f58a209f1d1c": {
-   "label": "",
-   "source": "0636432c-82c8-4962-a75e-8230d2eda533",
-   "target": "97cba967-00ea-4c4b-bc90-da90781706e8",
-   "type": "verifies"
-  },
-  "f75e2165-ca72-4679-a607-1a4166e49f3e": {
-   "label": "",
-   "source": "d79c3762-01c7-4248-b659-a9c0482eab8a",
-   "target": "56ef05b7-71d3-4638-aa7d-0c61baa98740",
-   "type": "mitigates"
   }
  },
  "settings": {},
  "stamp": {
-  "at": "2026-11-21T10:30:34Z",
-  "contentHash": "sha256:3da0d03be6c5aeea38cbf86791a23f6898e7333bb83e93184b89df0a0e6683e3",
-  "id": "c8c3fb55-5369-4de6-87b3-75091574288e",
+  "at": "2026-11-22T11:30:41Z",
+  "contentHash": "sha256:26140ff25834e202c256f7dacbb8747ee992540908e0b0a208e99fe0082ac07c",
+  "id": "57a12238-0e5d-4ad3-8643-9753ecd17d4d",
   "op": "batch:folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,folder.create,element.create,element.create,element.create,element.create,element.create",
   "prev": [
-   "683f18da-88b3-4208-b4fe-0643fda10bc8"
+   "60619f1a-3828-4c41-b156-e85967e8f050"
   ],
-  "sig": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAg7yxVWuCTrraMs8vYpOf8zV59wK\n8dROZ0OKRDpGFD5K8AAAAJc3BlY2dyYXBoAAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1l\nZDI1NTE5AAAAQCfR4cVjOZLNOnMsgf9XvDvVyfmcU21desyrRLPFbJzaSf+ocWjZQyLSdb\nZOFpnqdFiPaIBSbdlOQV6z0WrJlAM=\n-----END SSH SIGNATURE-----",
+  "sig": "-----BEGIN SSH SIGNATURE-----\nU1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAguGTtYoDwnus/UveWUYEf8/iOef\n+o8o0x2xdq7ltTdWgAAAAJc3BlY2dyYXBoAAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1l\nZDI1NTE5AAAAQKYQJGJbPQrRsaulLt2JnDE1mb2aPrNamM5RLCmFdodlACYfIeIrTEzE6a\n4O4xHk8dMuFXOh98EnXsD+zUTnigU=\n-----END SSH SIGNATURE-----",
   "tool": "specgraph",
-  "toolVersion": "0.3.0",
+  "toolVersion": "0.4.0",
   "user": "demo"
  },
  "users": {
   "demo": {
    "keys": [
-    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO8sVVrgk662jLPL2KTn/M1efcCvHUTmdDikQ6RhQ+Sv"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILhk7WKA8J7rP1L3llGBH/P4jnn/qPKNMdsXau5bU3Vo"
    ],
    "role": "admin"
   }

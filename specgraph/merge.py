@@ -45,7 +45,10 @@ def _merge(base, ours, theirs, path, conflicts):
 
 def merge3(base, ours, theirs):
     """Return (merged_model_without_stamp, conflicts)."""
-    strip = lambda m: {k: v for k, v in (m or {}).items() if k not in _SKIP}
+    def strip(m):
+        out = M.clone({k: v for k, v in (m or {}).items() if k not in _SKIP})
+        O.add_descriptions(out)  # ADR-033: an upgraded side and an old side must not differ by the empty default
+        return out
     conflicts = list((ours or {}).get("conflicts", [])) + list((theirs or {}).get("conflicts", []))
     merged = _merge(strip(base) if base else _MISSING, strip(ours), strip(theirs), [], conflicts)
     if conflicts:

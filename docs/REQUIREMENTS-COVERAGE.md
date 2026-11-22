@@ -1,7 +1,7 @@
 # Requirement → test
 
 `core` = tests/test_core.py, `integ` = tests/test_integrity.py, `changes` = tests/test_changes.py,
-`example` = tests/test_example.py, `ui` = tests/test_ui.py (browser). What each requirement says: `docs/REQUIREMENTS.md`.
+`example` = tests/test_example.py, `descriptions` = tests/test_descriptions.py, `ui` = tests/test_ui.py (browser). What each requirement says: `docs/REQUIREMENTS.md`.
 
 | Requirement | Covered by |
 |---|---|
@@ -43,6 +43,7 @@
 | CFG-06 | core `test_cfg06_*` |
 | CFG-07 | core `test_cfg07_*` |
 | CFG-08 | core `test_cfg08_*` |
+| CFG-09 | descriptions `test_cfg09_*` (6 tests: defaults, new entries, validation, v2 upgrade, merge of v2 and v3); ui (description typed in the configuration dialog, saved and shown as tooltip) |
 | SRC-01, SRC-02, SRC-05 | core `test_src01_02_05_*`; ui |
 | SRC-03, SRC-04 | ui |
 | INT-01 | integ `test_int01_*` |

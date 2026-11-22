@@ -1,4 +1,4 @@
-# Model file format (version 2)
+# Model file format (version 3)
 
 One UTF-8 JSON file, `specmodel.json`. Readable without the tool; **written only by the tool**.
 
@@ -58,15 +58,18 @@ element's `modified`, and a merge keeps our value without a conflict.
 Keys of stereotypes, statuses, link types and fields start with a letter and contain letters, digits, `_` and `-`
 (at most 40 characters), for example `B-REQ`.
 
-- `stereotypes.<KEY>`: `label, fill, border, icon, shape (rect|rounded|hexagon|ellipse), labelPrefix,
+- `stereotypes.<KEY>`: `label, description, fill, border, icon, shape (rect|rounded|hexagon|ellipse), labelPrefix,
   statuses (list of status keys or null = all), fields, retired`.
   `fields.<key>`: `{ label, type: string|text|number|boolean|enum|date, options? }`.
-- `statuses.<key>`: `label, color, symbol, order, retired`.
-- `linkTypes.<key>`: `label, lineStyle (solid|dashed|dotted), color, sourceArrow, targetArrow
+- `statuses.<key>`: `label, description, color, symbol, order, retired`.
+- `linkTypes.<key>`: `label, description, lineStyle (solid|dashed|dotted), color, sourceArrow, targetArrow
   (none|open|triangle|hollow-triangle|diamond|hollow-diamond), showLabel, routing, traceable
   (optional, missing = true), sources, targets (lists of stereotype keys or null = any), retired`.
 - `coverageRules.<key>`: `description, stereotype, statuses, linkType, direction (incoming|outgoing), other`.
 - `retired: true` entries still display on existing items but cannot be used for new ones.
+- `description` (stereotypes, statuses, link types; ADR-033): free text, at most 2 000 characters, `""` when nobody
+  wrote one. It says what the type means in this project, for people and agents. The tool stores and shows it and
+  never interprets it. Coverage rules have their own `description` (the rule in words, at most 500 characters).
 
 ## Traceability
 
@@ -95,6 +98,12 @@ without `sig`. If the content does not hash to `contentHash`, the file was edite
 After a merge where both sides changed the same value: `conflicts` is a list of
 `{ path: [...], base, ours, theirs }` with each side as `{ present, value }`. Our value stays in
 place until a person chooses. A model with conflicts fails validation and cannot be committed.
+
+## Older versions
+
+Version 2 had no `description` on stereotypes, statuses and link types. The tool still reads such a file; the first
+change through the tool (or a merge) writes it back as version 3 and adds `description: ""` where it is missing.
+A tool before 0.4.0 refuses a version-3 file ("unsupported formatVersion").
 
 ## Version 1 files
 

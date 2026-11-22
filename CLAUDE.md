@@ -210,10 +210,13 @@ specgraph/
   hooks.py            installs git hooks and merge driver
   cli.py, server.py   command line; local HTTP API
   web/                index.html, style.css, app.js (plain JS, SVG diagrams)
-tests/                test_core, test_integrity, test_changes, test_example, test_ui (browser, optional)
+tests/                test_core, test_integrity, test_changes, test_example, test_descriptions,
+                      test_synthetic, test_ui (browser, optional)
 docs/                 FORMAT.md, AGENTS.md, ADRS.md, REQUIREMENTS.md, REQUIREMENTS-COVERAGE.md,
                       SECURITY-REVIEW.md (lists a hash per reviewed file: it goes stale when code changes)
-sample/                build_example.py (README example), build_sample.py (demo for the browser tests)
+sample/                build_example.py (README example), build_sample.py (demo for the browser tests),
+                      build_synthetic.py (large seeded model for the evaluations)
+evals/                agent evaluations: questions, scoring, recorded baseline (not part of the tool)
 specmodel.example.json  stored example model (output of build_example.py)
 ```
 
