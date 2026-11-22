@@ -234,7 +234,7 @@ def _meta(db):
     if not os.path.exists(db):
         return None
     try:
-        con = sqlite3.connect("file:%s?mode=ro" % db.replace("\\", "/").replace("?", "%3f"), uri=True)
+        con = _open_ro(db)
         try:
             return dict(con.execute("SELECT key, value FROM meta").fetchall())
         finally:
@@ -414,3 +414,103 @@ def release(info):
     """Remove a private copy made by build() when the swap was not possible."""
     if info.get("private") and os.path.exists(info["path"]):
         os.remove(info["path"])
+
+
+# -- reading: `sg.py sql` (ADR-032 §5, REQ-AGT-03/04) -----------------------------------------------------
+
+TIME_LIMIT = 10.0         # seconds a query may run
+COUNT_CEILING = 10000     # left-out rows counted at most; beyond that "more than N"
+READ_PRAGMAS = {"table_info", "table_xinfo", "index_list", "index_info", "index_xinfo", "foreign_key_list",
+                "data_version", "collation_list", "function_list", "compile_options"}   # these never write
+_READING = {sqlite3.SQLITE_SELECT, sqlite3.SQLITE_READ, getattr(sqlite3, "SQLITE_RECURSIVE", 33)}
+
+
+class QueryError(Exception):
+    """A query that was refused or failed."""
+
+
+def _authorize(action, arg1, arg2, _db, _trigger):
+    """Allow reading only: no write, DDL, ATTACH, transaction, writing pragma or extension loading."""
+    if action in _READING:
+        return sqlite3.SQLITE_OK
+    if action == sqlite3.SQLITE_FUNCTION:
+        return sqlite3.SQLITE_DENY if (arg2 or "").lower() == "load_extension" else sqlite3.SQLITE_OK
+    if action == sqlite3.SQLITE_PRAGMA and (arg1 or "").lower() in READ_PRAGMAS:
+        return sqlite3.SQLITE_OK
+    return sqlite3.SQLITE_DENY
+
+
+def _open_ro(db):
+    return sqlite3.connect("file:%s?mode=ro" % db.replace("\\", "/").replace("?", "%3f"), uri=True)
+
+
+def _cut(v, width):
+    if width and isinstance(v, str) and len(v) > width:
+        return v[:width] + "…", True
+    return v, False
+
+
+def query(db, sql, limit=50, width=200):
+    """Run one reading statement on an index file; 0 = no cap. Returns {columns, rows, total, truncatedRows,
+    truncatedCells}, with `totalAtLeast` and total None when counting stopped at COUNT_CEILING."""
+    con = _open_ro(db)
+    try:
+        con.execute("PRAGMA query_only = 1")
+        con.set_authorizer(_authorize)
+        deadline = time.monotonic() + TIME_LIMIT
+        con.set_progress_handler(lambda: 1 if time.monotonic() > deadline else 0, 10000)
+        try:
+            cur = con.execute(sql)
+            columns = [d[0] for d in cur.description or ()]
+            rows = cur.fetchmany(limit) if limit else cur.fetchall()
+            total, at_least = len(rows), None
+            if limit and len(rows) == limit:
+                extra = 0
+                while extra <= COUNT_CEILING:
+                    got = len(cur.fetchmany(min(1000, COUNT_CEILING + 1 - extra)))
+                    if not got:
+                        break
+                    extra += got
+                if extra > COUNT_CEILING:
+                    total, at_least = None, limit + extra
+                else:
+                    total += extra
+        except (sqlite3.Error, sqlite3.Warning) as exc:
+            msg = str(exc)
+            if "not authorized" in msg:
+                raise QueryError("refused: the index is read-only; only reading statements (SELECT, WITH) "
+                                 "are allowed")
+            if "interrupted" in msg:
+                raise QueryError("refused: the query ran longer than the time limit of %g s" % TIME_LIMIT)
+            raise QueryError("SQL error: %s" % msg)
+    finally:
+        con.close()
+    cut_any, out = False, []
+    for row in rows:
+        cells = []
+        for v in row:
+            v, cut = _cut(v, width)
+            cut_any = cut_any or cut
+            cells.append(v)
+        out.append(cells)
+    res = {"columns": columns, "rows": out, "total": total, "truncatedRows": total != len(out),
+           "truncatedCells": cut_any}
+    if at_least is not None:
+        res["totalAtLeast"] = at_least
+    return res
+
+
+def schema(db):
+    """[(table, meaning, [(column, meaning)])] in the order of DOC, read from the index (REQ-AGT-05)."""
+    con = _open_ro(db)
+    try:
+        doc = con.execute('SELECT "table", "column", meaning FROM columns_doc ORDER BY rowid').fetchall()
+    finally:
+        con.close()
+    out = []
+    for table, column, meaning in doc:
+        if column == "":
+            out.append((table, meaning, []))
+        else:
+            out[-1][2].append((column, meaning))
+    return out

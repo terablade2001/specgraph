@@ -219,6 +219,12 @@ New module `specgraph/index.py` (only `sqlite3`, `hashlib`, `json`). One transac
 - Exit codes like the rest: 2 = refused (write attempt, syntax error, timeout).
 - Tests: every kind of write refused; ATTACH refused; caps and truncation; JSON shape; timeout.
 - **Accept:** write attempts fail; caps hold; tests pass.
+- **Done 2026-11-22:** `cmd_sql` in `cli.py`, `index.query`/`index.schema`, 37 tests (`tests/test_sql.py`). The
+  authorizer allows SELECT, READ, functions (not `load_extension`), recursive CTEs and a fixed list of
+  pragmas that never write (`table_info` … and `data_version`, which FTS5 uses); everything else is denied. Text
+  output: `a | b` rows, `NULL`, line breaks as `\n`, footer `(N rows)` or `(50 of 60 rows shown; …)`, a second
+  line when cells were cut. Counting ceiling 10 000 left-out rows. On s10k: elements without links 0.65 s
+  including the rebuild, links into locked folders 0.28 s; `sql --schema` is about 6 KB.
 
 ### Phase 6 — Agent guide and measurement → release 0.4.0
 

@@ -14,9 +14,25 @@ python sg.py history REQ-3d6e7863
 python sg.py validate
 ```
 
-`python sg.py index` builds a read-only SQLite copy of the model, `.specgraph/<model file>.db` next to the
-model (ADR-032; never committed, safe to delete). Its table `columns_doc` says what every table and column holds.
-A command to query it with SQL is being added in 0.4.0.
+For questions no command answers (counts, joins, "elements without links", whole-model lists), query a
+read-only SQLite copy of the model (ADR-032):
+
+```
+python sg.py sql --schema                                   # tables and what every column holds
+python sg.py sql "SELECT stereotype, count(*) FROM elements GROUP BY stereotype"
+python sg.py sql "SELECT ..." --json                         # {columns, rows, total, truncatedRows, truncatedCells}
+```
+
+- The copy is `.specgraph/<model file>.db` next to the model, rebuilt first when the model changed; it is never
+  committed and safe to delete (`sg.py index` rebuilds it now).
+- One `SELECT`/`WITH` statement per call. Anything that would write, attach a file or change the schema is
+  refused (exit code 2), as are SQL errors and queries over 10 s.
+- Output is capped: 50 rows and 200 characters a cell, and the last line says what was left out. Prefer
+  `count(*)`, `GROUP BY` and `LIMIT/OFFSET` to raising the caps; `--limit N` / `--width N` (or
+  `SPECGRAPH_SQL_LIMIT` / `SPECGRAPH_SQL_WIDTH`) change them, 0 = no cap.
+- Full-text search, when `meta` says `fts` is not `none`: `elements_fts MATCH 'sign* OR login'` (stemmed,
+  accents ignored), `ORDER BY rank`.
+- A warning on stderr means the model file was changed outside the tool; the copy shows it as it is.
 
 What the types mean in this project: every stereotype, status and link type has a `description` in
 `config` (empty when nobody wrote one). Read them before interpreting the model.

@@ -25,7 +25,14 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
   and deleting it loses nothing. It holds elements, notes, fields, links, folders with paths and locks in force,
   diagrams, users, the configuration with its descriptions, coverage violations, a full-text index when the Python
   build has FTS5, and `columns_doc`, the meaning of every column. Prints what it built as JSON. A 10 000-element
-  model builds in about half a second. Querying it (`sg.py sql`) comes next.
+  model builds in about half a second.
+- **`sg.py sql "<query>"`**: runs one read-only `SELECT`/`WITH` statement on the index, rebuilding it first when
+  the model changed. Writing, `ATTACH`, schema changes, transactions, writing pragmas and extensions are refused
+  (exit code 2), and a query stops after 10 s. Output is a compact table (`a | b`, `NULL`, line breaks as `\n`)
+  or `--json`; it shows at most 50 rows and 200 characters a cell, and says how much was left out. Change the caps
+  with `--limit N` / `--width N` or `SPECGRAPH_SQL_LIMIT` / `SPECGRAPH_SQL_WIDTH` (0 = no cap).
+  `sg.py sql --schema` prints every table and what its columns hold. A warning is printed when the model file was
+  changed outside the tool.
 
 ### Faster
 

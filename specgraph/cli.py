@@ -128,6 +128,68 @@ def cmd_index(store, a):
     _out(info)
 
 
+def _cap(value, env, default):
+    """A cap of `sql`: the option, else the environment variable, else the default; 0 = no cap."""
+    if value is None:
+        try:
+            value = int(os.environ.get(env) or default)
+        except ValueError:
+            raise StoreError("%s must be a whole number" % env)
+    if value < 0:
+        raise StoreError("%s must be 0 (no cap) or more" % env)
+    return value
+
+
+def _cell(v):
+    """One cell of the text table: on one line, NULL visible."""
+    if v is None:
+        return "NULL"
+    return str(v).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n")
+
+
+def cmd_sql(store, a):
+    from . import index as I
+    if not a.schema and not a.query:
+        raise StoreError('give a query, e.g. sql "SELECT count(*) FROM elements", or sql --schema')
+    limit = _cap(a.limit, "SPECGRAPH_SQL_LIMIT", 50)
+    width = _cap(a.width, "SPECGRAPH_SQL_WIDTH", 200)
+    info = I.ensure(store.path)
+    try:
+        if info.get("integrity") not in (None, "ok"):
+            print("%s: warning: %s. The index shows the file as it is." % (TOOL_NAME, info["integrity"]),
+                  file=sys.stderr)
+        if a.schema:
+            print("Index of %s (full-text search: %s). Tables and what their columns hold:"
+                  % (os.path.basename(store.path), info.get("fts")))
+            for table, meaning, cols in I.schema(info["path"]):
+                print("%s: %s" % (table, meaning))
+                for col, m in cols:
+                    print("  %s: %s" % (col, m))
+            return 0
+        try:
+            res = I.query(info["path"], a.query, limit, width)
+        except I.QueryError as exc:
+            raise StoreError(str(exc))
+    finally:
+        I.release(info)
+    if a.json:
+        sys.stdout.write(json.dumps(res, ensure_ascii=False) + "\n")
+        return 0
+    print(" | ".join(res["columns"]))
+    for row in res["rows"]:
+        print(" | ".join(_cell(v) for v in row))
+    n = len(res["rows"])
+    if not res["truncatedRows"]:
+        print("(%d row%s)" % (n, "" if n == 1 else "s"))
+    else:
+        total = res["total"] if res["total"] is not None else "more than %d" % (res["totalAtLeast"] - 1)
+        print("(%d of %s rows shown; refine the query or use LIMIT/OFFSET, or --limit N)" % (n, total))
+    if res["truncatedCells"]:
+        print("(cells longer than %d characters were cut at %d characters, marked with …; --width N, 0 = whole)"
+              % (width, width))
+    return 0
+
+
 def cmd_check(store, a):
     """validation + integrity + locks + identity, for the hooks."""
     if a.staged:
@@ -266,6 +328,15 @@ def build_parser():
     sp.add_argument("id")
     add("validate", cmd_validate, "validate the model")
     add("index", cmd_index, "build the read-only SQLite index of the model now (ADR-032)")
+    sp = add("sql", cmd_sql, "run one read-only SQL query on the index (rebuilt first when stale)")
+    sp.add_argument("query", nargs="?", help="one SELECT/WITH statement")
+    sp.add_argument("--schema", action="store_true", help="print the tables and what each column holds")
+    sp.add_argument("--limit", type=int, metavar="N",
+                    help="rows shown (default: SPECGRAPH_SQL_LIMIT or 50; 0 = all)")
+    sp.add_argument("--width", type=int, metavar="N",
+                    help="characters shown of a cell (default: SPECGRAPH_SQL_WIDTH or 200; 0 = whole)")
+    sp.add_argument("--json", action="store_true",
+                    help="JSON: columns, rows, total, truncatedRows, truncatedCells")
     sp = add("check", cmd_check, "all checks on the working or staged file (used by hooks)")
     sp.add_argument("--staged", action="store_true")
     sp = add("audit", cmd_audit, "check every commit of the branch history, or the commits <from> to <to> "
