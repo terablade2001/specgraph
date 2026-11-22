@@ -1,0 +1,154 @@
+{
+ "model": "specmodel.example.json",
+ "questions": [
+  {
+   "id": "Q01",
+   "kind": "ids",
+   "question": "Which business requirements (stereotype B-REQ) does REQ-002 (\"A loan is recorded within 2 seconds\") ultimately serve, following traceable links from it?",
+   "expected": [
+    "B-REQ-001"
+   ],
+   "subject": "REQ-002"
+  },
+  {
+   "id": "Q02",
+   "kind": "ids",
+   "question": "If FEAT-001 (\"Self-service checkout\") changes, which elements are affected, i.e. everything that traces to it directly or indirectly over traceable links?",
+   "expected": [
+    "ADR-001",
+    "ADR-003",
+    "E2E-001",
+    "INT-001",
+    "REQ-001",
+    "REQ-002",
+    "REQ-003"
+   ],
+   "subject": "FEAT-001"
+  },
+  {
+   "id": "Q03",
+   "kind": "ids",
+   "question": "Which elements in folder 'Product/Checkout' break a coverage rule of the model?",
+   "expected": [
+    "REQ-001"
+   ],
+   "subject": "Product/Checkout"
+  },
+  {
+   "id": "Q04",
+   "kind": "count",
+   "question": "How many elements break a coverage rule in the whole model?",
+   "expected": 1,
+   "subject": null
+  },
+  {
+   "id": "Q05a",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about notifying members (reminders, e-mail, SMS), however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "ADR-002",
+    "E2E-002",
+    "FEAT-002",
+    "REQ-004",
+    "REQ-005",
+    "RISK-002",
+    "T-ADR-001",
+    "U-REQ-002"
+   ],
+   "subject": "notifying members (reminders, e-mail, SMS)"
+  },
+  {
+   "id": "Q05b",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about privacy and personal data, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "CON-001",
+    "CON-002"
+   ],
+   "subject": "privacy and personal data"
+  },
+  {
+   "id": "Q05c",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about working without a network connection, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "ADR-001",
+    "E2E-001",
+    "REQ-003",
+    "RISK-001"
+   ],
+   "subject": "working without a network connection"
+  },
+  {
+   "id": "Q07",
+   "kind": "paths",
+   "question": "Which folders are locked (give their paths)?",
+   "expected": [
+    "Compliance (locked)"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q08",
+   "kind": "ids",
+   "question": "Which elements outside every locked folder have a link to an element inside a locked folder? Give the source elements.",
+   "expected": [
+    "ADR-003",
+    "REQ-006"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q09",
+   "kind": "ids",
+   "question": "Which elements shown on diagram 'Checkout: from business goal to tests' are in a status other than approved, validated or implemented?",
+   "expected": [
+    "ISS-001"
+   ],
+   "subject": "Checkout: from business goal to tests"
+  },
+  {
+   "id": "Q10",
+   "kind": "ids",
+   "question": "Which elements have no links at all (neither incoming nor outgoing)?",
+   "expected": [],
+   "subject": null
+  },
+  {
+   "id": "Q12",
+   "kind": "count",
+   "question": "How many REQ elements are in status 'approved'?",
+   "expected": 2,
+   "subject": null
+  },
+  {
+   "id": "Q13",
+   "kind": "ids",
+   "question": "Which tests verify the requirements (REQ) that refine FEAT-001 (\"Self-service checkout\") directly?",
+   "expected": [
+    "E2E-001",
+    "INT-001"
+   ],
+   "subject": "FEAT-001"
+  },
+  {
+   "id": "Q14",
+   "kind": "ids",
+   "question": "Which elements in folder 'Product/Overdue' have a depends_on link to an element in another folder?",
+   "expected": [
+    "REQ-006"
+   ],
+   "subject": "Product/Overdue"
+  },
+  {
+   "id": "Q15",
+   "kind": "ids",
+   "question": "Which elements does ADR-001 (\"Keep an offline queue of loans on the phone\") implement or mitigate?",
+   "expected": [
+    "REQ-003",
+    "RISK-001"
+   ],
+   "subject": "ADR-001"
+  }
+ ]
+}

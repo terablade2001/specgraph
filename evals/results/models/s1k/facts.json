@@ -1,0 +1,248 @@
+{
+ "buildSeconds": 0.7,
+ "concepts": {
+  "authentication": [
+   "738723e9-ec4c-4db4-ac8e-5ccf1ac2256f",
+   "ca3b381b-e60d-4661-a885-4bd4b52b82ff",
+   "834fe403-0b3c-4e1d-b37d-831ae7f4f2db",
+   "24668b99-76cd-440a-bfce-3dfbeb01fd93",
+   "2b94bbff-0a03-459c-b9a3-90d50fb398eb",
+   "257f89bd-f950-41b2-a1c0-aa06d515cd4a",
+   "eb1973dc-832a-46a7-87fc-bb06d8c80ac5",
+   "d22db0cb-200e-4338-97b7-85159c636686",
+   "ce82f3ae-cf99-4a79-9efd-f140db085b0a",
+   "9e302adb-3f27-4594-8048-36947eac07f1",
+   "08c80d01-f94d-4487-83dc-a7f7c74df833",
+   "77b01eae-6440-46a0-8445-0a7ce01862d4",
+   "b8c92dbb-4bfa-480c-89c5-697a6c0676c2",
+   "ac49ed89-b887-4812-9ec2-1c6335c134fc",
+   "0e0522ad-2516-4fca-b341-0c72bedb9b0a",
+   "3da6baaf-5e56-4967-9563-b513f7c464f1",
+   "217310e3-e81d-4d40-8d98-9a48dad200f1",
+   "01331006-7863-4a25-bf3f-d3c59087d616",
+   "93625ee5-05b0-4271-849c-8eae18e61db2",
+   "8162cf3b-4e05-44cb-afd4-477a8281f0c9",
+   "0f1eea98-4154-4650-9a31-83f91ec197b3",
+   "8aafc348-1401-4ec7-b24f-14e94f860d93",
+   "3d826a46-4867-4c44-a1f5-359c3d1dabf1",
+   "9b60094d-5b45-49f1-aeb9-80690ef66921"
+  ],
+  "payments": [
+   "a555e671-9019-4f77-803b-00c155a73ecc",
+   "daacbf69-c6ec-4e1f-a711-cb18c329746c",
+   "c1027b25-ceb1-46a3-8fa4-26a4344a19e2",
+   "08fab36e-2eeb-4397-bae6-7237986681ae",
+   "8937033a-2471-4431-ba38-73b37b4d03a5",
+   "501cddbc-9022-4e7b-9671-886f012eea6f",
+   "21203e8b-df49-4160-bb12-98cb711909e5",
+   "b5db4d0a-66ea-454c-b4aa-98b9206fc5fa",
+   "54200778-9fb3-44d8-9ad2-e441ed559144",
+   "0c0c14f3-47f7-459e-bc38-c4139e83e357",
+   "3f5d921b-497b-4ae0-92be-4e1f177dfd9d",
+   "74c0a207-e215-402d-875d-405d9f182cb9",
+   "85fe5706-3d11-40d1-afc7-c6410002fee5",
+   "deb78319-63e2-4c31-b175-2f91850938eb",
+   "c51a430f-bf6c-4194-882e-449d6c5ac858",
+   "5c106d81-aa7f-4c9e-abaa-abaa25d6d33e",
+   "24f65b2f-b326-42df-bf18-7125f15d797b",
+   "0080e172-4441-4a11-adbd-f5b16bffdad3"
+  ],
+  "personal data": [
+   "3641a06d-5209-428c-ae4f-2d786fec52e5",
+   "b3327ae7-847c-4cb0-835c-2ba9049a9ff0",
+   "d548e4ab-fccb-4ed3-ac82-d8c5958e07e5",
+   "96e6f931-dd1d-4704-8280-38a031905715",
+   "cef5f9c6-d805-44e7-a85e-0701a0f44b32",
+   "dfc598b1-edc9-4a29-948a-9128c9ef32a6",
+   "89fef3c9-d7de-44aa-a189-4c63e4332164",
+   "dfa04250-daf7-4924-b6dc-13f361aaa73f",
+   "12c04dbd-a118-4550-9532-0433f2ce6997",
+   "fb2f95c9-9bd7-49db-b73d-aaab5a0229d6",
+   "9c7a3055-21d7-439a-a4c4-3879f5c2e551",
+   "a028539d-2292-46ae-a51c-7d81d3dd0972",
+   "b33381b3-3d24-4308-8472-bfe2debd3095",
+   "fb7b67cf-7292-4ca7-8be9-a933f2a5e496"
+  ]
+ },
+ "crossModule": [
+  [
+   "36567c2e-ba98-497d-a580-5e46d1268e96",
+   "c0b67137-835a-49bb-a309-cb0affd3c3ce"
+  ],
+  [
+   "dfd4e106-9a12-4f66-aaad-9e0ad99ddc11",
+   "552c692e-e40e-4cb1-b21b-147634ba1e54"
+  ],
+  [
+   "e17b5664-23f9-4ff5-b989-0da7e808a8db",
+   "fab11e43-6762-48d0-91da-4a620f801fef"
+  ],
+  [
+   "020b3c8d-c278-4c2a-ab80-18ff3c0c4fc2",
+   "80db666f-b0d9-4c04-9d3c-04f1344fc2f9"
+  ],
+  [
+   "d306cc7e-79da-481f-85e4-e87f015be3b0",
+   "d5df3c84-0e4e-49eb-ab93-ce0422d6e8eb"
+  ],
+  [
+   "8937033a-2471-4431-ba38-73b37b4d03a5",
+   "edd3ad52-c398-469d-8193-b9578687dd77"
+  ],
+  [
+   "1e087160-14a0-4701-b6c4-4d3d07576c5a",
+   "0bf1da64-17d2-449b-8b6b-761cd99fed59"
+  ],
+  [
+   "f881487a-bdd0-407a-8477-cca3bfc81d9b",
+   "d5fabc4b-b08e-4360-897b-ae8724fca468"
+  ],
+  [
+   "d4eec509-ac77-49ee-a930-0333836e6bb3",
+   "9c4b4c88-5032-4c3a-b114-328b0be30fa6"
+  ],
+  [
+   "d617f451-b8f7-441b-8757-eab0263100b7",
+   "b33381b3-3d24-4308-8472-bfe2debd3095"
+  ]
+ ],
+ "diagrams": [
+  {
+   "id": "d0305bda-2640-4800-9e8a-89a5d63bbb0d",
+   "name": "Parking Requests overview"
+  },
+  {
+   "id": "d7ca7ea1-7014-4968-8154-406b301815ba",
+   "name": "Street lighting Requests overview"
+  },
+  {
+   "id": "c97a1fab-23cf-41fd-a220-c1b876014198",
+   "name": "Parks Requests overview"
+  },
+  {
+   "id": "31aa7aed-c93f-4d69-ba79-80a3a30b8a32",
+   "name": "Cemeteries Requests overview"
+  },
+  {
+   "id": "357b7c54-a112-4359-8f36-e998ad8d5750",
+   "name": "Sports halls Requests overview"
+  },
+  {
+   "id": "305c9e2d-3661-46e0-8348-7b20469e59ad",
+   "name": "Elder care Requests overview"
+  },
+  {
+   "id": "b265d0e8-b01d-44d3-b867-b8bd97ffb47e",
+   "name": "Flood defence Requests overview"
+  },
+  {
+   "id": "730d9fb5-f6a0-4115-9f73-4c77b8868271",
+   "name": "Swimming pools Scheduling overview"
+  },
+  {
+   "id": "db153127-f8cc-491d-9d23-e65d75bbfdc9",
+   "name": "School enrolment Scheduling overview"
+  },
+  {
+   "id": "e1d5ec08-0fd2-4f2e-991d-ca46a0317d41",
+   "name": "Housing Scheduling overview"
+  },
+  {
+   "id": "d2351f27-f139-49b4-99e2-a534d10635ed",
+   "name": "Snow clearing Scheduling overview"
+  }
+ ],
+ "duplicates": [
+  [
+   "a007eff2-77f4-40b8-9e5e-2c314730a25a",
+   "3c265051-2e60-4024-90e0-47403e43dc4c"
+  ],
+  [
+   "19774d6d-96bd-40c3-8bcb-cbe79e04b1d0",
+   "15c159fd-2d93-4cba-8de2-5ccc22616f37"
+  ]
+ ],
+ "elements": 1000,
+ "locked": [
+  "aa49d07e-cc68-48e1-97a3-2aa5167f0134",
+  "f6f38448-c4b2-422b-9122-d211a7874e68",
+  "51e12539-aad9-4ad8-918f-6e255c170571"
+ ],
+ "modules": {
+  "01a050e4-b691-42ac-93cf-08a959fd6561": "Housing Requests",
+  "059353aa-4937-4b7e-b942-473f273911b7": "Animal control Requests",
+  "05ce6aee-787c-4494-b869-507c7a1c4a97": "Swimming pools Scheduling",
+  "08ff8a66-b9a5-459a-8563-948da4ea58e6": "Flood defence Requests",
+  "1015e3e3-e63e-49c3-90b8-1165970857d9": "Elder care Requests",
+  "18f0e909-6815-42a1-ba50-fc11d13bd183": "Housing Scheduling",
+  "25c713a1-ef57-472a-8eb2-4c194b86b0fa": "Noise control Requests",
+  "2a67ab1d-0130-4aac-b3ef-5c9aaf5f25e1": "Parks Scheduling",
+  "3115b96a-f1f7-4a11-8d61-84b00dde28bc": "Sports halls Requests",
+  "332ee1ff-f724-4177-9087-6330f2e7dd25": "Recycling centres Requests",
+  "33610522-5462-4145-8c4f-1cd3ae0b5370": "Waste collection Requests",
+  "364e871b-81fe-4d16-9c46-088b639903f0": "Animal control Scheduling",
+  "37ccfd3a-b0e7-4ba9-861b-565b4b6c71f0": "Public transport Scheduling",
+  "3945eb8e-dd86-4f3b-8598-608ecf06c296": "Snow clearing Requests",
+  "40647609-7fa4-4f62-a23c-ef188417ccda": "Museums Requests",
+  "484950d8-5743-4548-8c26-6ac69b78088e": "Parks Requests",
+  "51e12539-aad9-4ad8-918f-6e255c170571": "Waste collection Scheduling",
+  "522dde2b-90ce-46aa-8de0-a57c2cfd5f30": "Markets Scheduling",
+  "5b7dc345-04e4-4221-b087-12f3e47cf18d": "Public transport Requests",
+  "60a40084-b743-437f-8d7d-f94b88fb3050": "Libraries Scheduling",
+  "63a448d9-efab-4aa0-8d3e-b4ba8de042ad": "Cemeteries Scheduling",
+  "69085761-37f8-4d20-a36b-a2b705d4bf3e": "Building control Requests",
+  "6940726b-e8df-4a04-b6a8-f10cb80909cb": "Libraries Requests",
+  "7435c976-dde7-42fc-9c15-c23b8d349c92": "Tree care Requests",
+  "7656a3ef-2745-462f-a641-d2bc70d5ead4": "Cemeteries Requests",
+  "87de109c-60c7-466f-8d7b-e9b55f9092d4": "Road works Scheduling",
+  "93e14580-d96a-4485-8d9a-c374e32e21f1": "School enrolment Scheduling",
+  "96280bae-a3a2-4351-9ad3-b87945db88ff": "Water supply Scheduling",
+  "a50f3f97-adcf-4b70-99d0-bce9e7e32d95": "Street lighting Scheduling",
+  "aa49d07e-cc68-48e1-97a3-2aa5167f0134": "Street lighting Requests",
+  "ae77725b-c6bd-4ba3-9189-5c83ce1e635f": "School enrolment Requests",
+  "d59ff4c5-4f2e-4b8c-bf1d-1c7e56ecae63": "Road works Requests",
+  "dffa1b3f-12aa-41f3-8635-7f5947db7cfd": "Water supply Requests",
+  "e17ad715-0880-4d27-be9c-35f083ac27ad": "Building control Scheduling",
+  "eef90ba0-bec5-4159-8e8b-5859b2d45d38": "Markets Requests",
+  "f2b21ccd-7b9a-4a59-801e-7ffb503b8208": "Snow clearing Scheduling",
+  "f43156ff-c3e4-4d45-8760-029ca6db0e9c": "Bike sharing Requests",
+  "f6f38448-c4b2-422b-9122-d211a7874e68": "Youth centres Requests",
+  "fb55c6b0-7c07-4837-8239-fc5e6338578b": "Parking Requests",
+  "ff4558c0-d66d-41ef-9e19-129cf004676d": "Parking Scheduling",
+  "ff7f4f60-2c85-4456-8e68-433e5919f307": "Swimming pools Requests"
+ },
+ "orphans": [
+  "5aab425b-d43d-4be2-a27b-de9c7151404a",
+  "3a4e9d8c-c291-484d-aa27-f7afe05ee4c8",
+  "f43ab8ea-27f0-4cb8-851f-69ce95b13849",
+  "073345b3-8919-4e1c-acfd-a5297119b6c3"
+ ],
+ "seed": 1,
+ "services": {
+  "00f98598-5f18-42f9-b8ec-65d87d05a72b": "Building control",
+  "03fd8b24-5560-419e-bb19-87c7c037fca2": "Public transport",
+  "0d1c0b77-6ee0-45b8-8462-68696ecc569c": "Youth centres",
+  "18604e46-2cb9-4c48-b40b-06c7bc2b71f5": "Snow clearing",
+  "22b84338-1da8-4332-8b24-d4b075c6247e": "Water supply",
+  "31d43361-8b93-464a-b0f8-b5c4a3b10bf5": "Elder care",
+  "4f4ce0d9-33ce-472f-a0be-d10d4743a00c": "Parks",
+  "5666132a-7d1c-40e4-bc7f-bf1face4f3d4": "Bike sharing",
+  "588c318b-3476-4e4f-bfd1-204fab4864be": "Flood defence",
+  "5becd56f-f1cf-4004-bfb0-723687d0a6ad": "Tree care",
+  "73cb897b-1454-4dab-85b0-80a3bb497839": "Waste collection",
+  "8fe42ad5-6749-4a82-8f9c-748b59099265": "Animal control",
+  "927b0b3e-5292-4cbf-b7d2-8a6f4a21db65": "Road works",
+  "92e34b68-2b6b-48a0-8011-5e443054d2f8": "Libraries",
+  "a1cdbfc2-4e1e-47a3-91fb-031f708973f7": "Recycling centres",
+  "a5a60c1c-ffe6-49a4-a045-5b921629c7ef": "Swimming pools",
+  "afae77ea-cef9-46f0-8b4e-c446ca09173b": "School enrolment",
+  "b65c2b0c-82ac-403b-8a36-1f032e3a45eb": "Street lighting",
+  "d0ffcf34-6112-4e3d-a564-3ce47beedd6e": "Parking",
+  "d18ee5fe-0270-4fb2-9f6e-7679e5da3947": "Sports halls",
+  "d5dfabef-e1bc-4dfc-beb8-6e488479c645": "Markets",
+  "d887f1fd-1e08-438f-adce-b508c7fe4c8c": "Museums",
+  "e63fea18-f5f0-44f1-950f-7209340bf6e0": "Noise control",
+  "eb9f4f31-0c66-4ecc-9448-c8c6039a484a": "Housing",
+  "fee98e34-1f69-4b18-8e48-2663bd1f45a7": "Cemeteries"
+ }
+}

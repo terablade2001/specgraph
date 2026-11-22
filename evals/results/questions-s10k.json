@@ -1,0 +1,253 @@
+{
+ "model": "evals/results/models/s10k/specmodel.json",
+ "questions": [
+  {
+   "id": "Q01",
+   "kind": "ids",
+   "question": "Which business requirements (stereotype B-REQ) does REQ-35f73d3a (\"Street lighting Statistics: a lamp fault that waits more than 2 days is marked late\") ultimately serve, following traceable links from it?",
+   "expected": [
+    "B-REQ-3b384c25"
+   ],
+   "subject": "REQ-35f73d3a"
+  },
+  {
+   "id": "Q02",
+   "kind": "ids",
+   "question": "If FEAT-5025e246 (\"Tree care Work orders weekly report\") changes, which elements are affected, i.e. everything that traces to it directly or indirectly over traceable links?",
+   "expected": [
+    "ADR-3211ad07",
+    "ADR-d33e2391",
+    "E2E-3a271e9d",
+    "E2E-7d925879",
+    "INT-fe208a14",
+    "REQ-18609e1e",
+    "REQ-3f844e76",
+    "REQ-a08c5822",
+    "REQ-efde138b",
+    "REQ-f56fb83b"
+   ],
+   "subject": "FEAT-5025e246"
+  },
+  {
+   "id": "Q03",
+   "kind": "ids",
+   "question": "Which elements in folder 'Street lighting/Street lighting Inventory' break a coverage rule of the model?",
+   "expected": [
+    "REQ-3c4685c8"
+   ],
+   "subject": "Street lighting/Street lighting Inventory"
+  },
+  {
+   "id": "Q04",
+   "kind": "count",
+   "question": "How many elements break a coverage rule in the whole model?",
+   "expected": 1104,
+   "subject": null
+  },
+  {
+   "id": "Q05a",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about authentication, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-0090491f",
+    "REQ-0dac87a3",
+    "REQ-18609e1e",
+    "REQ-25fb0704",
+    "REQ-3c52a764",
+    "REQ-441d9dc7",
+    "REQ-586a24ae",
+    "REQ-60c8a507",
+    "REQ-6434c6ff",
+    "REQ-703394f6",
+    "REQ-737b6ac3",
+    "REQ-7b5e8244",
+    "REQ-8f04ff65",
+    "REQ-93391395",
+    "REQ-b972d44c",
+    "REQ-bd30254b",
+    "REQ-cee291be",
+    "REQ-d5d27bf5",
+    "REQ-dcd24b6a",
+    "REQ-e09ef1a6",
+    "REQ-f4acfb35",
+    "REQ-ffd768e3",
+    "RISK-34463932",
+    "RISK-b316080b"
+   ],
+   "subject": "authentication"
+  },
+  {
+   "id": "Q05b",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about payments, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-096b40d7",
+    "REQ-1ecd1f9c",
+    "REQ-26324936",
+    "REQ-2d5dfba6",
+    "REQ-2da8b701",
+    "REQ-379277f9",
+    "REQ-4cc13160",
+    "REQ-4e6a8d11",
+    "REQ-4f241e79",
+    "REQ-86c551ee",
+    "REQ-aaff1ba1",
+    "REQ-dda1a821",
+    "REQ-e8d24f8c",
+    "REQ-ee7f3d48",
+    "REQ-f0fc6a40",
+    "REQ-f6eb9431",
+    "RISK-1a5d2d6c",
+    "RISK-8055007b"
+   ],
+   "subject": "payments"
+  },
+  {
+   "id": "Q05c",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about personal data, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-085e298d",
+    "REQ-2c797255",
+    "REQ-3c183411",
+    "REQ-471527ad",
+    "REQ-4e5f960c",
+    "REQ-660b240b",
+    "REQ-6f04fd61",
+    "REQ-b524beff",
+    "REQ-c0d16cad",
+    "REQ-dace36e8",
+    "REQ-ea9e4be1",
+    "REQ-ee402b1b",
+    "REQ-f71d52f6",
+    "REQ-fb399be2"
+   ],
+   "subject": "personal data"
+  },
+  {
+   "id": "Q06",
+   "kind": "ids",
+   "question": "Which RISK elements in folder 'Tree care' (including its sub-folders) have severity High and likelihood High?",
+   "expected": [
+    "RISK-2809a0eb",
+    "RISK-77eda77c",
+    "RISK-8544fd80",
+    "RISK-8645abd7",
+    "RISK-b90206ca"
+   ],
+   "subject": "Tree care"
+  },
+  {
+   "id": "Q07",
+   "kind": "paths",
+   "question": "Which folders are locked (give their paths)?",
+   "expected": [
+    "Markets/Markets Requests",
+    "Road works/Road works Staff planning",
+    "School enrolment/School enrolment Work orders"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q08",
+   "kind": "ids",
+   "question": "Which elements outside every locked folder have a link to an element inside a locked folder? Give the source elements.",
+   "expected": [
+    "REQ-0de6176c",
+    "REQ-9fa791ec"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q09",
+   "kind": "ids",
+   "question": "Which elements shown on diagram 'Animal control Statistics overview' are in a status other than approved, validated or implemented?",
+   "expected": [
+    "FEAT-55618880",
+    "REQ-54e023aa",
+    "REQ-dc77e4df",
+    "RISK-8333732d",
+    "U-REQ-0f3e66e5"
+   ],
+   "subject": "Animal control Statistics overview"
+  },
+  {
+   "id": "Q10",
+   "kind": "ids",
+   "question": "Which elements have no links at all (neither incoming nor outgoing)?",
+   "expected": [
+    "REQ-21fc3f7d",
+    "REQ-276ec10f",
+    "REQ-2ae7c7ca",
+    "REQ-39b01990",
+    "REQ-417346ce",
+    "REQ-506f09c7",
+    "REQ-7df6bc05",
+    "REQ-a5d05f53",
+    "REQ-b7997c9e",
+    "REQ-bbbaec2c",
+    "REQ-c70f794a",
+    "REQ-e548cf76",
+    "REQ-f107d037"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q11",
+   "kind": "ids",
+   "question": "Some requirements say the same thing as another requirement in slightly different words. List all elements of every such pair.",
+   "expected": [
+    "REQ-417346ce",
+    "REQ-506f09c7",
+    "REQ-5adf26ef",
+    "REQ-6d133ada",
+    "REQ-7b07029f",
+    "REQ-9e5b4e64",
+    "REQ-be4ce0c6",
+    "REQ-c70f794a",
+    "REQ-e548cf76",
+    "REQ-f107d037"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q12",
+   "kind": "count",
+   "question": "How many REQ elements are in status 'approved'?",
+   "expected": 1256,
+   "subject": null
+  },
+  {
+   "id": "Q13",
+   "kind": "ids",
+   "question": "Which tests verify the requirements (REQ) that refine FEAT-9acee6a6 (\"Public transport Statistics editing\") directly?",
+   "expected": [
+    "E2E-33c5e964",
+    "E2E-52eb6952",
+    "E2E-b46da42c",
+    "INT-da65b4ca"
+   ],
+   "subject": "FEAT-9acee6a6"
+  },
+  {
+   "id": "Q14",
+   "kind": "ids",
+   "question": "Which elements in folder 'Housing/Housing Staff planning' have a depends_on link to an element in another folder?",
+   "expected": [
+    "REQ-e7dcdd05"
+   ],
+   "subject": "Housing/Housing Staff planning"
+  },
+  {
+   "id": "Q15",
+   "kind": "ids",
+   "question": "Which elements does ADR-7778ab81 (\"Housing Complaints: reuse the city design system\") implement or mitigate?",
+   "expected": [
+    "REQ-09172810",
+    "REQ-50ce007b",
+    "RISK-9f7e7c0c"
+   ],
+   "subject": "ADR-7778ab81"
+  }
+ ]
+}

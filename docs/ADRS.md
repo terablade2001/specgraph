@@ -144,7 +144,7 @@ diagram layout is out of scope; positions are plain numbers so a layouter can be
 MIT (owner's choice). No third-party source is included; runtime needs only Python, git and OpenSSH.
 
 ## ADR-014 — Deliberately not built  · stakes: low
-Status transition rules (MAY in REQ-CFG-03), and everything listed under "Not in scope" in `CLAUDE.md`.
+Status transition rules (MAY in REQ-CFG-03), and everything listed under "Not in scope" in `CLAUDE.md`. Amended by ADR-032 (2026-11-22): a derived index outside git is allowed; generated files kept in the repository are still not built.
 
 ## ADR-015 — Keeping the future open  · stakes: low
 - Generators and indexes: stereotypes, typed links and stable ids let a generator read the file as is.
@@ -420,3 +420,73 @@ commits between them, so it cannot tell whose change is whose.
 forger who adds their own key to their side and signs with it still passes this check, as with the working file;
 the commit hook and `audit` catch that, because they verify against the previous commit's user list (ADR-003).
 Merges of versions written by the tool are unchanged.
+
+---
+
+# Added 2026-11-22 — for 0.4.0, approved by the owner
+
+Plan and reasons: `docs/PLAN-0.4-AI-LAYER.md`. Measurements: `evals/results/BASELINE.md`.
+
+## ADR-032 — A derived SQLite index and a read-only `sql` command for agents  · stakes: high · **approved by the owner 2026-11-22**
+**Context.** Agents read the model as JSON, or through `search`/`show`/`trace`/`impact`/`matrix`/`validate`. The
+baseline (Sonnet, 2026-11-22) answers every question one of these commands covers, at every size. Questions without
+a command (elements without links, links into locked folders, near-duplicates, counts over the whole model) cost
+90–145K tokens at 1 000 elements and fail at 10 000 (mean F1 0.85), where `validate` and `search ""` print more than
+an agent can read and agents fall back to forbidden workarounds. A 10K-element model is about 7 MB, roughly 2M
+tokens: reading the file is no longer an option. `CLAUDE.md` lists "index generation" as not in scope; ADR-015 kept
+the door open for an index that reads the file as it is.
+**Options.** (a) more query commands, one per kind of question; (b) a digest file of the model; (c) an MCP server;
+(d) a graph database; (e) a derived SQLite database (Python's `sqlite3`, standard library) plus one command that runs
+a read-only query and caps its output; (f) embeddings.
+**Decision.** (e).
+1. **What it is.** `<model folder>/.specgraph/<model file name>.db`, built from the model file by `specgraph/index.py`.
+   It is derived and disposable: never committed (the tool writes `.specgraph/.gitignore` with `*`), never edited,
+   never read to decide anything a change depends on, and never a source of truth. Deleting it loses nothing.
+2. **When it is built.** `sg.py index` builds it. `sg.py sql` rebuilds it first when it is stale. Stale = the sha256
+   of the model file's bytes, the index schema version or the tool version differs from what the index records. No
+   rebuild after `apply`, and the editor server never builds it.
+3. **How.** One transaction into a temporary file in `.specgraph/`, then `os.replace` over the old one (retried
+   briefly on Windows while a reader holds it). Readers never see a half-built index.
+4. **Content.** Elements (summary), their notes and custom fields, links, folders with paths and effective locks,
+   diagrams and which elements they show, users and roles, the configuration (stereotypes, statuses, link types,
+   fields, coverage rules, with their descriptions, ADR-033), coverage violations computed by
+   `validate.coverage_violations`, a full-text index (FTS5) when the Python build has one, and a table describing
+   every column. Deleted elements are not indexed (ADR-018: the log is not read to decide anything). Logic stays in
+   Python: folder paths, effective locks and coverage come from the existing code, not from SQL re-implementations.
+5. **`sg.py sql "<query>"`.** Opens the index read-only three ways: URI `mode=ro`, `PRAGMA query_only`, and an
+   authorizer that allows reading only (no `ATTACH`, no writes, no schema change, no pragma that writes); extension
+   loading stays off; a time limit stops a runaway query. Output is capped, says how many rows were left out, and
+   is text or `--json`. The caps are configurable (owner, 2026-11-22): `--limit N` (rows) and `--width N`
+   (characters a cell) per call, `SPECGRAPH_SQL_LIMIT` and `SPECGRAPH_SQL_WIDTH` for the environment, defaults 50
+   and 200 (like `--undo` / `SPECGRAPH_UNDO`). 0 means no cap.
+   `sg.py sql --schema` prints the tables and what each column means, from the index itself.
+6. **Integrity.** The index is built even when the model's stamp does not match (reading is allowed today too);
+   it records that and `sql` prints a warning line.
+7. The existing query commands stay as they are. No other new query command: one is added only when the
+   evaluations show agents repeatedly getting the same query wrong.
+**Consequences.** One new standard-library dependency (`sqlite3`, part of CPython). An extra folder `.specgraph/`
+next to the model, outside git. The model file stays the only source of truth; the write path (`Store.apply`) does
+not change. A Python build without FTS5 still builds the index, without full-text search (`LIKE` still works). Agents
+must write SQL; `docs/AGENTS.md` gets a short guide. `CLAUDE.md` "Not in scope" changes from "index generation" to
+"generated documents or files kept in the repository" (the derived index is allowed). ADR-014 is amended accordingly.
+
+## ADR-033 — Every stereotype, status and link type has a description; format version 3  · stakes: high (format change) · **approved by the owner 2026-11-22**
+**Context.** An agent knows the keys of a model (`REQ`, `approved`, `implements`) but not what they mean in this
+project. Owner decision (2026-11-22): a free-text description per type, always present, empty when nobody wrote one.
+Coverage rules already have `description` (max 500 characters).
+**Decision.**
+1. `config.stereotypes.<K>`, `config.statuses.<K>` and `config.linkTypes.<K>` get `description`: text, at most 2 000
+   characters, required in format 3, `""` when empty. The tool stores it and shows it; it never interprets it.
+2. `formatVersion` becomes 3. A version-1 or -2 file is still read; the first change through the tool (and a merge)
+   upgrades it in `ops.upgrade`, adding `description: ""` where it is missing. `config.put` sets `""` on a new entry
+   without one. Tools before 0.4.0 refuse a version-3 file ("unsupported formatVersion"), as with ADR-016.
+3. The default configuration (ADR-020) ships short generic descriptions for its stereotypes, statuses and link types
+   (owner decision, 2026-11-22). Existing models keep `""` until someone writes one.
+4. Editor: one *Description* text area in the configuration dialog for the three kinds; shown as the tooltip of a
+   type in the explorer.
+5. No glossary feature (owner decision, 2026-11-22). A project that wants one models it with its own stereotype and
+   says so in that stereotype's description.
+**Consequences.** Every model written by 0.4.0 needs 0.4.0 or later: everyone working on one repository upgrades
+together (CHANGELOG and README say so). The upgrade adds one line per stereotype, status and link type, once. The
+merge of a version-2 and a version-3 side upgrades the result. Descriptions are part of the model: signed, merged per
+entry like the rest of the configuration, and changeable by any user (REQ-CFG-01).

@@ -1,0 +1,243 @@
+{
+ "model": "evals/results/models/s1k/specmodel.json",
+ "questions": [
+  {
+   "id": "Q01",
+   "kind": "ids",
+   "question": "Which business requirements (stereotype B-REQ) does REQ-c95be86f (\"Street lighting Requests: show the list of lamp faults sorted by team (3)\") ultimately serve, following traceable links from it?",
+   "expected": [
+    "B-REQ-43d49e42"
+   ],
+   "subject": "REQ-c95be86f"
+  },
+  {
+   "id": "Q02",
+   "kind": "ids",
+   "question": "If FEAT-79b2f6bc (\"School enrolment Requests field work\") changes, which elements are affected, i.e. everything that traces to it directly or indirectly over traceable links?",
+   "expected": [
+    "ADR-3fc1dc77",
+    "ADR-f159dea2",
+    "E2E-3f6c0f5f",
+    "E2E-76bcb0e0",
+    "E2E-d2103285",
+    "INT-e4a260f9",
+    "REQ-5df18fe8",
+    "REQ-6c3435b6",
+    "REQ-a00c69da",
+    "REQ-b369b784",
+    "REQ-d548e4ab",
+    "REQ-eb1973dc"
+   ],
+   "subject": "FEAT-79b2f6bc"
+  },
+  {
+   "id": "Q03",
+   "kind": "ids",
+   "question": "Which elements in folder 'Markets/Markets Requests' break a coverage rule of the model?",
+   "expected": [
+    "REQ-60ab5308",
+    "REQ-8e7c3b09"
+   ],
+   "subject": "Markets/Markets Requests"
+  },
+  {
+   "id": "Q04",
+   "kind": "count",
+   "question": "How many elements break a coverage rule in the whole model?",
+   "expected": 100,
+   "subject": null
+  },
+  {
+   "id": "Q05a",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about authentication, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-01331006",
+    "REQ-08c80d01",
+    "REQ-0e0522ad",
+    "REQ-0f1eea98",
+    "REQ-217310e3",
+    "REQ-257f89bd",
+    "REQ-2b94bbff",
+    "REQ-3d826a46",
+    "REQ-738723e9",
+    "REQ-77b01eae",
+    "REQ-8162cf3b",
+    "REQ-834fe403",
+    "REQ-8aafc348",
+    "REQ-93625ee5",
+    "REQ-9b60094d",
+    "REQ-9e302adb",
+    "REQ-ac49ed89",
+    "REQ-b8c92dbb",
+    "REQ-ca3b381b",
+    "REQ-ce82f3ae",
+    "REQ-d22db0cb",
+    "REQ-eb1973dc",
+    "RISK-24668b99",
+    "RISK-3da6baaf"
+   ],
+   "subject": "authentication"
+  },
+  {
+   "id": "Q05b",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about payments, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-0080e172",
+    "REQ-08fab36e",
+    "REQ-21203e8b",
+    "REQ-3f5d921b",
+    "REQ-501cddbc",
+    "REQ-54200778",
+    "REQ-5c106d81",
+    "REQ-74c0a207",
+    "REQ-85fe5706",
+    "REQ-8937033a",
+    "REQ-a555e671",
+    "REQ-b5db4d0a",
+    "REQ-c1027b25",
+    "REQ-c51a430f",
+    "REQ-daacbf69",
+    "REQ-deb78319",
+    "RISK-0c0c14f3",
+    "RISK-24f65b2f"
+   ],
+   "subject": "payments"
+  },
+  {
+   "id": "Q05c",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about personal data, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-12c04dbd",
+    "REQ-3641a06d",
+    "REQ-89fef3c9",
+    "REQ-96e6f931",
+    "REQ-9c7a3055",
+    "REQ-a028539d",
+    "REQ-b3327ae7",
+    "REQ-b33381b3",
+    "REQ-cef5f9c6",
+    "REQ-d548e4ab",
+    "REQ-dfa04250",
+    "REQ-dfc598b1",
+    "REQ-fb2f95c9",
+    "REQ-fb7b67cf"
+   ],
+   "subject": "personal data"
+  },
+  {
+   "id": "Q06",
+   "kind": "ids",
+   "question": "Which RISK elements in folder 'Road works' (including its sub-folders) have severity High and likelihood High?",
+   "expected": [
+    "RISK-61bb844f"
+   ],
+   "subject": "Road works"
+  },
+  {
+   "id": "Q07",
+   "kind": "paths",
+   "question": "Which folders are locked (give their paths)?",
+   "expected": [
+    "Street lighting/Street lighting Requests",
+    "Waste collection/Waste collection Scheduling",
+    "Youth centres/Youth centres Requests"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q08",
+   "kind": "ids",
+   "question": "Which elements outside every locked folder have a link to an element inside a locked folder? Give the source elements.",
+   "expected": [],
+   "subject": null
+  },
+  {
+   "id": "Q09",
+   "kind": "ids",
+   "question": "Which elements shown on diagram 'Elder care Requests overview' are in a status other than approved, validated or implemented?",
+   "expected": [
+    "REQ-4fc86ec5",
+    "REQ-88f91dd1",
+    "REQ-94390ebf",
+    "RISK-6db98f68",
+    "U-REQ-2b87cb75"
+   ],
+   "subject": "Elder care Requests overview"
+  },
+  {
+   "id": "Q10",
+   "kind": "ids",
+   "question": "Which elements have no links at all (neither incoming nor outgoing)?",
+   "expected": [
+    "B-REQ-11e33af0",
+    "B-REQ-1bd1582a",
+    "B-REQ-33423110",
+    "B-REQ-41b46506",
+    "B-REQ-7cb6729a",
+    "B-REQ-89f288da",
+    "B-REQ-8bbc5253",
+    "B-REQ-af6551c0",
+    "REQ-073345b3",
+    "REQ-15c159fd",
+    "REQ-3a4e9d8c",
+    "REQ-3c265051",
+    "REQ-5aab425b",
+    "REQ-f43ab8ea"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q11",
+   "kind": "ids",
+   "question": "Some requirements say the same thing as another requirement in slightly different words. List all elements of every such pair.",
+   "expected": [
+    "REQ-15c159fd",
+    "REQ-19774d6d",
+    "REQ-3c265051",
+    "REQ-a007eff2"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q12",
+   "kind": "count",
+   "question": "How many REQ elements are in status 'approved'?",
+   "expected": 120,
+   "subject": null
+  },
+  {
+   "id": "Q13",
+   "kind": "ids",
+   "question": "Which tests verify the requirements (REQ) that refine FEAT-cc109abe (\"Street lighting Requests overview\") directly?",
+   "expected": [
+    "E2E-3648cc45",
+    "E2E-88a2b164",
+    "INT-0c324214"
+   ],
+   "subject": "FEAT-cc109abe"
+  },
+  {
+   "id": "Q14",
+   "kind": "ids",
+   "question": "Which elements in folder 'Public transport/Public transport Requests' have a depends_on link to an element in another folder?",
+   "expected": [
+    "REQ-e17b5664"
+   ],
+   "subject": "Public transport/Public transport Requests"
+  },
+  {
+   "id": "Q15",
+   "kind": "ids",
+   "question": "Which elements does ADR-d5cc7953 (\"Bike sharing Requests: one queue for all bike rentals (2)\") implement or mitigate?",
+   "expected": [
+    "REQ-3e8ac2c6",
+    "REQ-78bc1a67",
+    "REQ-e2cd6362"
+   ],
+   "subject": "ADR-d5cc7953"
+  }
+ ]
+}

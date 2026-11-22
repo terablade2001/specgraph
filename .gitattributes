@@ -1,3 +1,5 @@
 * text=auto eol=lf
 specmodel.json text eol=lf merge=specgraph
 specmodel.deleted.jsonl text eol=lf merge=union
+evals/results/*.json linguist-generated
+evals/results/models/** linguist-generated merge=text

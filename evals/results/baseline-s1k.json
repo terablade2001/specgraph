@@ -1,0 +1,175 @@
+{
+ "_control_tokens": 55205,
+ "Q01": {
+  "answer": [
+   "B-REQ-43d49e42"
+  ],
+  "tokens": 59099
+ },
+ "Q02": {
+  "answer": [
+   "REQ-5df18fe8",
+   "ADR-3fc1dc77",
+   "ADR-f159dea2",
+   "REQ-6c3435b6",
+   "REQ-a00c69da",
+   "E2E-3f6c0f5f",
+   "REQ-eb1973dc",
+   "E2E-d2103285",
+   "REQ-b369b784",
+   "E2E-76bcb0e0",
+   "REQ-d548e4ab",
+   "INT-e4a260f9"
+  ],
+  "tokens": 61048
+ },
+ "Q03": {
+  "answer": [
+   "REQ-60ab5308",
+   "REQ-8e7c3b09"
+  ],
+  "tokens": 69616
+ },
+ "Q04": {
+  "answer": 100,
+  "tokens": 63420
+ },
+ "Q05a": {
+  "answer": [
+   "REQ-0e0522ad",
+   "REQ-77b01eae",
+   "REQ-ac49ed89",
+   "REQ-ca3b381b",
+   "REQ-b8c92dbb",
+   "REQ-ce82f3ae",
+   "REQ-eb1973dc",
+   "RISK-24668b99",
+   "RISK-3da6baaf",
+   "REQ-257f89bd",
+   "REQ-2b94bbff",
+   "REQ-3d826a46",
+   "REQ-738723e9",
+   "REQ-93625ee5",
+   "REQ-d22db0cb"
+  ],
+  "tokens": 64550
+ },
+ "Q05b": {
+  "answer": [
+   "REQ-0080e172",
+   "REQ-08fab36e",
+   "RISK-0c0c14f3",
+   "REQ-21203e8b",
+   "RISK-24f65b2f",
+   "REQ-3f5d921b",
+   "REQ-501cddbc",
+   "REQ-54200778",
+   "REQ-5c106d81",
+   "REQ-74c0a207",
+   "REQ-85fe5706",
+   "REQ-a555e671",
+   "REQ-b5db4d0a",
+   "REQ-c1027b25",
+   "REQ-daacbf69"
+  ],
+  "tokens": 71926
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-9c7a3055",
+   "REQ-a028539d",
+   "REQ-b3327ae7",
+   "REQ-dfc598b1",
+   "REQ-12c04dbd",
+   "REQ-3641a06d",
+   "REQ-89fef3c9",
+   "REQ-b33381b3",
+   "REQ-fb7b67cf",
+   "REQ-cef5f9c6",
+   "REQ-d548e4ab"
+  ],
+  "tokens": 72190
+ },
+ "Q06": {
+  "answer": [
+   "RISK-61bb844f"
+  ],
+  "tokens": 73673
+ },
+ "Q07": {
+  "answer": [
+   "Waste collection/Waste collection Scheduling",
+   "Street lighting/Street lighting Requests",
+   "Youth centres/Youth centres Requests"
+  ],
+  "tokens": 61191
+ },
+ "Q08": {
+  "answer": [],
+  "tokens": 92976
+ },
+ "Q09": {
+  "answer": [
+   "U-REQ-2b87cb75",
+   "REQ-4fc86ec5",
+   "RISK-6db98f68",
+   "REQ-88f91dd1",
+   "REQ-94390ebf"
+  ],
+  "tokens": 66617
+ },
+ "Q10": {
+  "answer": [
+   "REQ-073345b3",
+   "B-REQ-11e33af0",
+   "REQ-15c159fd",
+   "B-REQ-1bd1582a",
+   "B-REQ-33423110",
+   "REQ-3a4e9d8c",
+   "REQ-3c265051",
+   "B-REQ-41b46506",
+   "REQ-5aab425b",
+   "B-REQ-7cb6729a",
+   "B-REQ-89f288da",
+   "B-REQ-8bbc5253",
+   "B-REQ-af6551c0",
+   "REQ-f43ab8ea"
+  ],
+  "tokens": 143722,
+  "note": "rerun: 59 tool calls, 171 s, Grep on the model by id prefix; first run (154110 tokens) used a pipe and was invalid"
+ },
+ "Q11": {
+  "answer": [
+   "REQ-19774d6d",
+   "REQ-15c159fd",
+   "REQ-a007eff2",
+   "REQ-3c265051"
+  ],
+  "tokens": 101261
+ },
+ "Q12": {
+  "answer": 120,
+  "tokens": 60266
+ },
+ "Q13": {
+  "answer": [
+   "INT-0c324214",
+   "E2E-88a2b164"
+  ],
+  "tokens": 61958
+ },
+ "Q14": {
+  "answer": [
+   "REQ-e17b5664"
+  ],
+  "tokens": 67464
+ },
+ "Q15": {
+  "answer": [
+   "REQ-e2cd6362",
+   "REQ-78bc1a67",
+   "REQ-3e8ac2c6"
+  ],
+  "tokens": 59159
+ }
+}

@@ -91,6 +91,7 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | CFG-06 | Data refers to configuration by stable key, never by display label. |
 | CFG-07 | A configuration entry that is in use cannot be deleted, but can be retired: existing data stays valid and editable, new use is refused. |
 | CFG-08 | A default configuration ships with the tool (stereotypes, statuses, link types; see ADR-020); everything in it can be edited. |
+| CFG-09 | Every stereotype, status and link type has a free-text description (empty when not written) that the tool stores and shows but never interprets; older models get empty descriptions on their first change (ADR-033). *From 0.4.0.* |
 
 ## SRC — search
 
@@ -157,6 +158,17 @@ than guessed. If a statement here disagrees with the tool, ask the owner which o
 | USE-12 | The editor has its own icon in the browser tab. |
 | USE-13 | In the explorer, Ctrl+click and Shift+click add or remove elements from the one selection the explorer and the open diagram share; dragging one selected element moves all selected ones (into a folder, before or after an element, onto the diagram). |
 | DOC-05 | A demo model, built through the tool's own operations. |
+
+## AGT — reading by agents (0.4.0, ADR-032)
+
+| ID | Requirement |
+|---|---|
+| AGT-01 | A derived index of the model can be built; it lives next to the model outside git, is never a source of truth, and deleting it loses nothing. |
+| AGT-02 | The index is rebuilt when the model file, the index schema or the tool version changed, and not otherwise; a reader never sees a half-built index. |
+| AGT-03 | An agent can run a SQL query on the index; anything that would write, attach another database or change the schema is refused. |
+| AGT-04 | Query output is capped in rows and cell length (configurable per call and by environment; defaults 50 rows, 200 characters), says how much was left out, and is available as text or JSON. |
+| AGT-05 | The index describes its own tables and columns, and carries the model's configuration with its descriptions. |
+| AGT-06 | The index works without full-text search when the Python build lacks it, and says which search it has. |
 
 ## IDs with no recorded meaning
 

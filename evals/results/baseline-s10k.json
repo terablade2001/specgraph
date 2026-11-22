@@ -1,0 +1,163 @@
+{
+ "_control_tokens": 55205,
+ "Q01": {
+  "answer": [
+   "B-REQ-3b384c25"
+  ],
+  "tokens": 59406
+ },
+ "Q02": {
+  "answer": [
+   "REQ-18609e1e",
+   "INT-fe208a14",
+   "REQ-3f844e76",
+   "ADR-3211ad07",
+   "E2E-7d925879",
+   "REQ-a08c5822",
+   "REQ-efde138b",
+   "E2E-3a271e9d",
+   "REQ-f56fb83b",
+   "ADR-d33e2391"
+  ],
+  "tokens": 60728
+ },
+ "Q03": {
+  "answer": [
+   "REQ-3c4685c8"
+  ],
+  "tokens": 68952,
+  "note": "filtered 1104 validate warnings; method self-reported"
+ },
+ "Q04": {
+  "answer": 1104,
+  "tokens": 61340,
+  "note": "counted validate warnings; method self-reported"
+ },
+ "Q05a": {
+  "answer": [
+   "REQ-0dac87a3",
+   "REQ-18609e1e",
+   "RISK-34463932",
+   "REQ-60c8a507",
+   "REQ-703394f6",
+   "REQ-7b5e8244",
+   "REQ-8f04ff65",
+   "REQ-93391395",
+   "RISK-b316080b",
+   "REQ-b972d44c",
+   "REQ-d5d27bf5",
+   "REQ-dcd24b6a",
+   "REQ-e09ef1a6"
+  ],
+  "tokens": 71287
+ },
+ "Q05b": {
+  "answer": [
+   "REQ-4e6a8d11",
+   "REQ-86c551ee",
+   "REQ-2d5dfba6",
+   "REQ-379277f9",
+   "REQ-f0fc6a40",
+   "REQ-1ecd1f9c",
+   "REQ-4cc13160",
+   "RISK-1a5d2d6c",
+   "RISK-8055007b",
+   "REQ-096b40d7",
+   "REQ-26324936",
+   "REQ-e8d24f8c",
+   "REQ-4f241e79",
+   "REQ-aaff1ba1",
+   "REQ-f6eb9431",
+   "REQ-2da8b701",
+   "REQ-dda1a821",
+   "REQ-ee7f3d48"
+  ],
+  "tokens": 72225
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-3c183411",
+   "REQ-471527ad",
+   "REQ-6f04fd61",
+   "REQ-fb399be2",
+   "REQ-4e5f960c",
+   "REQ-c0d16cad",
+   "REQ-b524beff",
+   "REQ-f71d52f6"
+  ],
+  "tokens": 69119
+ },
+ "Q06": {
+  "answer": [
+   "RISK-2809a0eb",
+   "RISK-77eda77c",
+   "RISK-8544fd80",
+   "RISK-8645abd7",
+   "RISK-b90206ca"
+  ],
+  "tokens": 80554
+ },
+ "Q07": {
+  "answer": [
+   "Markets/Markets Requests",
+   "Road works/Road works Staff planning",
+   "School enrolment/School enrolment Work orders"
+  ],
+  "tokens": 60509
+ },
+ "Q08": {
+  "answer": [
+   "REQ-0de6176c",
+   "REQ-9fa791ec"
+  ],
+  "tokens": 93244
+ },
+ "Q09": {
+  "answer": [
+   "FEAT-55618880",
+   "REQ-54e023aa",
+   "REQ-dc77e4df",
+   "RISK-8333732d",
+   "U-REQ-0f3e66e5"
+  ],
+  "tokens": 68543
+ },
+ "Q10": {
+  "answer": [],
+  "tokens": 78242,
+  "note": "rerun: gave up, no command finds unlinked elements; first run (72532 tokens) read the generator and was invalid"
+ },
+ "Q11": {
+  "answer": [],
+  "tokens": 87912,
+  "note": "gave up: ~10K topics, '(2)' repeats"
+ },
+ "Q12": {
+  "answer": 1256,
+  "tokens": 61270,
+  "note": "rerun; first run (60396 tokens) grepped a saved output file and was invalid"
+ },
+ "Q13": {
+  "answer": [
+   "E2E-b46da42c",
+   "E2E-33c5e964",
+   "E2E-52eb6952",
+   "INT-da65b4ca"
+  ],
+  "tokens": 63979
+ },
+ "Q14": {
+  "answer": [
+   "REQ-e7dcdd05"
+  ],
+  "tokens": 69974
+ },
+ "Q15": {
+  "answer": [
+   "REQ-09172810",
+   "REQ-50ce007b",
+   "RISK-9f7e7c0c"
+  ],
+  "tokens": 59038
+ }
+}

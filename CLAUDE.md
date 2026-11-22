@@ -136,7 +136,7 @@ throwaway key: readable with `--file`, not editable. Never edit it by hand; to c
 change `sample/build_example.py`, run it, copy its `specmodel.json` over the stored file and retake
 `docs/img/*.png` (README). `sample/build_sample.py` is the smaller demo used by the browser tests.
 
-Environment variables: `SPECGRAPH_FILE` (model path),
+Environment variables: `SPECGRAPH_FILE` (model path), `SPECGRAPH_SQL_LIMIT` / `SPECGRAPH_SQL_WIDTH` (row and cell caps of `sg.py sql`, from 0.4.0),
 `SPECGRAPH_SSH_KEYGEN` / `SPECGRAPH_SSH_ADD` (paths to ssh-keygen / ssh-add), `SPECGRAPH_UNDO` (undo steps of the editor). 
 
 ## Reading the model
@@ -263,4 +263,4 @@ specmodel.example.json  stored example model (output of build_example.py)
 ## Not in scope (do not build unless asked)
 
 Real-time collaboration, hosted servers, import/export of other tools' formats, full UML/SysML, mobile use,
-index generation, MCP server, baselines, automatic diagram layout.
+generated documents or files kept in the repository (the derived index of ADR-032 lives outside git), MCP server, baselines, automatic diagram layout.

@@ -1,0 +1,18 @@
+{
+ "_control_tokens": 55205,
+ "Q01": {"answer": ["B-REQ-001"], "tokens": 59814},
+ "Q02": {"answer": ["REQ-001","REQ-002","REQ-003","INT-001","ADR-003","E2E-001","ADR-001"], "tokens": 59503},
+ "Q03": {"answer": ["REQ-001"], "tokens": 61188},
+ "Q04": {"answer": 1, "tokens": 58094},
+ "Q05a": {"answer": ["FEAT-002","REQ-004","REQ-005","ADR-002","T-ADR-001","RISK-002","U-REQ-002","E2E-002"], "tokens": 63124},
+ "Q05b": {"answer": ["CON-001","CON-002"], "tokens": 62138},
+ "Q05c": {"answer": ["E2E-001","RISK-001","REQ-003","ADR-001"], "tokens": 60749},
+ "Q07": {"answer": ["Compliance (locked)"], "tokens": 59242},
+ "Q08": {"answer": ["ADR-003","REQ-006"], "tokens": 63071},
+ "Q09": {"answer": ["ISS-001"], "tokens": 73677, "note": "tried a shell loop first; it was refused, then used show only"},
+ "Q10": {"answer": [], "tokens": 70009},
+ "Q12": {"answer": 2, "tokens": 58506},
+ "Q13": {"answer": ["INT-001","E2E-001"], "tokens": 61474},
+ "Q14": {"answer": ["REQ-006"], "tokens": 64441},
+ "Q15": {"answer": ["REQ-003","RISK-001"], "tokens": 59378}
+}

@@ -1,0 +1,9 @@
+{
+ "note": "Hand-written facts for specmodel.example.json (labels). Concepts: elements whose own topic or notes are about it.",
+ "concepts": {
+  "notifying members (reminders, e-mail, SMS)": ["U-REQ-002", "FEAT-002", "REQ-004", "REQ-005", "ADR-002", "T-ADR-001", "RISK-002", "E2E-002"],
+  "working without a network connection": ["REQ-003", "ADR-001", "RISK-001", "E2E-001"],
+  "privacy and personal data": ["CON-001", "CON-002"]
+ },
+ "duplicates": []
+}
