@@ -15,6 +15,7 @@ from . import VERSION
 from . import ai as AI, model as M, query as Q, rules, stamp as S, validate as V
 
 SCHEMA_VERSION = 3       # 2: AI labels (ADR-034); 3: findings (ADR-036)
+LENGTH_LIMIT = 10_000_000   # largest text or blob a query may build (bytes); Python 3.11+ only
 SWAP_WAIT = 2.0        # seconds to retry the swap while another process holds the old index (Windows)
 
 # (table, column, meaning); column "" is the table itself. Feeds `columns_doc` and `sql --schema`.
@@ -221,6 +222,26 @@ CREATE VIEW v_links AS
 STEMMED = "porter unicode61 remove_diacritics 2"
 
 
+class IndexRefused(Exception):
+    """The index is in a place the tool does not trust (security review of 0.4.0)."""
+
+
+def _check_place(db):
+    """An index committed to git, or reached through a link, may have been planted: never read or replace it."""
+    folder = os.path.dirname(db)
+    for p in (folder, db):
+        if os.path.islink(p):
+            raise IndexRefused("%s is a link; the tool does not use or write an index through a link. "
+                               "Remove it." % p)
+    from . import gitio
+    root = gitio.repo_root(os.path.dirname(folder))
+    if root:
+        code, out = gitio.git(root, "ls-files", "--", gitio.rel_path(root, folder), check=False)
+        if code == 0 and out.strip():
+            raise IndexRefused("%s is tracked by git, so it may not be the tool's own index; it is not used. "
+                               "Run: git rm -r --cached %s" % (folder, gitio.rel_path(root, folder)))
+
+
 def index_path(model_path):
     folder, name = os.path.split(os.path.abspath(model_path))
     return os.path.join(folder, ".specgraph", name + ".db")
@@ -425,6 +446,7 @@ def build(model_path, _data=None):
     problems = S.check_integrity(model)
     db = index_path(model_path)
     folder = os.path.dirname(db)
+    _check_place(db)
     _prepare(folder)
     fts = fts_mode()
     info = {"schema_version": str(SCHEMA_VERSION), "tool_version": VERSION,
@@ -468,6 +490,7 @@ def ensure(model_path):
     """The index of a model, rebuilt first when stale (ADR-032 §2): same result shape as build()."""
     data, sha = _read(model_path)
     db = index_path(model_path)
+    _check_place(db)
     meta = _meta(db)
     if _fresh(meta, sha, _ai_sha(model_path)):
         return {"path": db, "built": False, "private": False, "seconds": 0.0, "fts": meta.get("fts"),
@@ -506,7 +529,11 @@ def _authorize(action, arg1, arg2, _db, _trigger):
 
 
 def _open_ro(db):
-    return sqlite3.connect("file:%s?mode=ro" % db.replace("\\", "/").replace("?", "%3f"), uri=True)
+    from urllib.parse import quote                       # '#', '?' and '%' in a folder name must not cut the URI
+    con = sqlite3.connect("file:%s?mode=ro" % quote(db.replace("\\", "/"), safe="/:"), uri=True)
+    if hasattr(con, "setlimit"):
+        con.setlimit(sqlite3.SQLITE_LIMIT_LENGTH, LENGTH_LIMIT)
+    return con
 
 
 def _cut(v, width):

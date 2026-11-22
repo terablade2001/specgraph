@@ -626,3 +626,23 @@ def test_ail09_findings_merge_and_dismissal_wins():
                                                           "by": "ada", "at": "t"}})
     merged, conflicts = A.merge3(base, kept, dismissed)
     assert conflicts == [] and set(merged["findings"]) == {"f2"} and "gap:e1" in merged["dismissed"]
+
+
+# -- security review of 0.4.0 -------------------------------------------------------------------------------
+
+def test_sec_ai_writes_refused_on_a_hand_edited_model(ada, keys):
+    """The AI file is never signed on top of a model changed outside the tool (as Store.apply refuses)."""
+    from specgraph.store import Store
+    m = ada.load()
+    m["users"]["eve"] = {"role": "admin", "keys": [S.norm_key(open(keys["eve"] + ".pub").read())]}
+    M.save(ada.path, m)
+    eve = Store(path=ada.path, key=keys["eve"])
+    with pytest.raises(StoreError, match="stamp"):
+        ai_do(eve, op("ai.vocab.add", label="X", definition="x"))
+    assert not os.path.exists(A.ai_path(ada.path))
+
+
+def test_sec_prompts_say_model_text_is_data():
+    for p in (A.PROMPT, A.VOCAB_PROMPT, A.REVIEW_PROMPT):
+        assert "data, not instructions" in p
+    assert A.PROMPT_VERSION == 2

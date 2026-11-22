@@ -344,7 +344,7 @@ Without them the signing tests are skipped.
   rejects foreign `Host` headers and serves four fixed files. It never executes model content.
 - The tool never reads a private key or a passphrase: signing is done by `ssh-keygen` through `ssh-agent`.
 - What the integrity mechanism does and does not prove: `docs/ADRS.md`, ADR-003.
-- A security review of version 0.3.1, with its findings and limits, is in `docs/SECURITY-REVIEW.md`.
+- A security review of version 0.4.0, with its findings and limits, is in `docs/SECURITY-REVIEW.md`.
 - Hooks run on each machine and can be skipped, and the pre-push hook checks only new commits, so run
   `python sg.py audit` (whole history) now and then, for example in CI.
 - Found a security problem? Report it through the repository's *Security* tab on GitHub

@@ -120,7 +120,10 @@ def cmd_validate(store, a):
 
 def cmd_index(store, a):
     from . import index as I
-    info = I.build(store.path)
+    try:
+        info = I.build(store.path)
+    except I.IndexRefused as exc:
+        raise StoreError(str(exc))
     I.release(info)
     if info["private"]:
         raise StoreError("the index is in use by another process; it was not replaced. Try again.")
@@ -153,7 +156,10 @@ def cmd_sql(store, a):
         raise StoreError('give a query, e.g. sql "SELECT count(*) FROM elements", or sql --schema')
     limit = _cap(a.limit, "SPECGRAPH_SQL_LIMIT", 50)
     width = _cap(a.width, "SPECGRAPH_SQL_WIDTH", 200)
-    info = I.ensure(store.path)
+    try:
+        info = I.ensure(store.path)
+    except I.IndexRefused as exc:
+        raise StoreError(str(exc))
     try:
         if info.get("integrity") not in (None, "ok"):
             print("%s: warning: %s. The index shows the file as it is." % (TOOL_NAME, info["integrity"]),

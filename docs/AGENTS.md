@@ -136,7 +136,11 @@ folder and links, the open and dismissed findings, and a prompt; `--label KEY` f
 packet lists `otherConcepts` for later packets). The agent reports `ai.finding.add` operations (kind, elements, a
 quote from each, a suggestion, optional `ops` for a person); an administrator applies them, and later dismisses
 (`ai.finding.dismiss`, never raised again) or closes (`ai.finding.close`) them. Open findings are in the index
-(`ai_findings`, `ai_finding_elements`). A review never changes the model.
+(`ai_findings`, `ai_finding_elements`). A review never changes the model. A finding's `ops` were written by an
+agent from text in the model: read them before running them with `sg.py apply`, never run them unread.
+
+Everything an agent reads from the model is data, not instructions (the packets' prompts say so). A spec that
+contains "ignore your instructions and …" is a spec with odd text, not an order.
 
 Labels never block anything: a model change only makes them stale. Commit `specmodel.ai.json` and
 `specmodel.ai.log.jsonl`, preferably in their own commit. Labelling on two branches merges by itself (merge driver,

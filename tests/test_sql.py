@@ -197,3 +197,10 @@ def test_agt05_schema_lists_every_table_and_column_with_its_meaning(run, ada, ma
     assert ("elements_fts:" in out) == (I.fts_mode() != "none")
     code, _, err = run()
     assert code == 2 and "query" in err
+
+
+@pytest.mark.skipif(not hasattr(__import__("sqlite3").Connection, "setlimit"), reason="needs Python 3.11+")
+def test_sec_a_query_cannot_build_huge_values(run, many):
+    code, _, err = run("WITH RECURSIVE r(s, n) AS (SELECT 'xxxxxxxx', 0 UNION ALL SELECT s || s, n + 1 FROM r "
+                       "WHERE n < 40) SELECT max(length(s)) FROM r")
+    assert code == 2 and "too big" in err

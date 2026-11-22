@@ -43,6 +43,12 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
   an administrator with `ai.finding.add`; each must quote every element it names, and a dismissed finding is never
   accepted again (`ai.finding.dismiss`, `ai.finding.close`). The index gets `ai_findings` and
   `ai_finding_elements` (schema 3). A review never changes the model.
+- **Security review of 0.4.0** (`docs/SECURITY-REVIEW.md`), with five low-severity fixes: `ai apply` refuses to sign
+  on top of a model changed outside the tool; `sql` and `index` refuse an index that is tracked by git or reached
+  through a link (it may have been planted); a `#` or `%` in the model's folder name no longer breaks `sql` or
+  creates a stray file; a query can no longer build a value above 10 MB (Python 3.11+); the packets' prompts
+  (version 2) and the guide say that model text is data, not instructions, and that a finding's `ops` must be read
+  before they are run.
 - **AI labels stay optional (ADR-037):** measured with and without labels (`evals/results/LABELS-EVAL.md`); the README
   says when labels pay off and what they cost.
 - (evaluations) A first labelling pass on the 1 000-element model: cost and quality in `evals/results/LABELS-S1K.md`.

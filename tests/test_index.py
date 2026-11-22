@@ -234,3 +234,30 @@ def test_agt01_index_command(ada, filled):
     out = json.loads(p.stdout)
     assert out["elements"] == 3 and out["links"] == 1 and out["path"] == I.index_path(ada.path)
     assert out["fts"] == I.fts_mode() and out["integrity"] == "ok" and out["seconds"] >= 0
+
+
+# -- security review of 0.4.0 -------------------------------------------------------------------------------
+
+def test_sec_index_tracked_by_git_or_linked_is_not_used(ada, filled, repo):
+    from conftest import git
+    db = I.build(ada.path)["path"]
+    git(repo, "add", "-f", os.path.relpath(db, str(repo)))          # someone commits an index
+    with pytest.raises(I.IndexRefused, match="tracked by git"):
+        I.ensure(ada.path)
+    with pytest.raises(I.IndexRefused, match="tracked by git"):
+        I.build(ada.path)
+    from specgraph.cli import main
+    assert main(["--file", ada.path, "sql", "SELECT 1"]) == 2 and main(["--file", ada.path, "index"]) == 2
+    git(repo, "rm", "-q", "--cached", os.path.relpath(db, str(repo)))
+    assert I.ensure(ada.path)["path"] == db
+
+
+def test_sec_index_in_a_folder_with_special_characters(tmp_path, keys):
+    from specgraph.store import Store
+    d = tmp_path / "a#b%20c d"
+    d.mkdir()
+    s = Store(path=str(d / "specmodel.json"), key=keys["ada"])
+    s.init("ada")
+    info = I.ensure(s.path)
+    assert I.query(info["path"], "SELECT count(*) FROM users")["rows"] == [[1]]
+    assert sorted(os.listdir(str(tmp_path))) == ["a#b%20c d"]                 # no stray file

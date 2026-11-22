@@ -1,11 +1,12 @@
-# Security review of specgraph 0.3.1
+# Security review of specgraph 0.4.0
 
 - **Reviewed by:** Claude (model Opus 5.5), an AI model made by Anthropic, at the request of the project owner.
-- **Date:** 2026-11-21.
-- **Version:** 0.3.1: release 0.3.0 (commit `68dc2ab`) plus the fixes for two findings of this review
-  (ADR-031). The files and hashes are listed at the end.
-- **Replaces:** the review of version 0.1.0 (2026-11-15, Claude, model Fable 5.2). This review was done again
-  from the start. It did not reuse the earlier result.
+- **Date:** 2026-11-23.
+- **Version:** 0.4.0 (not yet released): branch `3-Support_optimized_AI_synergy` at commit `e8a2fcb`, plus the fixes
+  for five findings of this review, committed together with this document. The files and hashes are listed at the
+  end.
+- **Builds on:** the review of 0.3.1 (2026-11-21, Claude, model Opus 5.5). Everything changed since 0.3.1 was read
+  and tried again; the unchanged files were checked against their 0.3.1 hashes and not re-read line by line.
 - **Question asked:** does the software do harm on purpose (steal data, communicate in secret, run hidden
   code), and does it have security weaknesses?
 
@@ -14,197 +15,185 @@
 - It says what was checked, how, and what was found, for the exact files listed at the end.
 - It is **not a cryptographic signature**. An AI model holds no signing key. The statement is tied to the
   code by the file hashes at the end. If a file's hash differs, this review does not cover that file.
-- It is **not a certification, a guarantee or an independent audit**. Claude models wrote most of this
-  code. This review was done by a different model version, but it is still not an outside party. No human
-  security specialist has reviewed the code.
+- It is **not a certification, a guarantee or an independent audit**. Claude models wrote this code, the same
+  model version wrote most of the 0.4.0 changes and this review. No human security specialist has reviewed it.
 - A review can show that problems were not found. It cannot prove that none exist.
 
 ## Result
 
-**No harmful behaviour was found.** The reviewed files contain no code that sends data anywhere and no
-connection to any machine other than your own. They contain no hidden or encoded code. They do not read
-private keys, passwords, browser data or files outside the repository the tool works in. Nothing runs text
-from the model as a program.
+**No harmful behaviour was found.** The new code (the SQLite index and `sql` command, the AI labels file, its
+merge driver, work packets and findings) contains no network code, starts no program other than `git`, reads no
+private key, and runs no text from the model or from an agent as a program. Its only new library is Python's own
+`sqlite3`.
 
-**One medium-severity weakness was found in 0.3.0 and is fixed in 0.3.1.** A merge accepted a model
-edited by hand on another branch without a warning, and stamped it under the name of the person merging
-(point 1 below). A low-severity weakness in the page was fixed with it (point 3). Both fixes have tests,
-and the trials that found the weaknesses were run again against 0.3.1. **No high- or medium-severity
-weakness remains known.** Eight low-severity points and limits remain, listed below so that users can
-judge them.
+**No high- or medium-severity weakness was found.** Five low-severity weaknesses were found and are **fixed in this
+version**, each with a test (points 1 to 5). Two limits are new (points 6 and 7); the limits of 0.3.1 still apply
+(points 8 to 15).
 
-## What changed since the 0.1.0 review
+## What changed since 0.3.1
 
-Every file was read again. The changes that matter for security:
-
-- The server serves a fourth static file, `favicon.svg` (a fixed drawing, no script).
-- The pre-push hook passes the remote name (`"$1"`) to `sg.py` and reads the refs git hands it on stdin.
-  It now checks only the commits being pushed (ADR-025). This is safe in itself, but see point 2.
-- `audit <from> <to>` takes two revisions from the command line and passes them to `git rev-list`.
-- The branch rule was removed (ADR-024). A new `order` field and the `folder.order` operation follow the
-  lock rules (checked).
-- The editor page gained multi-selection, alignment, a grid, an overview, PNG export and copy to clipboard.
-  It still builds every element with `textContent` / `setAttribute`. It has no `innerHTML`, no `eval`,
-  and makes no request except to its own server.
+- `specgraph/index.py` (new): builds a derived SQLite database from the model in `.specgraph/` next to it, and runs
+  one read-only query for `sg.py sql`: database opened read-only, `PRAGMA query_only`, an authorizer that allows
+  only reading (no writes, schema changes, `ATTACH`, transactions, writing pragmas or `load_extension`), a time
+  limit and capped output.
+- `specgraph/ai.py` (new): the optional AI labels file `specmodel.ai.json` (vocabulary, labels, rules, findings),
+  signed like the model, with one checked write path (`sg.py ai apply`), an append-only log, work packets for
+  agents, and a three-way merge driver. Vocabulary, rules and findings can be changed by administrators only; the
+  commit hook and `audit` check that on every commit.
+- `cli.py`, `audit.py`, `hooks.py`: the commands `index`, `sql` and `ai …`; the commit check and the audit also
+  check the AI file; `install-hooks` configures a second merge driver.
+- Format 3 (`ops.py`, `validate.py`, `merge.py`, `defaults.py`): a description per type, status and link type. The
+  editor shows it as a tooltip (`setAttribute`, never as HTML) and edits it in a text area.
+- `sample/build_synthetic.py` (new, not part of the tool): builds large test models; it creates a throwaway key in
+  the target folder (ignored by git there) and a private `ssh-agent` that it stops afterwards.
 
 ## What the software does on your machine
 
 | Area | Finding |
 |---|---|
-| Network | The only network code is the local editor server (`specgraph/server.py`). It listens on `127.0.0.1` only. Nothing in the tool opens a connection to another machine. No telemetry, no update check. |
-| Browser page | Four local files. No external script, font, image or link. The page talks only to the local server. A content security policy forbids everything else, so even a hostile model file cannot make the page load from or send to another site (tried, see below). |
-| Programs it starts | `git`, `ssh-keygen` and `ssh-add`, always with an argument list (no shell). Your default browser, once, to open the local link. Through git: its own hooks and merge driver, which run `sg.py` again. Nothing else. |
-| Files it reads | The model file, its deleted-elements log, the four page files, `.gitattributes`, an existing git hook (to see whether it is its own), the merge driver's three temporary files from git, and git objects through `git`. Public keys only, from `ssh-agent`. It never reads a private key file. |
-| Files it writes | The model file (through a temporary file next to it), a `.lock` file next to it, the deleted-elements log, `.gitattributes`, two git hooks and the merge-driver setting (only on `install-hooks`), and short-lived files in a private temporary folder for signing. |
-| Secrets | It never reads a private key or a passphrase. Signing is done by `ssh-keygen` through `ssh-agent`. The editor's access token is random (192 bits), compared in constant time, kept for the browser tab only (`sessionStorage`), and removed from the address bar on load. |
-| Dynamic code | No `eval`, `exec`, `pickle`, dynamic import or encoded data in the Python code. No `eval`, `innerHTML`, `new Function` or script injection in the page code. |
-| Dependencies | Python standard library only. No third-party package is installed or bundled to run the tool. |
+| Network | Unchanged: only the local editor server on `127.0.0.1`. The new code opens no connection. |
+| Programs it starts | `git`, `ssh-keygen`, `ssh-add` (argument lists, no shell); through git its own hooks and **two** merge drivers, which run `sg.py`. Nothing else. |
+| Files it reads | As in 0.3.1, plus the AI file and its log, the derived index in `.specgraph/`, and files an agent or user passes to `ai apply --ops-file`. |
+| Files it writes | As in 0.3.1, plus: `.specgraph/` next to the model (the index, its temporary build file and a `.gitignore` with `*`), the AI file and its log (only through `ai apply`, `ai resolve` or the merge driver), packet files given with `--out`, and the `.gitattributes` lines and merge-driver setting for the AI file (only on `install-hooks`). |
+| Secrets | Unchanged: no private key or passphrase is read; signing goes through `ssh-agent`. |
+| Dynamic code | None in the new code. Text from the model and from agents is stored, compared or shown, never run. A finding's `ops` is a suggestion stored as data; the tool never runs it. |
+| Dependencies | Python standard library only (`sqlite3` is part of it). |
 
 ## How it was checked
 
-1. **Reading the code.** All Python files of the tool (about 2,840 lines) were read. They were also
-   searched for every network, process, file, environment and dynamic-code call. The page code (about 1,370
-   lines of JavaScript) was searched for every place where model text reaches the page, the network,
-   storage or the clipboard, and those places were read. The server, signing, git, hook, audit, merge,
-   store and rule code were read in full. So was the whole change since version 0.1.0, and the two fixes
-   of 0.3.1.
-2. **Probing the running server** from outside the page, with 31 hostile requests. All were refused as
-   intended:
-   - a request without a token, with a wrong token, or with the token in the address instead of the header;
-   - a foreign, look-alike or empty `Host` header (the "DNS rebinding" attack);
-   - ten attempts to fetch files outside the four page files (`/../sg.py`, encoded variants,
-     `/specmodel.json`, `/.git/config`, `/C:/Windows/win.ini` and others);
-   - a write sent as a web form or as plain text, a write without a token or from a foreign host;
-   - an oversized or negative request length, a body that is not a JSON object, an unknown operation;
-   - a delete without confirmation;
-   - a cross-site preflight request (answered without any permission header);
-   - malformed queries.
-
-   A connection through the machine's network address was refused: the server can be reached from the
-   same machine only. The model file was byte-for-byte unchanged after the probes. The probes were run on
-   0.3.0 and again on 0.3.1, with the same result.
-3. **A hostile model in the browser.** This was listed as untried in the 0.1.0 review. A model was edited
-   by hand so that element topics, notes, labels, folder, diagram, type and link names contained
-   `<script>`, `<img onerror>`, `<svg onload>` and `javascript:` text. Type, status and link colours
-   contained CSS that loads an image from another site. The editor was opened on it in Chrome.
-   - In both versions all text was shown as text. No script ran, no element got an event attribute, and
-     no image element was created.
-   - In 0.3.0 the CSS in a type colour reached an inline style (point 3). The content security policy
-     blocked the outside image every time (9 attempts in the console).
-   - In 0.3.1 no hostile colour appears in any style or drawing, and the page made no attempt to reach
-     another site. A browser test now does the same check (`test_sec_colours_*`).
-4. **Watching what it does.** The test suite without the browser tests (66 tests on 0.3.1) was run with a
-   Python audit hook. The hook recorded every network call, every program started and every file opened
-   for writing, in the tool and in every Python process it started, the git hooks included. Results, the
-   same on 0.3.0 and 0.3.1:
-   - Every network call went to `127.0.0.1`, to the tests' own editor servers.
-   - The programs started were `git` and the OpenSSH programs `ssh-keygen`, `ssh-add` and `ssh-agent`.
-     `ssh-agent` is started by the tests only.
-   - Every file written was inside the tests' temporary folders, Python's private temporary folders for
-     signing, or git's temporary merge files.
-5. **Tests.** All 81 automated tests pass on 0.3.1, the browser tests included (Windows 11, Python 3.13,
-   Chrome). Some of them try to bypass locks, forge stamps, edit the file by hand, push bad commits and
-   merge a hand-edited branch.
-6. **A merge of a hand-edited branch** was tried in a scratch repository, on 0.3.0 and on 0.3.1 (point 1).
+1. **Reading the code.** Everything changed since 0.3.1 was read (`git diff` against 0.3.1, about 1 800 added lines
+   of Python, plus the page change). The new modules were searched for every network, process, file, environment,
+   SQL and dynamic-code call. The authorizer, the integrity and permission checks of the AI file, the merge driver
+   and the audit changes were read in full.
+2. **Probes** (16, written for this review, not kept in the repository):
+   - 11 more ways to write through `sql` (table-valued pragmas with arguments, `INSERT` inside `WITH`, two
+     statements, a trigger, `readfile`, `edit`, `load_extension`, FTS functions): all refused or harmless, and the
+     index file was byte-for-byte unchanged after each.
+   - a malformed AI file: the index, `ai status` and `ai todo` kept working;
+   - a finding with 1 000 suggested operations and a 5 000-character quote: stored, nothing run;
+   - a model folder named with `#`, a hand-edited model with a self-made administrator, and an index file with
+     altered content: these found points 1 to 3 below; all three now pass.
+3. **Watching what it does.** The 170 tests without a browser were run with a Python audit hook in every Python
+   process they started (including `sg.py` run by git hooks and both merge drivers). Every network call went to
+   `127.0.0.1` (the tests' own editor servers). The programs started were `git`, `ssh-keygen`, `ssh-add`,
+   `ssh-agent` (started by the tests) and `sg.py` itself. Every file written was inside the tests' temporary
+   folders or git's temporary merge files.
+4. **Tests.** All automated tests pass on this version, the browser tests included (Windows 11, Python 3.13,
+   SQLite 3.53, Chrome); five of them were added by this review (`test_sec_*` in `test_ai.py`, `test_index.py`,
+   `test_sql.py`).
 
 ## Findings, points and limits
 
-1. **Medium, fixed in 0.3.1: a merge laundered a hand edit.** In 0.3.0 the merge driver and `sg.py resolve`
-   did not check the stamps of the two versions they merged. Tried: user *bob* edits the file by hand to
-   make himself an administrator, and commits with `--no-verify`. User *ada* merges that branch. The merge
-   succeeded without a warning, and the result was stamped and signed by *ada*. The editor and
-   `sg.py check` then reported the file as intact. The merge commit also passed the commit hook and the
-   audit, because every item in it equals one of its parents. Only a full `sg.py audit` still showed the
-   hand edit, at its own commit.
-   **Fix (ADR-031):** before merging, the driver and `resolve` check our and their version the way the
-   editor checks the working file. If either was changed outside the tool, nothing is written and git
-   reports the model as conflicted with our version in place. The same trial on 0.3.1: the merge stops,
-   *bob* stays a plain user, and *ada*'s file is unchanged and intact. **Remaining limit:** someone who
-   edits their side, adds their own key to it and signs with that key passes this check, as with the
-   working file (point 7). The commit hook and `audit` still catch that case.
-2. **Low: once a bad commit is on the remote, only a full audit finds it.** Since ADR-025 the pre-push hook
-   checks only commits the remote does not have yet. Hooks run on each person's machine and can be skipped
-   with `--no-verify`. Nothing on the git server checks the model. A bad commit pushed that way is reported
-   only when someone runs `sg.py audit` without arguments, or when someone tries to merge it (point 1).
-   Run the full audit now and then, for example in CI.
-3. **Low, fixed in 0.3.1: a colour from a hand-edited model reached an inline style.** In 0.3.0 the small
-   type chip in the editor (tree and properties) put the stereotype's colours into a `style` text without
-   checking them. The tool's own operations accept only `#rrggbb` colours, so this needed a model edited
-   outside the tool. The content security policy blocked every outside load. **Fix:** the page uses a
-   type, status or link colour only when it is `#rrggbb`, and falls back to grey otherwise
-   (`specgraph/web/app.js`, `hex`).
-4. **The access token is visible to other programs of the same user.** `serve` prints the link with the
-   token and hands it to the browser, and the browser may keep the link in its history. Another program
-   running under your account could read it while the editor runs. Such a program could already edit the
-   model file directly, so this adds little.
-5. **Git hooks are written with your paths inside double quotes.** If the path to Python or to the model
-   contained a `"`, `$` or backtick character, the hook would break or the shell would interpret that text.
-   Only your own folder names are involved.
-6. **The environment decides which programs run.** `SPECGRAPH_SSH_KEYGEN`, `SPECGRAPH_SSH_ADD` and `PATH`
-   choose the `ssh-keygen`, `ssh-add` and `git` that are started. Whoever controls your environment
-   controls the tool. This is normal for command-line tools.
-7. **What the signatures prove is limited** (ADR-003 in `docs/ADRS.md`). They detect edits made outside
-   the tool and name a registered key. Several things are outside that:
-   - They do not stop a registered user from making any change the rules allow.
-   - The first version of a model trusts its own user list.
-   - The deleted-elements log is not signed.
-   - The working file, and each side of a merge, is checked against its own user list. Someone who edits
-     the file, adds their own key and signs with it gets a file the editor shows as intact. The commit hook
-     and `audit` catch this, because they check against the previous commit's user list.
-8. **Running the tool means running the code in your copy.** After `install-hooks`, git also runs it on
-   commit, push and merge. When `sg.py` lives inside the repository, the hooks run the `sg.py` of the
-   branch that is checked out. If you check out or pull a changed `sg.py` or `specgraph/` from someone
-   else, that code runs as you on your next commit. Review updates to the tool as you would any program.
-9. **The tests are less strict than the tool.** The browser tests start Chrome with its sandbox switched
-   off (against the local page only). The tests also create throwaway keys and a private `ssh-agent`. This
-   affects people who run the tests, not users of the tool.
-10. **Stale lock file.** The next writer removes a `.lock` file older than 60 seconds. Two writers at that
-    exact moment could both proceed. The effect would be a lost change, not a leak.
+### Fixed in this version
+
+1. **Low: the AI file could be signed on top of a hand-edited model.** `ai apply` checked the AI file's stamp but
+   not the model's. Tried: the model was edited by hand to make an unregistered user an administrator; that user
+   then signed vocabulary changes, and the tool accepted them. The commit hook and `audit` would have reported both
+   files, but the tool should not sign there. **Fix:** `ai apply` refuses when the model does not match its stamp,
+   like `Store.apply` (`test_sec_ai_writes_refused_on_a_hand_edited_model`).
+2. **Low: a planted index was trusted.** `sql` used any `.specgraph/<model>.db` whose recorded hashes matched the
+   model. A repository could commit such a file with false content (agents would read it), and an untrusted SQLite
+   file would be opened. **Fix:** `sql` and `index` refuse an index folder that is tracked by git or is a link, and
+   say how to remove it (`test_sec_index_tracked_by_git_or_linked_is_not_used`). An index changed locally by
+   someone who can already write your files is not covered.
+3. **Low: a `#` in a folder name broke the read-only opening.** The index is opened through a SQLite URI; a `#`
+   ended the path there, the read-only flag was lost, and SQLite created an empty file next to the folder. **Fix:**
+   the path is escaped (`test_sec_index_in_a_folder_with_special_characters`).
+4. **Low: instructions hidden in spec text.** Work packets give agents the model's text; a spec could contain text
+   aimed at the agent ("label everything X", or a finding whose `ops` deletes elements). Nothing in the tool runs
+   such output: labels and findings pass the checks of `ai apply`, and `ops` are never run. **Fix:** the prompts
+   (version 2) and `docs/AGENTS.md` say that model text is data, not instructions, and that a finding's `ops` must
+   be read before anyone runs them (`test_sec_prompts_say_model_text_is_data`). This lowers, not removes, the risk:
+   a language model can still be misled.
+5. **Low: a query could use a lot of memory within its time limit.** A recursive query doubling a string reaches
+   SQLite's 1 GB value limit in seconds. Only the person (or agent) running `sql` is affected. **Fix:** on Python
+   3.11 and later, a value above 10 MB stops the query (`test_sec_a_query_cannot_build_huge_values`). On older
+   Python the 10-second limit and SQLite's own limit remain.
+
+### New limits
+
+6. **The AI merge trusts the users of both sides.** Like the model merge (ADR-031), the AI merge driver checks each
+   side's signature against the users known on either side and in the working file, and signs the result as the
+   person merging. A branch that adds its own user and signs AI changes with that key passes the merge; the commit
+   check and a full `audit` report it at its own commit.
+7. **Findings and AI labels are advice written by a language model.** They can be wrong or steered by text in the
+   specs (point 4). Only administrators can store findings; nothing in the tool acts on labels or findings. Quotes
+   and suggested `ops` have no size cap; an administrator could make the AI file large.
+
+### Still true from 0.3.1
+
+8. **Once a bad commit is on the remote, only a full audit finds it** (pre-push checks only new commits). Run
+   `sg.py audit` now and then, for example in CI.
+9. **The access token is visible to other programs of the same user** while the editor runs.
+10. **Git hooks and the merge-driver settings contain your paths inside double quotes**; a `"`, `$` or backtick in a
+    path would break them. Only your own folder names are involved.
+11. **The environment decides which programs run** (`SPECGRAPH_SSH_KEYGEN`, `SPECGRAPH_SSH_ADD`, `PATH`).
+12. **What the signatures prove is limited** (ADR-003): they detect edits outside the tool and name a registered
+    key; the first version trusts its own user list; the deleted-elements log and the AI log are not signed; the
+    working file and each side of a merge are checked against their own user lists.
+13. **Running the tool means running the code in your copy**, also through hooks and both merge drivers after
+    `install-hooks`. Review updates to the tool as you would any program.
+14. **The tests are less strict than the tool** (Chrome without its sandbox against the local page; throwaway keys
+    and a private `ssh-agent`).
+15. **Stale lock file:** two writers at the same moment after 60 seconds could both proceed (a lost change, not a
+    leak). The AI file uses the same lock.
 
 ## Not covered
 
-- Python, Git, OpenSSH and the browser themselves.
-- Linux and macOS: everything was run on Windows 11 with Python 3.13, Git for Windows and Chrome 157.
-- Fuzzing, or a search for mistakes in the merge and validation logic beyond what the tests and the merge
-  trials exercise.
+- Python, SQLite, Git, OpenSSH and the browser themselves.
+- Linux and macOS: everything was run on Windows 11 with Python 3.13, SQLite 3.53, Git for Windows and Chrome.
+- The language models agents use, and the agents' own tools; what an agent does outside `sg.py` is outside this
+  review.
+- `evals/` (evaluation scripts and recorded results, not part of the tool) beyond checking that no private key is
+  stored there.
+- Fuzzing, or a search for mistakes in the merge, validation and SQL logic beyond what the tests and probes
+  exercise.
 - Anything changed after this review: check the hashes.
 
 ## Reviewed files
 
-32 files. Each hash is the git object id of the file. Check one with `git hash-object <file>`, or all of
+40 files. Each hash is the git object id of the file. Check one with `git hash-object <file>`, or all of
 them against `git ls-files -s`.
 
 | File | Git object id |
 |---|---|
-| `.gitattributes` | `3763ad9334a2b7a13e948d0a566557ddc4eafb65` |
-| `.gitignore` | `77ac75498fba8af48ba35bda27fca8ff915cdff3` |
-| `sample/build_example.py` | `17b40729c13c8da20ffa4e4a293892110d028a33` |
+| `.gitattributes` | `189aa1426a5718cd255a7bfcff523685f2ba36ac` |
+| `.gitignore` | `79e7df79c878e7ba22974b15f76ef037ef9aa1c9` |
+| `sample/build_example.py` | `a145d0581a333cefa64d5922a48b124d2e00bacb` |
 | `sample/build_sample.py` | `1d2198c4fc2789e364ee3b7a925e875222d49e8f` |
+| `sample/build_synthetic.py` | `3028996e4fd00b42fdf2713e07fb632cb07ced65` |
 | `sg.py` | `368f799da2624a4ef9d5d68039b61bce277ad6fd` |
-| `specgraph/__init__.py` | `e4ea5f2e2853a029e7c057454a63fe40c0786f66` |
+| `specgraph/__init__.py` | `1979722cbb2e0e503b0066fb3ef646d2fc7c0e8e` |
 | `specgraph/__main__.py` | `8dc43872898801f27d1945e099aac3bdc255c005` |
-| `specgraph/audit.py` | `db851be880315b76648bcaa93efa8e3e1ac1bf58` |
-| `specgraph/cli.py` | `e79b35a492c93c3bbce358e3ab84e6ebee603339` |
-| `specgraph/defaults.py` | `290a3cf707c7f03897b0172f0e1c96ba2c39aa76` |
+| `specgraph/ai.py` | `a1cb2efbb13cf29c50d9a3891b52061236081215` |
+| `specgraph/audit.py` | `6f0bb8fbb09d8b2b184185bca0081e2024ebe69c` |
+| `specgraph/cli.py` | `38a0cd7860eab175e150cd20357f019f6cdce624` |
+| `specgraph/defaults.py` | `78e6545ddfb929c87ffb9448e9f5fe83768accd1` |
 | `specgraph/gitio.py` | `b7b5a100da84d5d82d85c0094336bf27adf196f2` |
 | `specgraph/history.py` | `0b7372d9dfb88882741ba1058e26d4dd2d399efb` |
-| `specgraph/hooks.py` | `9004d7f4fd69317f41f2c21c3dfe4638da5198a5` |
-| `specgraph/merge.py` | `9a105901d9f39a2e573a89b90ec11243afaf4429` |
+| `specgraph/hooks.py` | `fc8c3dd903499135dfdb3e4bc8378481a89f2d92` |
+| `specgraph/index.py` | `b737f2836be810fa8806ac01f6050a37133ad236` |
+| `specgraph/merge.py` | `2c0589dcd40b6d18b4cc22755ff5550f52494854` |
 | `specgraph/model.py` | `1ba7b04b00c28d8e807cc34b009c5fd634eef9a0` |
-| `specgraph/ops.py` | `32501cdd3d34d6ca4b40c23b57592f082cf1ef5e` |
+| `specgraph/ops.py` | `8f03724e2ca6a97ae2dbef67549fcf4d8f99ff7b` |
 | `specgraph/query.py` | `9e6309872dcd4da72a4eeee37d2b718d1f4d33b2` |
 | `specgraph/rules.py` | `e2fedf80844b10b5b019c8fe13768b435d550c53` |
 | `specgraph/server.py` | `1f22c58051edd8b5074801f1c754caaa43e9badb` |
 | `specgraph/stamp.py` | `42c0a2897f9632c245efabe7d0479c5ddd685407` |
 | `specgraph/store.py` | `ada2ef076891e86f64455204ac4493e989168b57` |
-| `specgraph/validate.py` | `825122614aaf68de56236ddd807bcb2d0e8de443` |
-| `specgraph/web/app.js` | `8b614ecc12d07c923f7f6defa7fc826c6d6fa349` |
+| `specgraph/validate.py` | `5c2a77fd7d971c4ba3b5f9bd12e8a8f83ddd9ff9` |
+| `specgraph/web/app.js` | `6364cc4e9a7c672d861c508938a4528a6a3d097d` |
 | `specgraph/web/favicon.svg` | `8b45d7c799fdde7aa783ce28d9f6c37596926cad` |
 | `specgraph/web/index.html` | `f65a8e5d77865af4bc8348584910f9dc5d124f5e` |
 | `specgraph/web/style.css` | `6148e5f997010c9db90fb2088da9d69bc88bf027` |
 | `tests/conftest.py` | `1555d157ab8f95c6db45a844b8ebc2f2fc7b80d7` |
-| `tests/test_changes.py` | `801590ce958f3d6afab909ad97dc764f0430f4db` |
+| `tests/test_ai.py` | `847328db6ec25af0d8a12fdef63d44ba3fbe3eff` |
+| `tests/test_changes.py` | `0600fe14ef624d7d2d3345245abf167d54960ea1` |
 | `tests/test_core.py` | `d68a7d9675557753b0c7b4eca29b42bc0ad94d59` |
+| `tests/test_descriptions.py` | `e162f905bddd348400511749fdc80ca032ecb2e4` |
 | `tests/test_example.py` | `c8634f58c44151ad09d8dbac5dbeb93253641816` |
+| `tests/test_index.py` | `6744a62559fcf0ea04f0edbdb2d6630d157b7365` |
 | `tests/test_integrity.py` | `34cbffa602b74d6641b29f345ca4eaf746decb7b` |
-| `tests/test_ui.py` | `190ef13c5cc64ba1c1617a033a0fe1a97fdb50a7` |
+| `tests/test_sql.py` | `4584ceec86b4dc668720d450bc1a9afe22669642` |
+| `tests/test_synthetic.py` | `1bca8cc586af59f7b05a57e39b04f8f5f8c8c037` |
+| `tests/test_ui.py` | `d17118eaacd36fee4c066b7f00073aac60285113` |
