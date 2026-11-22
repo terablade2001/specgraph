@@ -1,0 +1,91 @@
+{
+ "_control_tokens": 55205,
+ "Q05a": {
+  "answer": [
+   "REQ-828bad1b",
+   "REQ-6b792cf3",
+   "REQ-d6f6478c",
+   "REQ-48d08707",
+   "RISK-7f5a2e62",
+   "RISK-eeca2227",
+   "REQ-0509d4bb",
+   "REQ-3b05e178",
+   "REQ-1c7d9817",
+   "REQ-8ff64f1f",
+   "REQ-87c2b68f",
+   "REQ-55e7c56f",
+   "REQ-533db9bf",
+   "REQ-a959faf2",
+   "REQ-5d62ebb3",
+   "REQ-ee1fbd78",
+   "REQ-618f3ff4",
+   "REQ-74a9e3dd"
+  ],
+  "tokens": 68546,
+  "note": "commands: sql fts x2, sql x3 (1 wrong column), schema"
+ },
+ "Q05b": {
+  "answer": [
+   "REQ-b6532c35",
+   "RISK-18a05e0e",
+   "RISK-85a23b14",
+   "REQ-f7ee1864",
+   "REQ-2f20dbeb",
+   "REQ-2905ee59",
+   "REQ-093cce7c",
+   "REQ-65581634",
+   "REQ-9d7e3498",
+   "REQ-279555c4",
+   "REQ-80e7fb74",
+   "REQ-87f9580f",
+   "REQ-e1bde39c",
+   "REQ-710836dd",
+   "REQ-d8e6a7be",
+   "REQ-66b47645"
+  ],
+  "tokens": 79626,
+  "note": "commands: search x2, sql fts x3, sql x2 (1 wrong column), schema"
+ },
+ "Q05c": {
+  "answer": [
+   "REQ-4c75efec",
+   "REQ-5421b5c2",
+   "REQ-32b64c18",
+   "REQ-91c6042d",
+   "REQ-adbae86e",
+   "REQ-b986d12f",
+   "REQ-11eb2241",
+   "REQ-cd638ed4",
+   "REQ-f81d5f30",
+   "REQ-56140cf3",
+   "REQ-3e5b7f7b",
+   "REQ-96ef9f83",
+   "REQ-5c7c65ac",
+   "REQ-1b1fd58d"
+  ],
+  "tokens": 87164,
+  "note": "commands: sql fts x5, sql x4 (1 wrong column)"
+ },
+ "Q11": {
+  "answer": [
+   "REQ-66cb4577",
+   "REQ-54431113",
+   "REQ-f5307557",
+   "REQ-b827c909",
+   "REQ-1057fc4a",
+   "REQ-af9771c2",
+   "REQ-61523762",
+   "REQ-1475a6e2",
+   "REQ-8adf77ce",
+   "REQ-08ebe0c8",
+   "REQ-92f19a76",
+   "REQ-4bd3cbeb",
+   "REQ-60b9279d",
+   "REQ-b4054441",
+   "REQ-d424267e",
+   "REQ-cd21c969"
+  ],
+  "tokens": 83490,
+  "note": "commands: schema, sql x21"
+ }
+}

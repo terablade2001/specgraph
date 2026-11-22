@@ -32,6 +32,26 @@ def test_eval_synthetic_model_is_reproducible(tmp_path, keys):
     assert [p["code"] for p in V.validate(ma) if p["level"] == "error"] == []
 
 
+def test_eval_synthetic_topics_are_unique_and_hidden_concepts_avoid_their_words(tmp_path, keys):
+    """Phase 6b: no " (2)" topics (Q11 has only the planted pairs); hidden plants never use the concept's words;
+    duplicates copy only plain requirements."""
+    import re
+    import build_synthetic as B
+    s, f = B.build(str(tmp_path / "a"), 1000, seed=3, key=keys["ada"])
+    m = s.load()
+    topics = [e["topic"] for e in m["elements"].values()]
+    assert f["suffixed"] == 0 and len(set(topics)) == len(topics)
+    assert not [t for t in topics if re.search(r" \(\d+\)$", t)]
+    tagged = {x for v in f["concepts"].values() for x in v}
+    for cname, ids in f["hidden"].items():
+        assert ids and set(ids) <= set(f["concepts"][cname])
+        words = re.compile(B.CONCEPTS[cname]["words"], re.I)
+        for i in ids:
+            assert not words.search(m["elements"][i]["topic"] + " " + m["elements"][i]["notes"]), i
+    for a, b in f["duplicates"]:
+        assert a not in tagged and b not in tagged and m["elements"][a]["topic"] != m["elements"][b]["topic"]
+
+
 def test_eval_synthetic_ids_do_not_leak(tmp_path, keys):
     """After a build the tool makes random ids again (the seeded ids are only for the build)."""
     import build_synthetic as B

@@ -87,8 +87,8 @@ GENERIC_NOTES = [
     "The current spreadsheet is replaced by this.", "Keep the wording the clerks already use.",
     "Measured on the slowest supported tablet.", "Applies to all districts from the next release.",
 ]
-GENERIC_UREQ = ["As a resident I see where my {obj} stands", "As a clerk I handle a {obj} in one screen",
-                "As a supervisor I see which {objs} are late", "As field staff I record a {obj} on site"]
+GENERIC_UREQ = ["{M}: as a resident I see where my {obj} stands", "{M}: as a clerk I handle a {obj} in one screen",
+                "{M}: as a supervisor I see which {objs} are late", "{M}: as field staff I record a {obj} on site"]
 GENERIC_FEAT = ["{M} overview", "{M} editing", "{M} weekly report", "{M} field work", "{M} reminders"]
 GENERIC_ADR = ["{M}: keep {objs} in the central database", "{M}: render the map tiles on the server",
                "{M}: sync the field app every {n} minutes", "{M}: one queue for all {objs}",
@@ -120,6 +120,12 @@ CONCEPTS = {
         "TEST-E2E": ["{M}: signing in fails after the session token expires"],
         "notes": ["Clerks reach this only after they log in with their badge.",
                   "Residents must be signed in; anonymous use is refused."],
+        # the concept without its usual words: only meaning finds these
+        "hidden": ["{M}: only staff with a city badge reach the back office",
+                   "{M}: the kiosk asks residents who they are before showing their {objs}",
+                   "{M}: after {n} failed attempts the kiosk waits one minute",
+                   "{M}: a resident proves who they are with the national e-ID app"],
+        "hiddenWords": r"\b(badge|who they are|failed attempts|e-ID)\b",
     },
     "payments": {
         "count": 18,
@@ -132,7 +138,12 @@ CONCEPTS = {
         "ADR": ["{M}: use the national payment gateway"],
         "RISK": ["{M}: a refund is paid twice"],
         "TEST-INT": ["{M}: an approved {obj} creates exactly one invoice"],
-        "notes": ["The fee table comes from the finance office every January."],
+        "notes": ["Residents pay a fee for this; the finance office sets the fee table every January."],
+        "hidden": ["{M}: the resident gets the money back when a {obj} is cancelled",
+                   "{M}: the kiosk takes coins and contactless",
+                   "{M}: the price of a {obj} is shown before it is booked",
+                   "{M}: the finance office sees what each {obj} brought in"],
+        "hiddenWords": r"\b(money|coins|contactless|price|brought in)\b",
     },
     "personal data": {
         "count": 14,
@@ -140,13 +151,19 @@ CONCEPTS = {
         "REQ": ["{M}: personal data is erased {n}0 days after a {obj} is closed",
                 "{M}: names are anonymised in the statistics",
                 "{M}: a resident downloads all data held about them",
-                "{M}: a retention period of {n} months for {obj} photos",
+                "{M}: photos of residents follow the personal data retention rules",
                 "{M}: follow the GDPR consent rules"],
         "CONSTRAINT": ["{M}: personal data never leaves the city data centre"],
-        "notes": ["The data protection officer asked for this retention rule."],
+        "notes": ["This stores residents' personal data; the data protection officer reviewed it."],
+        "hidden": ["{M}: a resident downloads all the information the city keeps about them",
+                   "{M}: the home address of a resident is hidden from other residents",
+                   "{M}: a resident can have their records removed",
+                   "{M}: residents' names never appear in the open data"],
+        "hiddenWords": r"\b(information the city keeps|home address|records removed|names never appear)\b",
     },
 }
-ALL_CONCEPT_WORDS = re.compile("|".join("(%s)" % c["words"] for c in CONCEPTS.values()), re.I)
+ALL_CONCEPT_WORDS = re.compile("|".join("(%s)" % w for c in CONCEPTS.values()
+                                          for w in (c["words"], c["hiddenWords"])), re.I)
 
 VERIFIES = {"label": "verifies", "lineStyle": "dashed", "color": "#6d28d9", "sourceArrow": "none",
             "targetArrow": "open", "showLabel": True, "routing": "auto", "traceable": True,
@@ -154,6 +171,16 @@ VERIFIES = {"label": "verifies", "lineStyle": "dashed", "color": "#6d28d9", "sou
 RULE = {"description": "An approved requirement is verified by a test", "stereotype": "REQ",
         "statuses": ["approved", "validated", "implemented"], "linkType": "verifies",
         "direction": "incoming", "other": None}
+SYNONYMS = [  # rewording of a near-duplicate requirement: same meaning, other words
+    ("show the list of", "list all"), ("export", "download"), ("a clerk", "a staff member"),
+    ("a supervisor", "a team lead"), ("search", "look up"), ("are refreshed", "are updated"),
+    ("opens within", "loads in under"), ("send a reminder", "remind the resident"), ("print", "fit"),
+    ("keeps a history of every change", "records each change made to it"), ("staff add", "staff attach"),
+    ("is marked late", "is flagged as overdue"), ("in the weekly report", "in the report of each week"),
+    ("the kiosk screen shows", "the kiosk displays"), ("merges two", "combines two"),
+    ("can be filtered by", "can be narrowed down by"), ("can be moved to", "can be transferred to"),
+    ("show how many", "count the"), ("works for", "keeps working for"), ("the map shows", "the map displays"),
+]
 REQ_STATUS = (["proposed"] * 3 + ["approved"] * 4 + ["validated"] * 2 + ["implemented"] * 3
               + ["rejected", "deprecated"])
 PER_MODULE = 24  # about this many elements per module
@@ -167,6 +194,7 @@ class Gen:
         self.elements = []          # (ref, stereotype, module ref or None)
         self.topics, self.links = set(), set()
         self.facts = {"seed": seed, "elements": n_elements, "concepts": {k: [] for k in CONCEPTS},
+                      "hidden": {k: [] for k in CONCEPTS}, "suffixed": 0,
                       "orphans": [], "duplicates": [], "crossModule": [], "modules": {}, "services": {},
                       "locked": [], "diagrams": []}
 
@@ -182,15 +210,22 @@ class Gen:
         return tpl.format(M=mod["name"], S=mod.get("service", ""), obj=mod["obj"], objs=mod["objs"], n=n,
                           attr=a1, attr2=a2, T=self.r.choice(TEAMS).lower())
 
-    def unique(self, text):
+    def unique(self, text, remake=None):
+        """A topic no other element has: other numbers/attributes of the template first, a suffix last."""
+        for _ in range(30):
+            if text not in self.topics or remake is None:
+                break
+            text = remake()
         base, k = text, 2
         while text in self.topics:
             text, k = "%s (%d)" % (base, k), k + 1
+            self.facts["suffixed"] += 1
         self.topics.add(text)
         return text
 
-    def element(self, ref, st, mod, folder_ref, topic, status, fields=None, notes="", concept=None):
-        topic = self.unique(topic)
+    def element(self, ref, st, mod, folder_ref, topic, status, fields=None, notes="", concept=None,
+                remake=None, hidden=False):
+        topic = self.unique(topic, remake)
         if concept is None:
             assert not ALL_CONCEPT_WORDS.search(topic + " " + notes), topic + " / " + notes
         self.add("element.create", ref, stereotype=st, topic=topic, folder=self.refs[folder_ref],
@@ -198,6 +233,8 @@ class Gen:
         self.elements.append((ref, st, mod["ref"] if mod else None))
         if concept:
             self.facts["concepts"][concept].append(ref)
+            if hidden:
+                self.facts["hidden"][concept].append(ref)
         return ref
 
     def link(self, type_, a, b):
@@ -233,7 +270,14 @@ class Gen:
             kinds = [k for k in ("REQ", "ADR", "RISK", "TEST-E2E", "TEST-INT", "CONSTRAINT") if k in c]
             for i in range(c["count"]):
                 kind = "notes" if i % 6 == 5 else kinds[i % len(kinds)] if i % 3 == 2 else "REQ"
-                slots.setdefault(r.randrange(n_modules), []).append((cname, kind))
+                if kind == "REQ" and i % 4 in (1, 2):
+                    kind = "hidden"
+                mi = r.randrange(n_modules)
+                for _ in range(50):          # one plant of a concept and kind per module, so wordings do not repeat
+                    if (cname, kind) not in slots.get(mi, []):
+                        break
+                    mi = r.randrange(n_modules)
+                slots.setdefault(mi, []).append((cname, kind))
 
         for s in services:
             self.add("folder.create", s["ref"], name=s["name"], parent=None)
@@ -257,10 +301,14 @@ class Gen:
                         return cname
                 return None
 
-            def text(kind, generic, concept):
+            def text(kind, generic, concept, tpl=None):
+                """(topic, remake). A remake varies numbers and attributes; for a concept it may also take
+                another wording of the same concept."""
                 if concept:
-                    return self.fill(r.choice(CONCEPTS[concept][kind]), mod)
-                return self.fill(r.choice(generic), mod)
+                    pool = CONCEPTS[concept][kind]
+                    return self.fill(r.choice(pool), mod), lambda: self.fill(r.choice(pool), mod)
+                tpl = tpl or r.choice(generic)
+                return self.fill(tpl, mod), lambda: self.fill(tpl, mod)
 
             ureqs, feats, reqs = [], [], []
             for j in range(2):
@@ -271,36 +319,50 @@ class Gen:
                 feats.append(self.element("%s_f%d" % (m, j), "FEAT", mod, m, self.fill(GENERIC_FEAT[(j + mi) % len(GENERIC_FEAT)], mod),
                                           r.choice(["approved", "implemented", "proposed"]), {"owner": r.choice(TEAMS)}))
                 self.link("refines", feats[-1], ureqs[j])
+            req_tpls = r.sample(GENERIC_REQ, 10)
             for j in range(10):
                 c = concept_for("REQ")
-                notes_c = None if c else concept_for("notes")
+                hid = None if c else concept_for("hidden")
+                notes_c = None if c or hid else concept_for("notes")
                 notes = r.choice(CONCEPTS[notes_c]["notes"]) if notes_c else (
                     self.fill(r.choice(GENERIC_NOTES), mod) if r.random() < 0.4 else "")
-                ref = self.element("%s_r%d" % (m, j), "REQ", mod, m, text("REQ", GENERIC_REQ, c),
+                if hid:
+                    topic, remake = text("hidden", None, hid)
+                else:
+                    topic, remake = text("REQ", None, c, req_tpls[j])
+                ref = self.element("%s_r%d" % (m, j), "REQ", mod, m, topic,
                                    r.choice(REQ_STATUS), {"priority": r.choice(["Must", "Should", "Could"]),
-                                                          "owner": r.choice(TEAMS)}, notes, c or notes_c)
+                                                          "owner": r.choice(TEAMS)}, notes, c or hid or notes_c,
+                                   remake, hidden=bool(hid))
                 reqs.append(ref)
                 self.link("refines", ref, feats[j % 2])
             reqs_by_module[m] = reqs
+            adr_tpls, risk_tpls = r.sample(GENERIC_ADR, 3), r.sample(GENERIC_RISK, 2)
             for j in range(3):
                 c = concept_for("ADR")
-                ref = self.element("%s_a%d" % (m, j), "ADR", mod, m, text("ADR", GENERIC_ADR, c),
-                                   r.choice(["approved", "implemented", "proposed"]), {"owner": r.choice(TEAMS)}, concept=c)
+                topic, remake = text("ADR", None, c, adr_tpls[j])
+                ref = self.element("%s_a%d" % (m, j), "ADR", mod, m, topic,
+                                   r.choice(["approved", "implemented", "proposed"]), {"owner": r.choice(TEAMS)},
+                                   concept=c, remake=remake)
                 for t in r.sample(reqs, r.randint(1, 3)):
                     self.link("implements", ref, t)
                 if j < 2:
                     cr = concept_for("RISK")
-                    risk = self.element("%s_k%d" % (m, j), "RISK", mod, m, text("RISK", GENERIC_RISK, cr),
+                    topic, remake = text("RISK", None, cr, risk_tpls[j])
+                    risk = self.element("%s_k%d" % (m, j), "RISK", mod, m, topic,
                                         r.choice(["approved", "proposed"]),
-                                        {"severity": r.choice(LEVELS), "likelihood": r.choice(LEVELS)}, concept=cr)
+                                        {"severity": r.choice(LEVELS), "likelihood": r.choice(LEVELS)}, concept=cr,
+                                        remake=remake)
                     self.link("mitigates", ref, risk)
             tested = r.sample(reqs, 6)
+            e2e_tpls = r.sample(GENERIC_TEST_E2E, 3)
             for j in range(4):
                 st = "TEST-E2E" if j < 3 else "TEST-INT"
                 c = concept_for(st)
-                ref = self.element("%s_t%d" % (m, j), st, mod, m,
-                                   text(st, GENERIC_TEST_E2E if st == "TEST-E2E" else GENERIC_TEST_INT, c),
-                                   r.choice(["implemented", "approved"]), {"owner": r.choice(TEAMS)}, concept=c)
+                topic, remake = text(st, GENERIC_TEST_INT, c, e2e_tpls[j] if j < 3 else None)
+                ref = self.element("%s_t%d" % (m, j), st, mod, m, topic,
+                                   r.choice(["implemented", "approved"]), {"owner": r.choice(TEAMS)}, concept=c,
+                                   remake=remake)
                 for t in tested[j::4] or tested[:1]:
                     self.link("verifies", ref, t)
             for j in range(3):
@@ -308,17 +370,19 @@ class Gen:
                 self.link("depends_on", a, b)
             c = concept_for("CONSTRAINT")
             if c or r.random() < 0.4:
-                ref = self.element("%s_c0" % m, "CONSTRAINT", mod, m, text("CONSTRAINT", GENERIC_CON, c),
-                                   "approved", {"owner": r.choice(TEAMS)}, concept=c)
+                topic, remake = text("CONSTRAINT", GENERIC_CON, c)
+                ref = self.element("%s_c0" % m, "CONSTRAINT", mod, m, topic,
+                                   "approved", {"owner": r.choice(TEAMS)}, concept=c, remake=remake)
                 self.link("depends_on", r.choice(reqs), ref)
             if r.random() < 0.4:
                 ref = self.element("%s_i0" % m, "ISSUE", mod, m, self.fill(r.choice(GENERIC_ISSUE), mod),
                                    "proposed", {"owner": r.choice(TEAMS)})
                 self.link("relates_to", ref, r.choice(reqs))
             for cname, kind in todo:  # a concept slot whose kind did not occur: plant it as a REQ
-                ref = self.element("%s_x%d" % (m, len(self.elements)), "REQ", mod, m,
-                                   self.fill(r.choice(CONCEPTS[cname]["REQ"]), mod), r.choice(REQ_STATUS),
-                                   {"priority": "Should"}, concept=cname)
+                hid = kind == "hidden"
+                topic, remake = text("hidden" if hid else "REQ", None, cname)
+                ref = self.element("%s_x%d" % (m, len(self.elements)), "REQ", mod, m, topic, r.choice(REQ_STATUS),
+                                   {"priority": "Should"}, concept=cname, remake=remake, hidden=hid)
                 self.link("refines", ref, feats[0])
 
         # cross-module dependencies (REQ depends_on a REQ of another module)
@@ -331,14 +395,17 @@ class Gen:
         # requirements with no link at all
         for k in range(min(8, max(2, n_modules // 10))):
             mod = modules[r.randrange(n_modules)]
-            ref = self.element("orphan%d" % k, "REQ", mod, mod["ref"], self.fill(r.choice(GENERIC_REQ), mod),
-                               r.choice(REQ_STATUS), {"priority": "Could"})
+            tpl = r.choice(GENERIC_REQ)
+            ref = self.element("orphan%d" % k, "REQ", mod, mod["ref"], self.fill(tpl, mod),
+                               r.choice(REQ_STATUS), {"priority": "Could"}, remake=lambda: self.fill(r.choice(GENERIC_REQ), mod))
             self.facts["orphans"].append(ref)
         # near-duplicate pairs: same module text, written a second time a little differently
-        for k in range(min(5, max(1, n_modules // 20))):
-            mi = r.randrange(n_modules)
+        tagged = {x for refs in self.facts["concepts"].values() for x in refs}
+        plain = [mi for mi, mod in enumerate(modules) if any(x not in tagged for x in reqs_by_module[mod["ref"]])]
+        for k in range(min(10, max(3, n_modules // 20)) if plain else 0):  # a tiny model may have no plain REQ
+            mi = r.choice(plain)
             mod = modules[mi]
-            src = r.choice(reqs_by_module[mod["ref"]])
+            src = r.choice([x for x in reqs_by_module[mod["ref"]] if x not in tagged])
             other = modules[(mi + 1 + r.randrange(n_modules - 1)) % n_modules]
             self.facts["duplicates"].append([src, "dup%d" % k, other["ref"], mod["ref"]])
         return modules
@@ -348,13 +415,13 @@ class Gen:
         ops = []
         for src, dref, other_m, mod_m in self.facts["duplicates"]:
             topic = model["elements"][ids[src]]["topic"]
-            if ":" in topic:
-                head, tail = topic.split(":", 1)
-                dup = "%s: %s" % (head, tail.strip().replace(" a ", " each ", 1).replace(" the ", " all ", 1))
-            else:
-                dup = topic + " too"
+            head, tail = topic.split(":", 1)
+            tail = " " + tail.strip()
+            for old, new in SYNONYMS:
+                tail = tail.replace(" " + old, " " + new, 1)
+            dup = "%s:%s" % (head, tail)
             if dup == topic:
-                dup = topic + " as well"
+                dup = topic + ", for every district"
             ops.append({"op": "element.create", "args": {
                 "stereotype": "REQ", "topic": dup, "folder": ids[other_m], "status": "proposed",
                 "fields": {"priority": "Should"}, "notes": ""}})
@@ -483,6 +550,8 @@ def _build(target, n_elements, seed, key, batch):
     f = g.facts
     out = {"seed": f["seed"], "elements": f["elements"],
            "concepts": {k: [ids[x] for x in v] for k, v in f["concepts"].items()},
+           "hidden": {k: [ids[x] for x in v] for k, v in f["hidden"].items()},
+           "suffixed": f["suffixed"],
            "orphans": [ids[x] for x in f["orphans"]],
            "duplicates": [[ids[a], ids[b]] for a, b, _, _ in f["duplicates"]],
            "crossModule": [[ids[a], ids[b]] for a, b in f["crossModule"]],

@@ -263,6 +263,11 @@ Labels can only show value on questions the index cannot answer. Before Phase 7:
 - Re-run the `index` variant on the concept and duplicate questions only (Q05a–c, Q11, and any new ones): the
   numbers labels must beat. Report in `evals/results/INDEX-V2.md`.
 - **Accept:** the owner reviews the new baseline.
+- **Done 2026-11-22:** generator fixed (tested: unique topics, hidden plants avoid the concept's words, duplicates
+  only of plain requirements); models `s1k-v2`, `s10k-v2`; 8 runs (`evals/results/INDEX-V2.md`). Named concept
+  elements 69/74 found, **hidden 23/38 (61%), from 0/6 to 6/6 between runs**; near-duplicates 3/3 and 8/10, found by
+  comparing topics in SQL. Labels target the hidden-wording recall and its spread; Phase 12 runs each concept
+  question at least twice per variant.
 
 ### Phase 7 — AI file, write path, index integration
 

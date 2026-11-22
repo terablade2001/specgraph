@@ -1,0 +1,246 @@
+{
+ "model": "evals/results/models/s1k-v2/specmodel.json",
+ "questions": [
+  {
+   "id": "Q01",
+   "kind": "ids",
+   "question": "Which business requirements (stereotype B-REQ) does REQ-bad87bbb (\"Housing Scheduling: a repair request keeps a history of every change\") ultimately serve, following traceable links from it?",
+   "expected": [
+    "B-REQ-a402c950"
+   ],
+   "subject": "REQ-bad87bbb"
+  },
+  {
+   "id": "Q02",
+   "kind": "ids",
+   "question": "If FEAT-6329ef41 (\"Markets Scheduling field work\") changes, which elements are affected, i.e. everything that traces to it directly or indirectly over traceable links?",
+   "expected": [
+    "ADR-11923e4d",
+    "ADR-79c01354",
+    "ADR-a2b7607c",
+    "E2E-52b0fec0",
+    "E2E-a795fa2e",
+    "E2E-e459733c",
+    "REQ-07f43132",
+    "REQ-14be0af9",
+    "REQ-7f318f78",
+    "REQ-afb8792a",
+    "REQ-c7f47bbb",
+    "REQ-f33253fe"
+   ],
+   "subject": "FEAT-6329ef41"
+  },
+  {
+   "id": "Q03",
+   "kind": "ids",
+   "question": "Which elements in folder 'Museums/Museums Requests' break a coverage rule of the model?",
+   "expected": [
+    "REQ-1d3ef8e0",
+    "REQ-8235f745",
+    "REQ-a49c64bd"
+   ],
+   "subject": "Museums/Museums Requests"
+  },
+  {
+   "id": "Q04",
+   "kind": "count",
+   "question": "How many elements break a coverage rule in the whole model?",
+   "expected": 100,
+   "subject": null
+  },
+  {
+   "id": "Q05a",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about authentication, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-0b3babea",
+    "REQ-15019a7b",
+    "REQ-21bbfd7f",
+    "REQ-2b2930a1",
+    "REQ-474ffc00",
+    "REQ-4beebf3e",
+    "REQ-52e25b8d",
+    "REQ-5c4faaef",
+    "REQ-6756fe51",
+    "REQ-6803cee6",
+    "REQ-6b57f3d9",
+    "REQ-83b0f550",
+    "REQ-8d879223",
+    "REQ-8f789263",
+    "REQ-92c4fcd2",
+    "REQ-9eff359a",
+    "REQ-afb8792a",
+    "REQ-c23d28c8",
+    "REQ-cc204fad",
+    "REQ-d0b9f78e",
+    "REQ-d50b9f0f",
+    "REQ-f260f85e",
+    "RISK-7c869825",
+    "RISK-f3f97be4"
+   ],
+   "subject": "authentication"
+  },
+  {
+   "id": "Q05b",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about payments, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-1280e9e4",
+    "REQ-26443172",
+    "REQ-3b37c0da",
+    "REQ-3ca62ef0",
+    "REQ-4e4b5339",
+    "REQ-5d62ebb3",
+    "REQ-7b643c1f",
+    "REQ-89a5b21d",
+    "REQ-8c20b8d9",
+    "REQ-8fbf3661",
+    "REQ-920352b5",
+    "REQ-a3075d41",
+    "REQ-a8198cd0",
+    "REQ-ad8778a6",
+    "REQ-b0834a66",
+    "REQ-b0decce5",
+    "RISK-1b104215",
+    "RISK-74e3ba86"
+   ],
+   "subject": "payments"
+  },
+  {
+   "id": "Q05c",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about personal data, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-2091b92e",
+    "REQ-2ac3b6b6",
+    "REQ-43a9a371",
+    "REQ-43cf2144",
+    "REQ-45b7c3a6",
+    "REQ-4800585c",
+    "REQ-588119ff",
+    "REQ-95983def",
+    "REQ-97cd0a9e",
+    "REQ-9ecdaba0",
+    "REQ-a356c355",
+    "REQ-a60153a1",
+    "REQ-e63389ab",
+    "REQ-efdf12b5"
+   ],
+   "subject": "personal data"
+  },
+  {
+   "id": "Q06",
+   "kind": "ids",
+   "question": "Which RISK elements in folder 'Street lighting' (including its sub-folders) have severity High and likelihood High?",
+   "expected": [
+    "RISK-7c869825"
+   ],
+   "subject": "Street lighting"
+  },
+  {
+   "id": "Q07",
+   "kind": "paths",
+   "question": "Which folders are locked (give their paths)?",
+   "expected": [
+    "Cemeteries/Cemeteries Scheduling",
+    "Road works/Road works Scheduling",
+    "Waste collection/Waste collection Requests"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q08",
+   "kind": "ids",
+   "question": "Which elements outside every locked folder have a link to an element inside a locked folder? Give the source elements.",
+   "expected": [
+    "REQ-97cd0a9e"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q09",
+   "kind": "ids",
+   "question": "Which elements shown on diagram 'Street lighting Requests overview' are in a status other than approved, validated or implemented?",
+   "expected": [
+    "REQ-4cf9a5ae",
+    "REQ-ad305fb7",
+    "U-REQ-fd48983d"
+   ],
+   "subject": "Street lighting Requests overview"
+  },
+  {
+   "id": "Q10",
+   "kind": "ids",
+   "question": "Which elements have no links at all (neither incoming nor outgoing)?",
+   "expected": [
+    "B-REQ-0442b501",
+    "B-REQ-2e06b6a6",
+    "B-REQ-3215a56c",
+    "B-REQ-5cedc62c",
+    "B-REQ-a292f634",
+    "B-REQ-ae253961",
+    "REQ-1ea3cf09",
+    "REQ-30ba2be9",
+    "REQ-45426028",
+    "REQ-50375e72",
+    "REQ-6b107fcf",
+    "REQ-87d2267d",
+    "REQ-c0654b80"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q11",
+   "kind": "ids",
+   "question": "Some requirements say the same thing as another requirement in slightly different words. List all elements of every such pair.",
+   "expected": [
+    "REQ-0696580b",
+    "REQ-1ea3cf09",
+    "REQ-3d7f7bc7",
+    "REQ-50375e72",
+    "REQ-87d2267d",
+    "REQ-bdeca294"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q12",
+   "kind": "count",
+   "question": "How many REQ elements are in status 'approved'?",
+   "expected": 106,
+   "subject": null
+  },
+  {
+   "id": "Q13",
+   "kind": "ids",
+   "question": "Which tests verify the requirements (REQ) that refine FEAT-cb1a49c8 (\"Waste collection Scheduling editing\") directly?",
+   "expected": [
+    "E2E-77b6cd71",
+    "E2E-a6e892ee",
+    "INT-9c960942"
+   ],
+   "subject": "FEAT-cb1a49c8"
+  },
+  {
+   "id": "Q14",
+   "kind": "ids",
+   "question": "Which elements in folder 'Noise control/Noise control Requests' have a depends_on link to an element in another folder?",
+   "expected": [
+    "REQ-33eda426"
+   ],
+   "subject": "Noise control/Noise control Requests"
+  },
+  {
+   "id": "Q15",
+   "kind": "ids",
+   "question": "Which elements does ADR-af590941 (\"Snow clearing Scheduling: one queue for all gritting runs\") implement or mitigate?",
+   "expected": [
+    "REQ-03928ff3",
+    "REQ-44005f8a",
+    "REQ-a474674e",
+    "RISK-2cc01bbc"
+   ],
+   "subject": "ADR-af590941"
+  }
+ ]
+}

@@ -1,0 +1,267 @@
+{
+ "model": "evals/results/models/s10k-v2/specmodel.json",
+ "questions": [
+  {
+   "id": "Q01",
+   "kind": "ids",
+   "question": "Which business requirements (stereotype B-REQ) does REQ-37eaeea5 (\"Bike sharing Kiosk: a bike rental keeps a history of every change\") ultimately serve, following traceable links from it?",
+   "expected": [
+    "B-REQ-d9a6df4b"
+   ],
+   "subject": "REQ-37eaeea5"
+  },
+  {
+   "id": "Q02",
+   "kind": "ids",
+   "question": "If FEAT-579a2315 (\"Museums Audits weekly report\") changes, which elements are affected, i.e. everything that traces to it directly or indirectly over traceable links?",
+   "expected": [
+    "ADR-16f6e56c",
+    "ADR-82580231",
+    "E2E-85dc8831",
+    "E2E-ceb17df5",
+    "INT-6b422a38",
+    "REQ-29db512a",
+    "REQ-67623da1",
+    "REQ-9ed79699",
+    "REQ-bf2bdca4",
+    "REQ-c33914c2",
+    "REQ-f7ad190d"
+   ],
+   "subject": "FEAT-579a2315"
+  },
+  {
+   "id": "Q03",
+   "kind": "ids",
+   "question": "Which elements in folder 'Bike sharing/Bike sharing Statistics' break a coverage rule of the model?",
+   "expected": [
+    "REQ-3eaad86b",
+    "REQ-80c470f4",
+    "REQ-ee5922ce"
+   ],
+   "subject": "Bike sharing/Bike sharing Statistics"
+  },
+  {
+   "id": "Q04",
+   "kind": "count",
+   "question": "How many elements break a coverage rule in the whole model?",
+   "expected": 1072,
+   "subject": null
+  },
+  {
+   "id": "Q05a",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about authentication, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-0509d4bb",
+    "REQ-1c7d9817",
+    "REQ-3b05e178",
+    "REQ-48d08707",
+    "REQ-533db9bf",
+    "REQ-55e7c56f",
+    "REQ-599f8590",
+    "REQ-5d62ebb3",
+    "REQ-618f3ff4",
+    "REQ-6b792cf3",
+    "REQ-6dc6b0e2",
+    "REQ-74a9e3dd",
+    "REQ-76c5f982",
+    "REQ-828bad1b",
+    "REQ-87c2b68f",
+    "REQ-8cb9d94c",
+    "REQ-8ff64f1f",
+    "REQ-91063074",
+    "REQ-a4de4690",
+    "REQ-a959faf2",
+    "REQ-d6f6478c",
+    "REQ-ee1fbd78",
+    "RISK-7f5a2e62",
+    "RISK-eeca2227"
+   ],
+   "subject": "authentication"
+  },
+  {
+   "id": "Q05b",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about payments, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-093cce7c",
+    "REQ-279555c4",
+    "REQ-2905ee59",
+    "REQ-2f20dbeb",
+    "REQ-5bd29eee",
+    "REQ-65581634",
+    "REQ-66b47645",
+    "REQ-710836dd",
+    "REQ-80e7fb74",
+    "REQ-87f9580f",
+    "REQ-9d7e3498",
+    "REQ-b6532c35",
+    "REQ-d8e6a7be",
+    "REQ-e1bde39c",
+    "REQ-ed488824",
+    "REQ-f7ee1864",
+    "RISK-18a05e0e",
+    "RISK-85a23b14"
+   ],
+   "subject": "payments"
+  },
+  {
+   "id": "Q05c",
+   "kind": "ids",
+   "question": "List every element whose own topic or notes are about personal data, however it is worded. Elements that only link to such elements do not count.",
+   "expected": [
+    "REQ-11eb2241",
+    "REQ-1b1fd58d",
+    "REQ-32b64c18",
+    "REQ-3e5b7f7b",
+    "REQ-4c75efec",
+    "REQ-5421b5c2",
+    "REQ-56140cf3",
+    "REQ-5c7c65ac",
+    "REQ-91c6042d",
+    "REQ-96ef9f83",
+    "REQ-adbae86e",
+    "REQ-b986d12f",
+    "REQ-cd638ed4",
+    "REQ-f81d5f30"
+   ],
+   "subject": "personal data"
+  },
+  {
+   "id": "Q06",
+   "kind": "ids",
+   "question": "Which RISK elements in folder 'Sports halls' (including its sub-folders) have severity High and likelihood High?",
+   "expected": [
+    "RISK-6e2c1394",
+    "RISK-910a6110",
+    "RISK-d20c1130"
+   ],
+   "subject": "Sports halls"
+  },
+  {
+   "id": "Q07",
+   "kind": "paths",
+   "question": "Which folders are locked (give their paths)?",
+   "expected": [
+    "Noise control/Noise control Staff planning",
+    "Parks/Parks Reporting",
+    "Tree care/Tree care Open data"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q08",
+   "kind": "ids",
+   "question": "Which elements outside every locked folder have a link to an element inside a locked folder? Give the source elements.",
+   "expected": [],
+   "subject": null
+  },
+  {
+   "id": "Q09",
+   "kind": "ids",
+   "question": "Which elements shown on diagram 'Animal control Statistics overview' are in a status other than approved, validated or implemented?",
+   "expected": [
+    "ADR-c9980505",
+    "REQ-3ef4d72e",
+    "REQ-991233c9",
+    "REQ-aea7b549",
+    "REQ-b1f2fecf",
+    "RISK-3fc3def8",
+    "U-REQ-8a530b06"
+   ],
+   "subject": "Animal control Statistics overview"
+  },
+  {
+   "id": "Q10",
+   "kind": "ids",
+   "question": "Which elements have no links at all (neither incoming nor outgoing)?",
+   "expected": [
+    "REQ-0ecf2571",
+    "REQ-1057fc4a",
+    "REQ-2b49a503",
+    "REQ-4723ba6b",
+    "REQ-60b9279d",
+    "REQ-61523762",
+    "REQ-66cb4577",
+    "REQ-6e8fcb85",
+    "REQ-701a20fc",
+    "REQ-72729396",
+    "REQ-7565bd23",
+    "REQ-8adf77ce",
+    "REQ-92f19a76",
+    "REQ-a7ce2be4",
+    "REQ-be83b362",
+    "REQ-cd2c048d",
+    "REQ-d424267e",
+    "REQ-f5307557"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q11",
+   "kind": "ids",
+   "question": "Some requirements say the same thing as another requirement in slightly different words. List all elements of every such pair.",
+   "expected": [
+    "REQ-08ebe0c8",
+    "REQ-0b24dc8d",
+    "REQ-1057fc4a",
+    "REQ-1475a6e2",
+    "REQ-4bd3cbeb",
+    "REQ-54431113",
+    "REQ-60b9279d",
+    "REQ-61523762",
+    "REQ-66cb4577",
+    "REQ-8adf77ce",
+    "REQ-92f19a76",
+    "REQ-a7ce2be4",
+    "REQ-af9771c2",
+    "REQ-b4054441",
+    "REQ-b827c909",
+    "REQ-cd21c969",
+    "REQ-cd2c048d",
+    "REQ-d424267e",
+    "REQ-dd1e0285",
+    "REQ-f5307557"
+   ],
+   "subject": null
+  },
+  {
+   "id": "Q12",
+   "kind": "count",
+   "question": "How many REQ elements are in status 'approved'?",
+   "expected": 1170,
+   "subject": null
+  },
+  {
+   "id": "Q13",
+   "kind": "ids",
+   "question": "Which tests verify the requirements (REQ) that refine FEAT-9483b05a (\"Libraries Complaints weekly report\") directly?",
+   "expected": [
+    "E2E-5456daea",
+    "INT-886a8661"
+   ],
+   "subject": "FEAT-9483b05a"
+  },
+  {
+   "id": "Q14",
+   "kind": "ids",
+   "question": "Which elements in folder 'School enrolment/School enrolment Work orders' have a depends_on link to an element in another folder?",
+   "expected": [
+    "REQ-507d61e7"
+   ],
+   "subject": "School enrolment/School enrolment Work orders"
+  },
+  {
+   "id": "Q15",
+   "kind": "ids",
+   "question": "Which elements does ADR-782c8e7b (\"Cemeteries Field app: render the map tiles on the server\") implement or mitigate?",
+   "expected": [
+    "REQ-00eaf7cc",
+    "REQ-52669cc0",
+    "REQ-a0e49b13",
+    "RISK-93a83bdc"
+   ],
+   "subject": "ADR-782c8e7b"
+  }
+ ]
+}

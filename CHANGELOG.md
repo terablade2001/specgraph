@@ -47,6 +47,8 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
 - `evals/`: questions, expected answers, scoring and the baseline of agents on 0.3.1 (`evals/results/BASELINE.md`).
 - The same evaluations with the index (`evals/results/INDEX.md`): at 10 000 elements mean F1 0.85 → 0.95, and
   questions that needed 90–145K tokens now need about 65K.
+- The evaluation generator writes unique topics, clear concept notes and *hidden* concept wordings; new stored
+  models (`s1k-v2`, `s10k-v2`) and the baseline for labels (`evals/results/INDEX-V2.md`).
 
 ## 0.3.1 — 2026-11-21
 

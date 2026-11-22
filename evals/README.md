@@ -34,6 +34,12 @@ build:** `evals/results/models/s1k/specmodel.json` and `…/s10k/specmodel.json`
 readable with `--file`, not editable). The question files in `evals/results/` point at them, with paths relative
 to the repository root.
 
+**Version 2 (Phase 6b).** The generator was fixed after the Phase 6 comparison: unique topics (no " (2)"),
+unambiguous concept notes, *hidden* concept plants that never use the concept's words (`facts.json` → `hidden`),
+more near-duplicate pairs reworded with synonyms. Stored as `evals/results/models/s1k-v2` and `…/s10k-v2`
+(`--seed 1`) with `questions-s1k-v2.json` / `questions-s10k-v2.json`; results in `results/INDEX-V2.md`. The label
+measurements (Phase 12) use these. The version-1 models stay for the recorded baseline and `INDEX.md`.
+
 ## Running (protocol)
 
 - **Agent:** a Claude Code subagent on **Sonnet**, one fresh agent per question and model, so no run
