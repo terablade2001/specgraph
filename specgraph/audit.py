@@ -3,7 +3,7 @@ the commit being made, and by `audit` for the whole branch history, so a
 bypassed hook is still found afterwards."""
 import json
 
-from . import gitio, model as M, rules, stamp as S, validate as V
+from . import ai as AI, gitio, model as M, rules, stamp as S, validate as V
 
 
 def check_version(new_text, parent_texts):
@@ -66,21 +66,50 @@ def _unlogged_deletes(store, head_text, staged_text):
     return []
 
 
+def _users(texts):
+    """The users of the first readable model text (the trusted list for an AI file version)."""
+    for t in texts:
+        if t:
+            try:
+                return M.parse(t).get("users", {})
+            except M.ModelError:
+                continue
+    return {}
+
+
+def _ai_rel(store):
+    return gitio.rel_path(store.root, AI.ai_path(store.path))
+
+
+def check_staged_ai(store):
+    """ADR-034 §8: the staged AI file against HEAD, trusted users from HEAD's model (else the staged model)."""
+    rel, mrel = _ai_rel(store), gitio.rel_path(store.root, store.path)
+    staged = gitio.show(store.root, ":" + rel)
+    if staged is None:
+        return []
+    head = gitio.show(store.root, "HEAD:" + rel)
+    if head == staged:
+        return []
+    users = _users([gitio.show(store.root, "HEAD:" + mrel), gitio.show(store.root, ":" + mrel)])
+    return AI.check_version(staged, [head], users)
+
+
 def check_staged(store):
     """Pre-commit: the staged model against HEAD. Returns (findings, notes)."""
     rel = gitio.rel_path(store.root, store.path)
+    ai_findings = check_staged_ai(store)
     staged = gitio.show(store.root, ":" + rel)
     if staged is None:
         code, out = gitio.git(store.root, "ls-files", "--stage", "--", rel, check=False)
         if out.strip():
-            return ["%s has unresolved git conflicts; run the 'resolve' command" % rel], []
-        return [], ["model file is not staged"]
+            return ["%s has unresolved git conflicts; run the 'resolve' command" % rel] + ai_findings, []
+        return ai_findings, ["model file is not staged"]
     head = gitio.show(store.root, "HEAD:" + rel)
     if head == staged:
-        return [], []
+        return ai_findings, []
     findings, notes = check_version(staged, [head])
     findings += _unlogged_deletes(store, head, staged)
-    return findings, notes
+    return findings + ai_findings, notes
 
 
 ZERO = "0" * 40
@@ -113,10 +142,10 @@ def audit_history(store, rev="HEAD", since=None, revs=None):
     """Walk the commits that touched the model: all of `rev`, those after `since`, or those
     selected by the rev-list arguments `revs`. Returns a list of
     {commit, author, date, subject, findings, notes}."""
-    rel = gitio.rel_path(store.root, store.path)
+    rel, airel = gitio.rel_path(store.root, store.path), _ai_rel(store)
     rng = revs or (["%s..%s" % (since, rev)] if since else [rev])
     _, out = gitio.git(store.root, "rev-list", "--topo-order", "--reverse", "--full-history",
-                       "--parents", *rng, "--", rel)
+                       "--parents", *rng, "--", rel, airel)
     report = []
     for line in out.splitlines():
         commit, *parents = line.split()
@@ -125,10 +154,15 @@ def audit_history(store, rev="HEAD", since=None, revs=None):
         author, date, subject = (meta.strip().split("\x1f") + ["", "", ""])[:3]
         entry = {"commit": commit, "author": author, "date": date, "subject": subject,
                  "findings": [], "notes": []}
+        ptexts = [gitio.show(store.root, "%s:%s" % (p, rel)) for p in parents]
         if text is None:
             entry["notes"].append("model file deleted in this commit")
-        else:
-            ptexts = [gitio.show(store.root, "%s:%s" % (p, rel)) for p in parents]
+        elif not parents or text not in ptexts:
             entry["findings"], entry["notes"] = check_version(text, ptexts if parents else [])
+        ai_text = gitio.show(store.root, "%s:%s" % (commit, airel))
+        if ai_text is not None:
+            ai_parents = [gitio.show(store.root, "%s:%s" % (p, airel)) for p in parents]
+            if not parents or ai_text not in ai_parents:
+                entry["findings"] += AI.check_version(ai_text, ai_parents, _users(ptexts + [text]))
         report.append(entry)
     return report

@@ -20,6 +20,14 @@ Design: ADR-032, ADR-033 (approved by the owner 2026-11-22). Plan: `docs/PLAN-0.
 
 ### Added
 
+- **AI labels (ADR-034), first part.** An optional second file `specmodel.ai.json` holds a controlled vocabulary of
+  concepts, labels per element (keyed by a hash of type, topic, notes and fields) and people's rules, signed like
+  the model; `specmodel.ai.log.jsonl` logs every operation. `sg.py ai apply` is its only write path (labels: any
+  user; vocabulary and rules: administrators), `sg.py ai status` and `sg.py ai ops` report. The index gets
+  `ai_vocabulary` and `ai_labels` (with a stale flag) and is rebuilt when the AI file changes. The commit check and
+  `audit` check the AI file's stamp and that only administrators changed vocabulary and rules. `install-hooks` marks
+  both files in `.gitattributes`. The tool never calls a language model; work packets for agents come next.
+
 - **`sg.py index`**: builds a read-only SQLite index of the model in `.specgraph/<model file name>.db` next to the
   model (ADR-032). It is derived and disposable: the tool writes `.specgraph/.gitignore`, so it is never committed,
   and deleting it loses nothing. It holds elements, notes, fields, links, folders with paths and locks in force,

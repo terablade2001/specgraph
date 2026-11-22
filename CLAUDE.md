@@ -150,6 +150,7 @@ sg.py trace <id>        sg.py impact <id>       sg.py matrix ADR REQ [--types im
 sg.py history <id>      sg.py validate
 sg.py sql "SELECT ..."   # read-only SQL on the index .specgraph/<model file>.db (ADR-032); sql --schema
 sg.py index             # rebuild that index now (sql rebuilds it by itself when stale)
+sg.py ai status | ops   # AI labels (ADR-034); changed only with sg.py ai apply
 ```
 
 ## Changing the model
@@ -209,13 +210,14 @@ specgraph/
   merge.py            model-aware three-way merge, conflicts
   audit.py            checks for staged file and for branch history
   history.py          element history from git
+  ai.py               AI labels (ADR-034): the second file, its write path, staleness, the change check
   index.py            the derived SQLite index (ADR-032): built from the file, never a source of truth;
                       the read-only query of `sql` (authorizer, time limit, caps)
   hooks.py            installs git hooks and merge driver
   cli.py, server.py   command line; local HTTP API
   web/                index.html, style.css, app.js (plain JS, SVG diagrams)
 tests/                test_core, test_integrity, test_changes, test_example, test_descriptions,
-                      test_index, test_sql, test_synthetic, test_ui (browser, optional)
+                      test_index, test_sql, test_ai, test_synthetic, test_ui (browser, optional)
 docs/                 FORMAT.md, AGENTS.md, ADRS.md, REQUIREMENTS.md, REQUIREMENTS-COVERAGE.md,
                       SECURITY-REVIEW.md (lists a hash per reviewed file: it goes stale when code changes)
 sample/                build_example.py (README example), build_sample.py (demo for the browser tests),

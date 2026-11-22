@@ -1,7 +1,7 @@
 # Requirement → test
 
 `core` = tests/test_core.py, `integ` = tests/test_integrity.py, `changes` = tests/test_changes.py,
-`example` = tests/test_example.py, `descriptions` = tests/test_descriptions.py, `index` = tests/test_index.py, `sql` = tests/test_sql.py, `ui` = tests/test_ui.py (browser). What each requirement says: `docs/REQUIREMENTS.md`.
+`example` = tests/test_example.py, `descriptions` = tests/test_descriptions.py, `index` = tests/test_index.py, `sql` = tests/test_sql.py, `ai` = tests/test_ai.py, `ui` = tests/test_ui.py (browser). What each requirement says: `docs/REQUIREMENTS.md`.
 
 | Requirement | Covered by |
 |---|---|
@@ -50,6 +50,14 @@
 | AGT-04 | sql `test_agt04_*` (text table and footer, 50-row default, `--limit`/env/0, counting ceiling, 200-character cells, `--width`/env/0, NULL and line breaks, JSON shape) |
 | AGT-05 | index `test_agt05_*` (configuration with descriptions, every table and column described); sql `test_agt05_*` (`sql --schema`) |
 | AGT-06 | index `test_agt06_*` (FTS5 with stemming, accents and field values; build without FTS) |
+| AIL-01 | ai `test_ail01_*` (no AI file: as before; file next to the model, signed, canonical; the model untouched) |
+| AIL-02 | ai `test_ail02_*` (hash fields; status change keeps labels, content change makes them stale; vocabulary changes stale only what they touch; merge and split) |
+| AIL-03 | ai `test_ail03_*` (label checks, rules, idempotent, admin-only vocabulary/rules/gc, one version per batch, gc, hand-edited file refused, `sg.py ai`) |
+| AIL-04 | not built yet (work packets, Phase 8) |
+| AIL-05 | ai `test_ail05_*` (index tables with staleness, rebuilt when only the AI file changes; validation ignores labels) |
+| AIL-06 | ai `test_ail06_*` (commit check and audit: vocabulary changed by a non-admin, hand-edited file; labels by any user pass; `.gitattributes`) |
+| AIL-07 | not built yet (merge driver, Phase 10) |
+| AIL-08 | ai `test_ail08_*` (one log line per operation with reason, confidence, model, stamp) |
 | SRC-01, SRC-02, SRC-05 | core `test_src01_02_05_*`; ui |
 | SRC-03, SRC-04 | ui |
 | INT-01 | integ `test_int01_*` |

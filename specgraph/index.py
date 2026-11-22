@@ -12,15 +12,16 @@ import time
 from datetime import datetime, timezone
 
 from . import VERSION
-from . import model as M, query as Q, rules, stamp as S, validate as V
+from . import ai as AI, model as M, query as Q, rules, stamp as S, validate as V
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2       # 2: AI labels (ADR-034)
 SWAP_WAIT = 2.0        # seconds to retry the swap while another process holds the old index (Windows)
 
 # (table, column, meaning); column "" is the table itself. Feeds `columns_doc` and `sql --schema`.
 DOC = [
     ("meta", "", "facts about this index: one row per key"),
-    ("meta", "key", "schema_version, tool_version, model_file, model_sha256, format_version, built_at, "
+    ("meta", "key", "schema_version, tool_version, model_file, model_sha256, ai (sha256 of the AI file or "
+                    "'none'), ai_integrity, format_version, built_at, "
                     "integrity ('ok' or what is wrong with the stamp), fts ('fts5', 'fts5+trigram' or 'none')"),
     ("meta", "value", "the value, as text"),
     ("elements", "", "one row per element (deleted elements are not here); long notes are in element_notes"),
@@ -129,6 +130,18 @@ DOC = [
     ("columns_doc", "table", "table or view name"),
     ("columns_doc", "column", "column name; '' for the table itself"),
     ("columns_doc", "meaning", "what it holds"),
+    ("ai_vocabulary", "", "AI labels: the controlled vocabulary of concepts (ADR-034); empty without an AI file"),
+    ("ai_vocabulary", "key", "label key, as in ai_labels.label"),
+    ("ai_vocabulary", "label", "name of the concept"),
+    ("ai_vocabulary", "definition", "what the concept means, one line"),
+    ("ai_vocabulary", "parent", "broader concept (key); NULL at the top"),
+    ("ai_vocabulary", "retired", "1 = not used for new labels"),
+    ("ai_vocabulary", "replaced_by", "JSON list of the keys that replace a merged or split concept; NULL otherwise"),
+    ("ai_labels", "", "AI labels of elements: a retrieval aid assigned by an agent, never a source of truth; "
+                      "combine with full-text search and links"),
+    ("ai_labels", "element", "element id"),
+    ("ai_labels", "label", "concept key, see ai_vocabulary.key"),
+    ("ai_labels", "stale", "1 = possibly outdated: the element or the concept changed since it was labelled"),
 ]
 FTS_DOC = [
     ("elements_fts", "", "full-text search (FTS5, stemmed, accents ignored): WHERE elements_fts MATCH 'word*'; "
@@ -173,6 +186,10 @@ CREATE TABLE config_fields (stereotype TEXT, key TEXT, label TEXT, type TEXT, op
 CREATE TABLE config_coverage_rules (key TEXT PRIMARY KEY, description TEXT, stereotype TEXT, statuses TEXT,
   link_type TEXT, direction TEXT, other TEXT);
 CREATE TABLE coverage_violations (rule TEXT, element TEXT, message TEXT);
+CREATE TABLE ai_vocabulary (key TEXT PRIMARY KEY, label TEXT, definition TEXT, parent TEXT, retired INTEGER,
+  replaced_by TEXT);
+CREATE TABLE ai_labels (element TEXT, label TEXT, stale INTEGER, PRIMARY KEY (element, label));
+CREATE INDEX ai_labels_label ON ai_labels(label, element);
 CREATE TABLE columns_doc ("table" TEXT, "column" TEXT, meaning TEXT, PRIMARY KEY ("table", "column"));
 CREATE INDEX links_source ON links(source);
 CREATE INDEX links_target ON links(target);
@@ -243,9 +260,18 @@ def _meta(db):
         return None
 
 
-def _fresh(meta, sha):
+def _ai_sha(model_path):
+    """sha256 of the AI file's bytes, or 'none' (ADR-034 §7: part of the freshness key)."""
+    try:
+        with open(AI.ai_path(model_path), "rb") as fh:
+            return hashlib.sha256(fh.read()).hexdigest()
+    except OSError:
+        return "none"
+
+
+def _fresh(meta, sha, ai_sha="none"):
     return bool(meta) and meta.get("model_sha256") == sha and meta.get("schema_version") == str(SCHEMA_VERSION) \
-        and meta.get("tool_version") == VERSION
+        and meta.get("tool_version") == VERSION and meta.get("ai", "none") == ai_sha
 
 
 def _text(v):
@@ -266,6 +292,7 @@ def _list(v):
 
 def _fill(con, model, info):
     """Write the whole model into an empty database (one transaction, done by the caller)."""
+    ai = info.pop("_ai", None)
     cfg = model["config"]
     for statement in TABLES.split(";"):          # not executescript(): it would end the transaction
         if statement.strip():
@@ -337,6 +364,13 @@ def _fill(con, model, info):
             con.execute("CREATE VIRTUAL TABLE elements_trigram USING fts5(id UNINDEXED, label, topic, notes, "
                         "fields, tokenize='trigram')")
             ins("INSERT INTO elements_trigram VALUES (?,?,?,?,?)", texts)
+    if ai:
+        ins("INSERT INTO ai_vocabulary VALUES (?,?,?,?,?,?)", [
+            (k, v.get("label"), v.get("definition"), v.get("parent"), int(bool(v.get("retired"))),
+             _list(v.get("replacedBy"))) for k, v in sorted(ai["vocabulary"].items())])
+        ins("INSERT INTO ai_labels VALUES (?,?,?)", [
+            (eid, k, int(stale)) for eid, (labels, stale) in sorted(AI.element_labels(ai, model).items())
+            for k in labels])
     ins("INSERT INTO columns_doc VALUES (?,?,?)", doc)
 
 
@@ -377,7 +411,18 @@ def build(model_path, _data=None):
             "model_file": os.path.basename(model_path), "model_sha256": sha,
             "format_version": str(model.get("formatVersion")),
             "built_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "integrity": "; ".join(problems) if problems else "ok", "fts": fts}
+            "integrity": "; ".join(problems) if problems else "ok", "fts": fts, "ai": "none", "ai_integrity": ""}
+    ai = None
+    try:
+        with open(AI.ai_path(model_path), "rb") as fh:
+            ai_bytes = fh.read()
+        info["ai"] = hashlib.sha256(ai_bytes).hexdigest()
+        ai = AI.parse(ai_bytes.decode("utf-8"))
+        info["ai_integrity"] = "; ".join(S.check_integrity(ai, model.get("users"))) or "ok"
+    except OSError:
+        pass
+    except (M.ModelError, UnicodeDecodeError) as exc:
+        info["ai_integrity"] = str(exc)
     tmp = "%s.tmp-%d-%d" % (db, os.getpid(), time.monotonic_ns())
     try:
         con = sqlite3.connect(tmp, isolation_level=None)
@@ -385,7 +430,7 @@ def build(model_path, _data=None):
             con.execute("PRAGMA journal_mode=OFF")
             con.execute("PRAGMA synchronous=OFF")
             con.execute("BEGIN")
-            _fill(con, model, info)
+            _fill(con, model, dict(info, _ai=ai))
             con.execute("COMMIT")
         finally:
             con.close()
@@ -404,7 +449,7 @@ def ensure(model_path):
     data, sha = _read(model_path)
     db = index_path(model_path)
     meta = _meta(db)
-    if _fresh(meta, sha):
+    if _fresh(meta, sha, _ai_sha(model_path)):
         return {"path": db, "built": False, "private": False, "seconds": 0.0, "fts": meta.get("fts"),
                 "integrity": meta.get("integrity")}
     return build(model_path, (data, sha))

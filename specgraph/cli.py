@@ -190,6 +190,30 @@ def cmd_sql(store, a):
     return 0
 
 
+def cmd_ai_apply(store, a):
+    from . import ai as AI
+    text = a.ops if a.ops else sys.stdin.read()
+    try:
+        ops = json.loads(text)
+    except ValueError as exc:
+        raise StoreError("operations are not valid JSON: %s" % exc)
+    if isinstance(ops, dict):
+        ops = [ops]
+    new, results = AI.AIStore(store).apply(ops, a.model)
+    _out({"ok": True, "results": results, "stamp": (new.get("stamp") or {}).get("id")})
+
+
+def cmd_ai_status(store, a):
+    from . import ai as AI
+    _out(AI.AIStore(store).status())
+
+
+def cmd_ai_ops(store, a):
+    from . import ai as AI
+    for name in sorted(AI.OPS):
+        print("%-18s %s%s" % (name, "(admin) " if AI.OPS[name].admin else "", AI.OPS[name].doc))
+
+
 def cmd_check(store, a):
     """validation + integrity + locks + identity, for the hooks."""
     if a.staged:
@@ -337,6 +361,14 @@ def build_parser():
                     help="characters shown of a cell (default: SPECGRAPH_SQL_WIDTH or 200; 0 = whole)")
     sp.add_argument("--json", action="store_true",
                     help="JSON: columns, rows, total, truncatedRows, truncatedCells")
+    sp = sub.add_parser("ai", help="AI labels (ADR-034): apply operations, status, list operations")
+    aisub = sp.add_subparsers(dest="aicmd", required=True)
+    ap = aisub.add_parser("apply", help="apply AI operations (JSON list) - the write path of the AI file")
+    ap.set_defaults(fn=cmd_ai_apply)
+    ap.add_argument("ops", nargs="?", help="JSON; read from stdin when omitted")
+    ap.add_argument("--model", help="name of the language model that produced the labels (recorded)")
+    aisub.add_parser("status", help="counts of labelled, stale and unlabelled elements").set_defaults(fn=cmd_ai_status)
+    aisub.add_parser("ops", help="list the AI operations").set_defaults(fn=cmd_ai_ops)
     sp = add("check", cmd_check, "all checks on the working or staged file (used by hooks)")
     sp.add_argument("--staged", action="store_true")
     sp = add("audit", cmd_audit, "check every commit of the branch history, or the commits <from> to <to> "

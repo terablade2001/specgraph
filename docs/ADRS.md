@@ -521,8 +521,10 @@ dependencies, weak for exact filtering; rejected in the draft plan).
      key rule; `definition` one line, at most 300 characters; `parent` an existing key (two levels at most);
      `changed` = the `vocabVersion` at which the entry was added or its meaning last changed. Target 100–200
      entries; retired entries stay so old labels can be read.
-   - `labels`: `{<elementHash>: {v: <vocabVersion>, labels: [keys], by: <user>, model: <text>}}`. `model` is the
-     name of the language model the agent reports; it is recorded, not checked.
+   - `labels`: `{<elementHash>: {v: <vocabVersion>, labels: [keys], by: <user>, model: <text>, elements: [ids]}}`.
+     `model` is the name of the language model the agent reports; it is recorded, not checked. `elements` (added in
+     implementation, Phase 7) lists the elements labelled with that content, so an element whose content changed
+     still shows its last labels, as stale.
    - `rules`: `{<id>: {element, label, kind: "never" | "always", reason, by, at}}`: people's corrections ("never
      label REQ-12 security"), applied by every later labelling.
    - `stamp`: the same mechanism as the model (`stamp.make_stamp` / `check_integrity`), verified against the user

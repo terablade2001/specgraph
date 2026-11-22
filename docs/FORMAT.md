@@ -138,3 +138,26 @@ to the model file, for example `.specgraph/specmodel.json.db`. It is **not part 
   change, and never read to decide a change. The model file stays the only source of truth.
 - The tool writes `.specgraph/.gitignore` (`*`), so the folder is never committed. Deleting it loses nothing.
 - Deleted elements are not in it. `sg.py sql --schema` lists its tables and what every column holds.
+
+## AI labels (`specmodel.ai.json`, ADR-034)
+
+An optional second file next to the model, written only by `sg.py ai apply`. Without it the tool works as before.
+
+```
+{ "format": "specgraph-ai", "formatVersion": 1, "vocabVersion": 3, "promptVersion": 1,
+  "vocabulary": { "<key>": { "label", "definition", "parent"?, "retired"?, "replacedBy"?: [keys], "changed": 2 } },
+  "labels":     { "<elementHash>": { "v": 3, "labels": [keys], "by": "<user>", "model": "<LLM name>",
+                                     "elements": [ids] } },
+  "rules":      { "<id>": { "element", "label", "kind": "never" | "always", "reason", "by", "at" } },
+  "stamp":      { ...as the model's, verified against the model's users... } }
+```
+
+- `elementHash` = sha256 of the compact sorted JSON of `{stereotype, topic, notes, fields}` of an element: a status
+  change or a move keeps its labels.
+- An element's labels are **current** when the entry for its hash exists, every label is active with
+  `changed <= v`, and its rules hold; otherwise they are **stale** (shown, marked as possibly outdated).
+- Vocabulary and rules change only by an administrator; any registered user sets labels. Every vocabulary batch
+  raises `vocabVersion`; `changed` moves only when a concept is retired, merged, split or redefined.
+- `specmodel.ai.log.jsonl`: one line per operation (who, when, which, reason, confidence, model), append-only,
+  `merge=union`, never read by the tool to decide anything.
+- Labels are a retrieval aid. Validation, coverage, locks and every other decision ignore them.

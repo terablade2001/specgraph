@@ -275,6 +275,12 @@ Labels can only show value on questions the index cannot answer. Before Phase 7:
   AI file states), `sg.py ai apply`, `sg.py ai status`, stamp and log (ADR-034 §1–5, §8).
 - Index: `ai_vocabulary`, `ai_labels(element, label, stale)`, freshness key with the AI file (ADR-034 §7).
 - Tests (AIL-01, -02, -03, -05, -06, -08) first; everything also tested without an AI file.
+- **Done 2026-11-22:** `specgraph/ai.py`, `sg.py ai apply|status|ops`, index schema 2 (`ai_vocabulary`, `ai_labels`,
+  `meta.ai`, `meta.ai_integrity`), AI file in `check --staged` and `audit`, `.gitattributes` lines; 22 tests
+  (`tests/test_ai.py`). Details settled in code: one `vocabVersion` raise per batch; a definition change stales
+  unless `keepLabels`; merge/split = retire with `replacedBy`; label entries list their `elements` (so a changed
+  element keeps showing its last labels, stale; noted in ADR-034 §2); removing label entries (`ai.gc`) is
+  admin-only; rules are checked when labelling and an `always` label is added automatically.
 
 ### Phase 8 — Labelling by an agent
 

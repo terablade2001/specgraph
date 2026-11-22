@@ -101,6 +101,16 @@ JOIN element_fields p ON p.element = e.id AND p.key = 'priority'
 WHERE e.stereotype = 'REQ' AND p.value = 'Must';
 ```
 
+## AI labels (optional, ADR-034)
+
+A project may keep a vocabulary of concepts and per-element labels in `specmodel.ai.json`. In the index:
+`ai_vocabulary` (read it like the configuration) and `ai_labels(element, label, stale)`.
+`SELECT e.label, e.topic FROM ai_labels a JOIN elements e ON e.id = a.element WHERE a.label = 'payments'` finds
+elements by concept even when their words differ. Labels find, specs answer: `stale = 1` means possibly outdated,
+an element may be unlabelled, and labels can be wrong, so combine them with full-text search and links.
+`python sg.py ai status` shows how much is labelled; `python sg.py ai ops` lists the operations of
+`python sg.py ai apply` (vocabulary and rules: administrators only).
+
 ## Change — always through `apply`, never by editing the file
 
 ```

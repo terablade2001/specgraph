@@ -24,6 +24,12 @@ def _cmd(store):
     return '"%s" "%s"' % (sys.executable.replace("\\", "/"), script.replace("\\", "/"))
 
 
+def _ai_rel(rel, log=False):
+    """Repository-relative path of the AI file (ADR-034) or its log, next to the model `rel`."""
+    base = rel[:-5] if rel.endswith(".json") else rel
+    return base + (".ai.log.jsonl" if log else ".ai.json")
+
+
 def install(store, force=False):
     if not store.root:
         raise gitio.GitError("not inside a git repository")
@@ -53,7 +59,10 @@ def install(store, force=False):
     done.append("configured merge driver")
     attr = os.path.join(store.root, ".gitattributes")
     lines = [("%s text eol=lf merge=%s" % (rel, TOOL_NAME), "added merge rule to .gitattributes (commit this file)"),
-             ("%s text eol=lf merge=union" % M.deleted_path(rel), "added the deleted-elements log to .gitattributes")]
+             ("%s text eol=lf merge=union" % M.deleted_path(rel), "added the deleted-elements log to .gitattributes"),
+             ("%s text eol=lf linguist-generated" % _ai_rel(rel), "added the AI labels file to .gitattributes"),
+             ("%s text eol=lf merge=union linguist-generated" % _ai_rel(rel, log=True),
+              "added the AI log to .gitattributes")]
     for line, note in lines:
         existing = ""
         if os.path.exists(attr):
